@@ -1,6 +1,17 @@
-# GitHub Reports
+# GitHub Pull Requests
 
 This project is to auto-generate a GitHub Pages HTML page that produces various reports.
+
+## APIs
+
+### API by Repo
+
+GitHub does have an API to list pull requests on a per-repo basis as listed here:
+
+* API Reference: https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests
+* Example: https://api.github.com/repos/grokify/go-metabase/pulls 
+
+### API by User
 
 The first report is an open Pull Request list based on the following API:
 
