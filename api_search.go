@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v56/github"
+	"github.com/grokify/mogo/pointer"
 )
 
 type Client struct {
@@ -28,6 +29,37 @@ func (c *Client) SearchOpenPullRequests(ctx context.Context, username string, op
 
 func (c *Client) SearchIssues(ctx context.Context, qry Query, opts *github.SearchOptions) (*github.IssuesSearchResult, *github.Response, error) {
 	return c.Client.Search.Issues(ctx, qry.Encode(), opts)
+}
+
+func (c *Client) SearchIssuesAll(ctx context.Context, qry Query, opts *github.SearchOptions) (Issues, error) {
+	if opts == nil {
+		opts = &github.SearchOptions{
+			ListOptions: github.ListOptions{
+				Page:    1,
+				PerPage: ParamPerPageMax,
+			},
+		}
+	}
+	iss := Issues{}
+	for {
+		isRes, _, err := c.SearchIssues(ctx, qry, opts)
+		if err != nil {
+			return iss, err
+		}
+		if len(isRes.Issues) > 0 {
+			iss = append(iss, isRes.Issues...)
+		}
+		tc := ParamPerPageMax
+		if isRes != nil && isRes.Total != nil {
+			tc = pointer.Dereference(isRes.Total)
+		}
+		if tc < ParamPerPageMax {
+			break
+		}
+		opts.ListOptions.Page++
+	}
+	return iss, nil
+	//return c.Client.Search.Issues(ctx, qry.Encode(), opts)
 }
 
 type Query map[string]string
