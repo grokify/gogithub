@@ -90,7 +90,7 @@ func (is *Issue) CreatedAge() (time.Duration, error) {
 	if dt, err := is.CreatedTime(); err != nil {
 		return -1, err
 	} else {
-		return time.Now().Sub(dt), nil
+		return time.Since(dt), nil
 	}
 }
 
