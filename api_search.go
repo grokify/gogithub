@@ -14,8 +14,7 @@ type Client struct {
 }
 
 func NewClient(httpClient *http.Client) *Client {
-	c := github.NewClient(httpClient)
-	return &Client{Client: c}
+	return &Client{Client: github.NewClient(httpClient)}
 }
 
 func (c *Client) SearchOpenPullRequests(ctx context.Context, username string, opts *github.SearchOptions) (*github.IssuesSearchResult, *github.Response, error) {
