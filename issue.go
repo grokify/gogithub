@@ -79,7 +79,7 @@ func (is *Issue) CreatedTime() (time.Time, error) {
 		return time.Time{}, ErrIssueIsNotSet
 	} else if is.Issue.CreatedAt == nil {
 		return time.Time{}, ErrIssueCreatedAtIsNotSet
-	} else if dt := is.Issue.CreatedAt.GetTime(); dt == nil {
+	} else if dt := is.Issue.CreatedAt.GetTime(); dt == nil || dt.IsZero() {
 		return time.Time{}, ErrIssueCreatedAtGetTimeIsNotSet
 	} else {
 		return *dt, nil
@@ -100,12 +100,4 @@ func (is *Issue) MustAuthorUsername() string {
 	} else {
 		return username
 	}
-}
-
-func DereferenceSlice[S ~[]*E, E comparable](s S) []E {
-	deref := []E{}
-	for _, e := range s {
-		deref = append(deref, *e)
-	}
-	return deref
 }
