@@ -6,4 +6,7 @@ const (
 
 	ParamPerPageMax     = 100
 	ParamPerPageDefault = 30
+
+	IssueStateOpen = "open"
+	IssueIsPR      = "pr"
 )

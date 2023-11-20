@@ -37,11 +37,14 @@ func main() {
 	for i, acct := range opts.Accounts {
 		iss2, err := c.SearchIssuesAll(context.Background(), gogithub.Query{
 			"user":  acct,
-			"state": "open",
-			"is":    "pr",
+			"state": gogithub.IssueStateOpen,
+			"is":    gogithub.IssueIsPR,
 		}, nil)
+		logutil.FatalErr(err)
+
 		tbl2, err := iss2.Table()
 		logutil.FatalErr(err)
+
 		if i == 0 {
 			tbl = tbl2
 		} else {
