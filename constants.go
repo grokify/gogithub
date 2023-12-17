@@ -4,9 +4,15 @@ const (
 	UsernameDependabot = "dependabot[bot]"
 	UserIDDependabot   = 49699333
 
-	ParamPerPageMax     = 100
-	ParamPerPageDefault = 30
+	ParamPerPageValueMax     = 100
+	ParamPerPageValueDefault = 30
 
-	IssueStateOpen = "open"
-	IssueIsPR      = "pr"
+	ParamUser           = "user"
+	ParamState          = "state"
+	ParamStateValueOpen = "open"
+	ParamIs             = "is"
+	ParamIsValuePR      = "pr"
+
+	BaseURLRepoAPI  = "https://api.github.com/repos"
+	BaseURLRepoHTML = "https://github.com"
 )
