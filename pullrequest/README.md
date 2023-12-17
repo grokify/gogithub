@@ -1,6 +1,6 @@
 # GitHub Pull Requests
 
-This project is to auto-generate a GitHub Pages HTML page that produces various reports.
+This project is query and inspect pull requests.
 
 ## APIs
 
@@ -21,3 +21,7 @@ To retrieve pull requests across repos, use the Search Issues API
 It does not appear Pull Request count is separately available in the repos API call. See more on this API call here:
 
 * Discussion: https://stackoverflow.com/questions/8713596/how-to-retrieve-the-list-of-all-github-repositories-of-a-person
+
+## Dependabot
+
+https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions

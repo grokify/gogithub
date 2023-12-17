@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/grokify/gocharts/v2/data/table"
 	"github.com/grokify/gogithub"
 	"github.com/grokify/mogo/log/logutil"
 	flags "github.com/jessevdk/go-flags"
@@ -32,27 +31,22 @@ func main() {
 
 	c := gogithub.NewClient(nil)
 
-	var tbl *table.Table
+	ii := gogithub.Issues{}
 
-	for i, acct := range opts.Accounts {
+	for _, acct := range opts.Accounts {
 		iss2, err := c.SearchIssuesAll(context.Background(), gogithub.Query{
-			"user":  acct,
-			"state": gogithub.IssueStateOpen,
-			"is":    gogithub.IssueIsPR,
+			gogithub.ParamUser:  acct,
+			gogithub.ParamState: gogithub.ParamStateValueOpen,
+			gogithub.ParamIs:    gogithub.ParamIsValuePR,
 		}, nil)
 		logutil.FatalErr(err)
-
-		tbl2, err := iss2.Table()
-		logutil.FatalErr(err)
-
-		if i == 0 {
-			tbl = tbl2
-		} else {
-			tbl.Rows = append(tbl.Rows, tbl2.Rows...)
-		}
+		ii = append(ii, iss2...)
 	}
 
-	err = tbl.WriteXLSX("githubissues.xlsx", "issues")
+	ts, err := ii.TableSet()
+	logutil.FatalErr(err)
+
+	err = ts.WriteXLSX("githubissues.xlsx")
 	logutil.FatalErr(err)
 
 	fmt.Println("DONE")
