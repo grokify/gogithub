@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/google/go-github/v56 v56.0.0
 	github.com/grokify/gocharts/v2 v2.16.1
-	github.com/grokify/mogo v0.62.3
+	github.com/grokify/mogo v0.62.5
 	github.com/jessevdk/go-flags v1.5.0
 )
 
