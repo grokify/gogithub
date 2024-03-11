@@ -1,11 +1,12 @@
 module github.com/grokify/gogithub
 
 go 1.21
+toolchain go1.22.1
 
 require (
 	github.com/google/go-github/v56 v56.0.0
 	github.com/grokify/gocharts/v2 v2.18.1
-	github.com/grokify/mogo v0.63.1
+	github.com/grokify/mogo v0.63.2
 	github.com/jessevdk/go-flags v1.5.0
 )
 
