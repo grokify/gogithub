@@ -14,6 +14,7 @@ import (
 
 type Options struct {
 	Accounts []string `short:"a" long:"accounts" description:"Accounts" required:"true"`
+	Outfile  string   `short:"o" long:"outfile" description:"Output File" required:"false"`
 }
 
 func main() {
@@ -23,6 +24,10 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Printf("loading public pull requests for (%s)\n", strings.Join(opts.Accounts, ", "))
+	opts.Outfile = strings.TrimSpace(opts.Outfile)
+	if opts.Outfile == "" {
+		opts.Outfile = "githubissues.xlsx"
+	}
 
 	if len(opts.Accounts) == 0 {
 		fmt.Println("DONE")
@@ -46,8 +51,9 @@ func main() {
 	ts, err := ii.TableSet()
 	logutil.FatalErr(err)
 
-	err = ts.WriteXLSX("githubissues.xlsx")
+	err = ts.WriteXLSX(opts.Outfile)
 	logutil.FatalErr(err)
+	fmt.Printf("WROTE (%s)\n", opts.Outfile)
 
 	fmt.Println("DONE")
 }
