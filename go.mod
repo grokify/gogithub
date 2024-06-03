@@ -7,7 +7,7 @@ toolchain go1.22.2
 require (
 	github.com/google/go-github/v56 v56.0.0
 	github.com/grokify/gocharts/v2 v2.19.0
-	github.com/grokify/mogo v0.64.0
+	github.com/grokify/mogo v0.64.3
 	github.com/jessevdk/go-flags v1.5.0
 )
 
@@ -27,7 +27,7 @@ require (
 	github.com/xuri/excelize/v2 v2.8.1 // indirect
 	github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7 // indirect
 	golang.org/x/crypto v0.23.0 // indirect
-	golang.org/x/exp v0.0.0-20240525044651-4c93da0ed11d // indirect
+	golang.org/x/exp v0.0.0-20240531132922-fd00a4e0eefc // indirect
 	golang.org/x/image v0.16.0 // indirect
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
