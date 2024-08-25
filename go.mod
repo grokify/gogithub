@@ -6,8 +6,8 @@ toolchain go1.22.2
 
 require (
 	github.com/google/go-github/v56 v56.0.0
-	github.com/grokify/gocharts/v2 v2.19.6
-	github.com/grokify/mogo v0.64.7
+	github.com/grokify/gocharts/v2 v2.19.8
+	github.com/grokify/mogo v0.64.8
 	github.com/jessevdk/go-flags v1.6.1
 )
 
@@ -32,7 +32,7 @@ require (
 	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/sys v0.24.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
-	gonum.org/v1/gonum v0.15.0 // indirect
+	gonum.org/v1/gonum v0.15.1 // indirect
 )
 
 // replace github.com/grokify/gocharts/v2 => ../gocharts
