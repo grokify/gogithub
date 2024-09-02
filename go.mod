@@ -6,8 +6,8 @@ toolchain go1.22.2
 
 require (
 	github.com/google/go-github/v56 v56.0.0
-	github.com/grokify/gocharts/v2 v2.19.8
-	github.com/grokify/mogo v0.64.9
+	github.com/grokify/gocharts/v2 v2.20.0
+	github.com/grokify/mogo v0.64.10
 	github.com/jessevdk/go-flags v1.6.1
 )
 
