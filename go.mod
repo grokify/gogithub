@@ -6,8 +6,8 @@ toolchain go1.22.2
 
 require (
 	github.com/google/go-github/v56 v56.0.0
-	github.com/grokify/gocharts/v2 v2.20.3
-	github.com/grokify/mogo v0.65.1
+	github.com/grokify/gocharts/v2 v2.20.4
+	github.com/grokify/mogo v0.65.2
 	github.com/jessevdk/go-flags v1.6.1
 )
 
@@ -24,7 +24,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/quicktemplate v1.8.0 // indirect
 	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect
-	github.com/xuri/excelize/v2 v2.8.1 // indirect
+	github.com/xuri/excelize/v2 v2.9.0 // indirect
 	github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7 // indirect
 	golang.org/x/crypto v0.28.0 // indirect
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect
