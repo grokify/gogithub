@@ -10,10 +10,10 @@ github.com/google/go-querystring v1.1.0 h1:AnCroh3fv4ZBgVIf1Iwtovgjaw/GiKJo8M8yD
 github.com/google/go-querystring v1.1.0/go.mod h1:Kcdr2DB4koayq7X8pmAG4sNG59So17icRSOU623lUBU=
 github.com/grokify/base36 v1.0.5 h1:iUgnt40hrPtn3M2gjU4Darow5ikf8xWXrTuMWTLziCk=
 github.com/grokify/base36 v1.0.5/go.mod h1:L+1aaUBGfp5Ctar7KCS5G9uPABo1Ccu1Ct2iQAuhOJ4=
-github.com/grokify/gocharts/v2 v2.20.5 h1:A4PxNqmoXTVb73KRSE45qq8UytMl1dniFhrbX+Mojec=
-github.com/grokify/gocharts/v2 v2.20.5/go.mod h1:2pdr/oR10OWnAbMBDRbwdAhVy7sb7zLKH7Y2TPi6nVs=
-github.com/grokify/mogo v0.65.3 h1:+WHUGNTwIExBRLTUSB6gy+vAFtN15L1MCOU9GqPIVm4=
-github.com/grokify/mogo v0.65.3/go.mod h1:pqvLLaqKpwXRYKQNtAUKvlTR3Zg9MPWHvpe9Qd6p9Uw=
+github.com/grokify/gocharts/v2 v2.21.0 h1:XjVFV85Gn24aZ3+zHzeITIGwNWd3Llni029k/TvYA2g=
+github.com/grokify/gocharts/v2 v2.21.0/go.mod h1:TWe3yGhjo9xyPBBDhbdDobzdyvaLgRXcPFnGmZZxP8A=
+github.com/grokify/mogo v0.65.5 h1:ifDwXUQNeFIi27sKk2kp/TYiseo2imMuVbPGA/zBGjM=
+github.com/grokify/mogo v0.65.5/go.mod h1:q0uXqdhW6F4VJZ5iTJqi34GMewjZr6Q48ZbAigBYfpQ=
 github.com/huandu/xstrings v1.5.0 h1:2ag3IFq9ZDANvthTwTiqSSZLjDc+BedvHPAp5tJy2TI=
 github.com/huandu/xstrings v1.5.0/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
 github.com/jessevdk/go-flags v1.6.1 h1:Cvu5U8UGrLay1rZfv/zP7iLpSHGUZ/Ou68T0iX1bBK4=
