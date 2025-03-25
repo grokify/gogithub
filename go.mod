@@ -5,7 +5,7 @@ go 1.23.2
 require (
 	github.com/google/go-github/v56 v56.0.0
 	github.com/grokify/gocharts/v2 v2.22.3
-	github.com/grokify/mogo v0.68.1
+	github.com/grokify/mogo v0.68.3
 	github.com/jessevdk/go-flags v1.6.1
 )
 
