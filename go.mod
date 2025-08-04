@@ -4,8 +4,8 @@ go 1.23.2
 
 require (
 	github.com/google/go-github/v56 v56.0.0
-	github.com/grokify/gocharts/v2 v2.24.15
-	github.com/grokify/mogo v0.70.13
+	github.com/grokify/gocharts/v2 v2.24.17
+	github.com/grokify/mogo v0.70.15
 	github.com/jessevdk/go-flags v1.6.1
 )
 
@@ -19,7 +19,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/olekukonko/errors v1.1.0 // indirect
 	github.com/olekukonko/ll v0.0.9 // indirect
-	github.com/olekukonko/tablewriter v1.0.8 // indirect
+	github.com/olekukonko/tablewriter v1.0.9 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.4 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
