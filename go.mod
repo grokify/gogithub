@@ -1,11 +1,11 @@
 module github.com/grokify/gogithub
 
-go 1.23.2
+go 1.24.0
 
 require (
 	github.com/google/go-github/v56 v56.0.0
 	github.com/grokify/gocharts/v2 v2.24.17
-	github.com/grokify/mogo v0.70.15
+	github.com/grokify/mogo v0.71.7
 	github.com/jessevdk/go-flags v1.6.1
 )
 
@@ -29,11 +29,11 @@ require (
 	github.com/xuri/efp v0.0.1 // indirect
 	github.com/xuri/excelize/v2 v2.9.1 // indirect
 	github.com/xuri/nfp v0.0.1 // indirect
-	golang.org/x/crypto v0.40.0 // indirect
-	golang.org/x/exp v0.0.0-20250718183923-645b1fa84792 // indirect
-	golang.org/x/image v0.29.0 // indirect
-	golang.org/x/net v0.42.0 // indirect
-	golang.org/x/sys v0.34.0 // indirect
-	golang.org/x/text v0.27.0 // indirect
+	golang.org/x/crypto v0.43.0 // indirect
+	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546 // indirect
+	golang.org/x/image v0.32.0 // indirect
+	golang.org/x/net v0.46.0 // indirect
+	golang.org/x/sys v0.37.0 // indirect
+	golang.org/x/text v0.30.0 // indirect
 	gonum.org/v1/gonum v0.16.0 // indirect
 )
