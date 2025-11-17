@@ -4,7 +4,6 @@
 [![Lint Status][lint-status-svg]][lint-status-url]
 [![Go Report Card][goreport-svg]][goreport-url]
 [![Docs][docs-godoc-svg]][docs-godoc-url]
-[![LOC][loc-svg]][loc-url]
 [![License][license-svg]][license-url]
 
  [build-status-svg]: https://github.com/grokify/gogithub/actions/workflows/ci.yaml/badge.svg?branch=main
