@@ -7,8 +7,8 @@
 [![LOC][loc-svg]][loc-url]
 [![License][license-svg]][license-url]
 
- [build-status-svg]: https://github.com/grokify/gogithub/actions/workflows/test.yaml/badge.svg?branch=main
- [build-status-url]: https://github.com/grokify/gogithub/actions/workflows/test.yaml
+ [build-status-svg]: https://github.com/grokify/gogithub/actions/workflows/ci.yaml/badge.svg?branch=main
+ [build-status-url]: https://github.com/grokify/gogithub/actions/workflows/ci.yaml
  [lint-status-svg]: https://github.com/grokify/gogithub/actions/workflows/lint.yaml/badge.svg?branch=main
  [lint-status-url]: https://github.com/grokify/gogithub/actions/workflows/lint.yaml
  [goreport-svg]: https://goreportcard.com/badge/github.com/grokify/gogithub
