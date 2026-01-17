@@ -9,19 +9,8 @@ import (
 	"github.com/google/go-github/v81/github"
 	"github.com/grokify/gocharts/v2/data/histogram"
 	"github.com/grokify/gocharts/v2/data/table"
+	"github.com/grokify/gogithub"
 	"github.com/grokify/mogo/pointer"
-)
-
-// Base URLs for converting between API and HTML URLs.
-const (
-	BaseURLRepoAPI  = "https://api.github.com/repos"
-	BaseURLRepoHTML = "https://github.com"
-)
-
-// Known bot users.
-const (
-	UsernameDependabot = "dependabot[bot]"
-	UserIDDependabot   = 49699333
 )
 
 // Issue-related errors.
@@ -47,7 +36,7 @@ func (iss Issues) RepositoryIssueCounts(htmlURLs bool) map[string]int {
 	}
 	hURLs := map[string]int{}
 	for k, v := range out {
-		k2 := strings.Replace(k, BaseURLRepoAPI, BaseURLRepoHTML, 1)
+		k2 := strings.Replace(k, gogithub.BaseURLRepoAPI, gogithub.BaseURLRepoHTML, 1)
 		hURLs[k2] = v
 	}
 	return hURLs
