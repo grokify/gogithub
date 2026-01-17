@@ -8,7 +8,7 @@
   "maintainers": ["grokify"],
   "releases": [
     {
-      "version": "0.6.0",
+      "version": "v0.6.0",
       "date": "2026-01-17",
       "highlights": [
         {"description": "Added `graphql` package for GitHub GraphQL API support with user contribution statistics"},
@@ -44,7 +44,7 @@
       ]
     },
     {
-      "version": "0.5.0",
+      "version": "v0.5.0",
       "date": "2026-01-17",
       "highlights": [
         {"description": "Added `QueryBuilder` for type-safe, fluent query construction"},
@@ -76,7 +76,7 @@
       ]
     },
     {
-      "version": "0.4.0",
+      "version": "v0.4.0",
       "date": "2026-01-17",
       "highlights": [
         {"description": "Breaking change release: removed backward compatibility layer from v0.3.0"},
@@ -120,7 +120,7 @@
       ]
     },
     {
-      "version": "0.3.0",
+      "version": "v0.3.0",
       "date": "2026-01-17",
       "highlights": [
         {"description": "Major architecture refactor: reorganized into modular subpackages by operation type"},
@@ -179,42 +179,42 @@
       ]
     },
     {
-      "version": "0.2.5",
+      "version": "v0.2.5",
       "date": "2026-01-17",
       "dependencies": [
         {"description": "Bump `github.com/grokify/mogo` from 0.72.5 to 0.72.6", "commit": "4ca5253"}
       ]
     },
     {
-      "version": "0.2.4",
+      "version": "v0.2.4",
       "date": "2025-11-17",
       "dependencies": [
         {"description": "Bump `github.com/grokify/gocharts/v2` from 2.26.6 to 2.26.7", "commit": "0f4477a"}
       ]
     },
     {
-      "version": "0.2.3",
+      "version": "v0.2.3",
       "date": "2025-03-10",
       "changed": [
         {"description": "Update dependencies via `go mod`", "commit": "06c1ac2"}
       ]
     },
     {
-      "version": "0.2.2",
+      "version": "v0.2.2",
       "date": "2025-01-04",
       "changed": [
         {"description": "Dependency updates", "commit": "58e2699"}
       ]
     },
     {
-      "version": "0.2.1",
+      "version": "v0.2.1",
       "date": "2024-02-05",
       "changed": [
         {"description": "Dependency updates"}
       ]
     },
     {
-      "version": "0.2.0",
+      "version": "v0.2.0",
       "date": "2023-12-17",
       "added": [
         {"description": "Initial GitHub search API support", "commit": "283c912"},
@@ -225,7 +225,7 @@
       ]
     },
     {
-      "version": "0.1.0",
+      "version": "v0.1.0",
       "date": "2023-12-17",
       "added": [
         {"description": "Initial release", "commit": "43f8ecf"},
