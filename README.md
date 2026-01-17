@@ -38,6 +38,12 @@ gogithub/
 ├── gogithub.go        # Client factory, backward-compatible re-exports
 ├── auth/              # Authentication utilities
 │   └── auth.go        # NewGitHubClient, GetAuthenticatedUser
+├── config/            # Configuration utilities
+│   └── config.go      # Config struct, FromEnv, GitHub Enterprise support
+├── errors/            # Error types and translation
+│   └── errors.go      # APIError, Translate, IsNotFound, IsRateLimited
+├── pathutil/          # Path validation and normalization
+│   └── pathutil.go    # Validate, Normalize, Join, Split
 ├── search/            # Search API operations
 │   ├── search.go      # SearchIssues, SearchIssuesAll
 │   ├── query.go       # Query builder, parameter constants
@@ -45,9 +51,13 @@ gogithub/
 ├── repo/              # Repository operations
 │   ├── fork.go        # EnsureFork, GetDefaultBranch
 │   ├── branch.go      # CreateBranch, GetBranchSHA, DeleteBranch
-│   └── commit.go      # CreateCommit (Git tree API), ReadLocalFiles
+│   ├── commit.go      # CreateCommit (Git tree API), ReadLocalFiles
+│   ├── list.go        # ListOrgRepos, ListUserRepos, GetRepo
+│   └── batch.go       # Batch for atomic multi-file commits
 ├── pr/                # Pull request operations
-│   └── pullrequest.go # CreatePR, GetPR, ListPRs, MergePR
+│   └── pullrequest.go # CreatePR, GetPR, ListPRs, MergePR, ClosePR
+├── release/           # Release operations
+│   └── release.go     # ListReleases, GetLatestRelease, ListReleaseAssets
 ├── cliutil/           # CLI utilities
 │   └── status.go      # Git status helpers
 └── cmd/               # Example commands
@@ -146,9 +156,13 @@ When adding new GitHub API functionality, follow this structure:
 
 1. **Identify the operation category** - Determine which subdirectory the functionality belongs to:
    - `auth/` - Authentication, user identity
+   - `config/` - Configuration, environment variables, GitHub Enterprise
+   - `errors/` - Error types and translation utilities
+   - `pathutil/` - Path validation and normalization
    - `search/` - Search API (issues, PRs, code, commits, etc.)
-   - `repo/` - Repository operations (forks, branches, commits, releases, tags)
+   - `repo/` - Repository operations (forks, branches, commits, batch operations)
    - `pr/` - Pull request operations
+   - `release/` - Release and asset operations
    - Create new directories for distinct API areas (e.g., `issues/`, `actions/`, `gists/`)
 
 2. **Create focused files** - Within each subdirectory, organize by specific functionality:
@@ -195,7 +209,7 @@ package gist
 
 import (
     "context"
-    "github.com/google/go-github/v68/github"
+    "github.com/google/go-github/v81/github"
 )
 
 func Create(ctx context.Context, gh *github.Client, description string, public bool, files map[string]string) (*github.Gist, error) {
@@ -231,7 +245,7 @@ issues, _ := c.SearchIssuesAll(ctx, search.Query{...}, nil)
 
 ## Dependencies
 
-- [google/go-github](https://github.com/google/go-github) v68 - GitHub API client
+- [google/go-github](https://github.com/google/go-github) v81 - GitHub API client
 - [golang.org/x/oauth2](https://golang.org/x/oauth2) - OAuth2 authentication
 
 ## License
