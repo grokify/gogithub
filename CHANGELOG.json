@@ -16,31 +16,31 @@
         {"description": "Two approaches for commit statistics: quick stats (profile view) and detailed stats (additions/deletions)"}
       ],
       "added": [
-        {"description": "New `graphql` package for GitHub GraphQL API"},
-        {"description": "`graphql.NewClient()` and `graphql.NewEnterpriseClient()` for GraphQL client creation"},
-        {"description": "`graphql.GetContributionStats()` for quick contribution statistics (like GitHub profile)"},
-        {"description": "`graphql.GetContributionStatsMultiYear()` for multi-year contribution queries"},
-        {"description": "`graphql.GetCommitStats()` for detailed commit stats with additions/deletions"},
-        {"description": "`graphql.GetCommitStatsByVisibility()` for stats split by public/private repositories"},
-        {"description": "`graphql.Visibility` type with `VisibilityAll`, `VisibilityPublic`, `VisibilityPrivate` constants"},
-        {"description": "`graphql.ContributionStats` type with monthly contribution breakdown"},
-        {"description": "`graphql.CommitStats` type with per-repo and per-month breakdowns including line changes"},
-        {"description": "MkDocs documentation site with Material theme at https://grokify.github.io/gogithub/"},
-        {"description": "Documentation guides for all packages: auth, search, repo, pr, release, graphql, errors"},
-        {"description": "GitHub Actions workflow for automatic documentation deployment to gh-pages"}
+        {"description": "New `graphql` package for GitHub GraphQL API", "commit": "6277bd5"},
+        {"description": "`graphql.NewClient()` and `graphql.NewEnterpriseClient()` for GraphQL client creation", "commit": "6277bd5"},
+        {"description": "`graphql.GetContributionStats()` for quick contribution statistics (like GitHub profile)", "commit": "6277bd5"},
+        {"description": "`graphql.GetContributionStatsMultiYear()` for multi-year contribution queries", "commit": "6277bd5"},
+        {"description": "`graphql.GetCommitStats()` for detailed commit stats with additions/deletions", "commit": "6277bd5"},
+        {"description": "`graphql.GetCommitStatsByVisibility()` for stats split by public/private repositories", "commit": "6277bd5"},
+        {"description": "`graphql.Visibility` type with `VisibilityAll`, `VisibilityPublic`, `VisibilityPrivate` constants", "commit": "6277bd5"},
+        {"description": "`graphql.ContributionStats` type with monthly contribution breakdown", "commit": "6277bd5"},
+        {"description": "`graphql.CommitStats` type with per-repo and per-month breakdowns including line changes", "commit": "6277bd5"},
+        {"description": "MkDocs documentation site with Material theme at https://grokify.github.io/gogithub/", "commit": "88108f5"},
+        {"description": "Documentation guides for all packages: auth, search, repo, pr, release, graphql, errors", "commit": "88108f5"},
+        {"description": "GitHub Actions workflow for automatic documentation deployment to gh-pages", "commit": "88108f5"}
       ],
       "dependencies": [
-        {"description": "Added `github.com/shurcooL/githubv4` for GitHub GraphQL API support"},
-        {"description": "Added `github.com/shurcooL/graphql` (indirect dependency)"}
+        {"description": "Added `github.com/shurcooL/githubv4` for GitHub GraphQL API support", "commit": "6277bd5"},
+        {"description": "Added `github.com/shurcooL/graphql` (indirect dependency)", "commit": "6277bd5"}
       ],
       "documentation": [
-        {"description": "Added MkDocs configuration (mkdocs.yml) with Material theme"},
-        {"description": "Added documentation home page (docs/index.md)"},
-        {"description": "Added getting started guide (docs/getting-started.md)"},
-        {"description": "Added API reference page with links to pkg.go.dev (docs/api-reference.md)"},
-        {"description": "Added package guides: auth, search, repo, pr, release, graphql, errors"},
-        {"description": "Added .github/workflows/docs.yaml for automatic gh-pages deployment"},
-        {"description": "Updated README.md with documentation site link"}
+        {"description": "Added MkDocs configuration (mkdocs.yml) with Material theme", "commit": "88108f5"},
+        {"description": "Added documentation home page (docs/index.md)", "commit": "88108f5"},
+        {"description": "Added getting started guide (docs/getting-started.md)", "commit": "88108f5"},
+        {"description": "Added API reference page with links to pkg.go.dev (docs/api-reference.md)", "commit": "88108f5"},
+        {"description": "Added package guides: auth, search, repo, pr, release, graphql, errors", "commit": "88108f5"},
+        {"description": "Added .github/workflows/docs.yaml for automatic gh-pages deployment", "commit": "88108f5"},
+        {"description": "Updated README.md with documentation site link", "commit": "88108f5"}
       ]
     },
     {
