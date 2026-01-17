@@ -6,6 +6,8 @@
 [![Docs][docs-godoc-svg]][docs-godoc-url]
 [![License][license-svg]][license-url]
 
+**[Documentation](https://grokify.github.io/gogithub/)** | **[API Reference](https://pkg.go.dev/github.com/grokify/gogithub)**
+
  [build-status-svg]: https://github.com/grokify/gogithub/actions/workflows/ci.yaml/badge.svg?branch=main
  [build-status-url]: https://github.com/grokify/gogithub/actions/workflows/ci.yaml
  [lint-status-svg]: https://github.com/grokify/gogithub/actions/workflows/lint.yaml/badge.svg?branch=main
