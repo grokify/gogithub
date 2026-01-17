@@ -46,6 +46,13 @@
       "status": "completed",
       "order": 4,
       "description": "Remove deprecated code and make breaking changes (targeted for v0.4.0)"
+    },
+    {
+      "id": "phase5",
+      "name": "Phase 5: v0.5.0 Breaking Changes",
+      "status": "planned",
+      "order": 5,
+      "description": "API improvements requiring breaking changes (targeted for v0.5.0)"
     }
   ],
 
@@ -102,21 +109,23 @@
       "id": "fix-auth-error-unwrap",
       "title": "Add Unwrap() to AuthError",
       "description": "auth.AuthError doesn't implement Unwrap() unlike other custom error types. Add for Go 1.13+ error chain compatibility.",
-      "status": "planned",
+      "status": "completed",
       "area": "high",
       "type": "Fixed",
-      "phase": "phase2",
-      "priority": "high"
+      "phase": "phase4",
+      "priority": "high",
+      "completed_in": "v0.4.0"
     },
     {
       "id": "fix-query-encode",
       "title": "Make Query.Encode() deterministic",
       "description": "Query.Encode() iterates over map which has non-deterministic order. Sort keys before encoding to ensure consistent output.",
-      "status": "planned",
+      "status": "completed",
       "area": "high",
       "type": "Fixed",
-      "phase": "phase2",
-      "priority": "high"
+      "phase": "phase4",
+      "priority": "high",
+      "completed_in": "v0.4.0"
     },
     {
       "id": "add-cliutil-docs",
@@ -230,6 +239,36 @@
         {"id": "move-url-constants", "description": "Move BaseURLRepoAPI, BaseURLRepoHTML to root package", "completed": true},
         {"id": "update-imports", "description": "Update internal imports to use new locations", "completed": true}
       ]
+    },
+    {
+      "id": "query-builder-pattern",
+      "title": "Change Query to struct with builder pattern",
+      "description": "Replace Query map[string]string with a struct type using builder pattern for type-safe query construction. Enables IDE autocomplete and compile-time validation of parameter names.",
+      "status": "planned",
+      "area": "high",
+      "type": "Changed",
+      "phase": "phase5",
+      "priority": "high",
+      "breaking_change": true,
+      "tasks": [
+        {"id": "query-struct", "description": "Create Query struct with internal params slice", "completed": false},
+        {"id": "query-builder-methods", "description": "Add builder methods (User, State, Is, Org, Repo, Type)", "completed": false},
+        {"id": "query-encode-update", "description": "Update Encode() to use new struct", "completed": false},
+        {"id": "update-callers", "description": "Update all callers to use builder pattern", "completed": false}
+      ],
+      "migration_guide": "Replace `search.Query{search.ParamUser: \"grokify\"}` with `search.NewQuery().User(\"grokify\")`."
+    },
+    {
+      "id": "remove-newclient-http",
+      "title": "Remove NewClientHTTP from search package",
+      "description": "Remove search.NewClientHTTP() factory function. Users should use auth.NewGitHubClient() or github.NewClient() to create the GitHub client, then pass it to search.NewClient().",
+      "status": "planned",
+      "area": "medium",
+      "type": "Removed",
+      "phase": "phase5",
+      "priority": "medium",
+      "breaking_change": true,
+      "migration_guide": "Replace `search.NewClientHTTP(httpClient)` with `search.NewClient(github.NewClient(httpClient))`."
     }
   ],
 

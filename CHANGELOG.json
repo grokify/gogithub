@@ -12,7 +12,9 @@
       "date": "2026-01-17",
       "highlights": [
         {"description": "Breaking change release: removed backward compatibility layer from v0.3.0"},
-        {"description": "Relocated constants to more appropriate packages for better code organization"}
+        {"description": "Relocated constants to more appropriate packages for better code organization"},
+        {"description": "Improved error handling with `AuthError.Unwrap()` for error chain compatibility"},
+        {"description": "Fixed `Query.Encode()` to produce deterministic output"}
       ],
       "breaking": [
         {"description": "Removed `Client` type from root package - use `auth.NewGitHubClient()` + subpackage clients"},
@@ -23,11 +25,18 @@
         {"description": "Moved `UsernameDependabot` and `UserIDDependabot` from `search` to `auth` package"},
         {"description": "Moved `BaseURLRepoAPI` and `BaseURLRepoHTML` from `search` to root `gogithub` package"}
       ],
+      "added": [
+        {"description": "`AuthError.Unwrap()` method for Go 1.13+ error chain compatibility"},
+        {"description": "`AuthError.Err` field to wrap underlying errors"}
+      ],
       "changed": [
         {"description": "Root package now contains only package documentation and URL constants"},
         {"description": "Bot user constants (`UsernameDependabot`, `UserIDDependabot`) now in `auth` package"},
         {"description": "URL constants (`BaseURLRepoAPI`, `BaseURLRepoHTML`) now in root `gogithub` package"},
         {"description": "`search/issues.go` now imports URL constants from root package"}
+      ],
+      "fixed": [
+        {"description": "`Query.Encode()` now produces deterministic output by sorting keys"}
       ],
       "removed": [
         {"description": "Removed `Client` type wrapper from root package"},
