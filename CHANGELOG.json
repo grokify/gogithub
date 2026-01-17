@@ -1,0 +1,122 @@
+{
+  "ir_version": "1.0",
+  "project": "gogithub",
+  "repository": "https://github.com/grokify/gogithub",
+  "description": "A high-level Go module for interacting with the GitHub API",
+  "versioning": "semver",
+  "commit_convention": "conventional",
+  "maintainers": ["grokify"],
+  "releases": [
+    {
+      "version": "0.3.0",
+      "date": "2026-01-17",
+      "highlights": [
+        {"description": "Major architecture refactor: reorganized into modular subpackages by operation type"},
+        {"description": "Added comprehensive GitHub API operations for repositories, pull requests, and releases"},
+        {"description": "Maintained backward compatibility with v0.2.x API (deprecated, will be removed in v0.4.0)"}
+      ],
+      "added": [
+        {"description": "New `auth` package with `NewGitHubClient`, `GetAuthenticatedUser`, `GetUser` functions"},
+        {"description": "New `config` package with `Config` struct, `FromEnv`, `FromEnvWithConfig`, GitHub Enterprise support"},
+        {"description": "New `errors` package with standard error types (`ErrNotFound`, `ErrPermissionDenied`, `ErrRateLimited`, etc.) and `Translate` function"},
+        {"description": "New `pathutil` package with `Validate`, `Normalize`, `Join`, `Split`, `Dir`, `Base`, `Ext`, `HasPrefix` functions"},
+        {"description": "New `search` package with `Client`, `SearchIssues`, `SearchIssuesAll`, `Query` builder, and `Issues` type with table generation"},
+        {"description": "New `repo` package with fork operations (`EnsureFork`, `GetDefaultBranch`)"},
+        {"description": "New `repo` package with branch operations (`CreateBranch`, `GetBranchSHA`, `DeleteBranch`, `BranchExists`)"},
+        {"description": "New `repo` package with commit operations (`CreateCommit`, `ReadLocalFiles`, `FileContent` type)"},
+        {"description": "New `repo` package with listing operations (`ListOrgRepos`, `ListUserRepos`, `GetRepo`, `ParseRepoName`)"},
+        {"description": "New `repo` package with batch operations (`Batch` type for atomic multi-file commits)"},
+        {"description": "New `pr` package with `CreatePR`, `GetPR`, `ListPRs`, `MergePR`, `ClosePR`, `AddPRReviewers`, `ListPRFiles`, `ListPRComments`"},
+        {"description": "New `release` package with `ListReleases`, `ListReleasesSince`, `GetRelease`, `GetLatestRelease`, `GetReleaseByTag`, `ListReleaseAssets`"},
+        {"description": "New `cliutil` package with `GitStatusShortLines`, `GitRmDeletedLines`, `GitRmDeletedFile` helpers"},
+        {"description": "Example command `cmd/searchuserpr` for searching user pull requests"}
+      ],
+      "changed": [
+        {"description": "Reorganized codebase from flat package structure to modular subpackages by operation type"},
+        {"description": "Root package now provides backward-compatible re-exports delegating to subpackages"},
+        {"description": "Moved search functionality from `api_search.go` to `search/search.go`"},
+        {"description": "Moved constants from `constants.go` to `search/query.go`"},
+        {"description": "Moved issue types from `issue.go` to `search/issues.go`"},
+        {"description": "Moved example command from `pullrequest/cmd/searchuserpr` to `cmd/searchuserpr`"}
+      ],
+      "deprecated": [
+        {"description": "Root package `Client` type - use `auth.NewGitHubClient` and subpackage clients directly"},
+        {"description": "Root package `NewClient` function - use `auth.NewGitHubClient` instead"},
+        {"description": "Root package `NewClientWithToken` function - use `auth.NewGitHubClient` instead"},
+        {"description": "Root package type aliases (`Query`, `Issues`, `Issue`) - import from `search` package directly"},
+        {"description": "Root package constant re-exports (`ParamUser`, `ParamState`, etc.) - import from `search` package directly"},
+        {"description": "Root package wrapper methods (`SearchOpenPullRequests`, `SearchIssues`, `SearchIssuesAll`) - use `search.Client` methods directly"}
+      ],
+      "removed": [
+        {"description": "Removed `api_search.go` (functionality moved to `search/search.go`)"},
+        {"description": "Removed `constants.go` (functionality moved to `search/query.go`)"},
+        {"description": "Removed `issue.go` (functionality moved to `search/issues.go`)"},
+        {"description": "Removed `pullrequest/` directory (functionality moved to `pr/` and `cmd/`)"}
+      ],
+      "dependencies": [
+        {"description": "Upgraded `github.com/google/go-github` from v68 to v81"},
+        {"description": "Updated Go version from 1.22 to 1.24.0"},
+        {"description": "Updated indirect dependencies"}
+      ],
+      "documentation": [
+        {"description": "Updated README with new modular package structure and usage examples"},
+        {"description": "Added RELEASE_NOTES_v0.3.0.md with comprehensive release documentation"},
+        {"description": "Added ROADMAP.json and ROADMAP.md with project roadmap and v0.4.0 deprecation plan"}
+      ]
+    },
+    {
+      "version": "0.2.5",
+      "date": "2024-12-15",
+      "dependencies": [
+        {"description": "Bump `github.com/grokify/mogo` from 0.72.5 to 0.72.6"}
+      ]
+    },
+    {
+      "version": "0.2.4",
+      "date": "2024-11-20",
+      "dependencies": [
+        {"description": "Bump `github.com/grokify/gocharts/v2` from 2.26.6 to 2.26.7"}
+      ]
+    },
+    {
+      "version": "0.2.3",
+      "date": "2024-10-15",
+      "changed": [
+        {"description": "Update dependencies via `go mod`"}
+      ]
+    },
+    {
+      "version": "0.2.2",
+      "date": "2024-09-10",
+      "changed": [
+        {"description": "Dependency updates"}
+      ]
+    },
+    {
+      "version": "0.2.1",
+      "date": "2024-08-05",
+      "changed": [
+        {"description": "Dependency updates"}
+      ]
+    },
+    {
+      "version": "0.2.0",
+      "date": "2024-07-01",
+      "added": [
+        {"description": "Initial GitHub search API support"},
+        {"description": "`Client` type wrapping `go-github` client"},
+        {"description": "`SearchIssues` and `SearchIssuesAll` methods"},
+        {"description": "`Query` type for building search queries"},
+        {"description": "`Issues` type with table generation for reporting"}
+      ]
+    },
+    {
+      "version": "0.1.0",
+      "date": "2024-06-01",
+      "added": [
+        {"description": "Initial release"},
+        {"description": "Basic GitHub API client wrapper"}
+      ]
+    }
+  ]
+}
