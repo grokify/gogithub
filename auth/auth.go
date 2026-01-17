@@ -20,10 +20,16 @@ const (
 // AuthError indicates an authentication failure.
 type AuthError struct {
 	Message string
+	Err     error // Wrapped error for Go 1.13+ error chain compatibility
 }
 
 func (e *AuthError) Error() string {
 	return "authentication failed: " + e.Message
+}
+
+// Unwrap returns the wrapped error for Go 1.13+ error chain compatibility.
+func (e *AuthError) Unwrap() error {
+	return e.Err
 }
 
 // NewTokenClient creates an HTTP client authenticated with the given token.
@@ -43,7 +49,7 @@ func NewGitHubClient(ctx context.Context, token string) *github.Client {
 func GetAuthenticatedUser(ctx context.Context, gh *github.Client) (string, error) {
 	user, _, err := gh.Users.Get(ctx, "")
 	if err != nil {
-		return "", &AuthError{Message: err.Error()}
+		return "", &AuthError{Message: err.Error(), Err: err}
 	}
 	return user.GetLogin(), nil
 }
