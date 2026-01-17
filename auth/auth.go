@@ -9,6 +9,14 @@ import (
 	"golang.org/x/oauth2"
 )
 
+// Known bot users.
+const (
+	// UsernameDependabot is the username for GitHub's Dependabot.
+	UsernameDependabot = "dependabot[bot]"
+	// UserIDDependabot is the user ID for GitHub's Dependabot.
+	UserIDDependabot = 49699333
+)
+
 // AuthError indicates an authentication failure.
 type AuthError struct {
 	Message string

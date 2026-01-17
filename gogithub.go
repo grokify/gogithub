@@ -1,10 +1,14 @@
 // Package gogithub provides a Go client for the GitHub API.
 //
 // This package is organized into subpackages by operation type:
-//   - auth: Authentication utilities
+//   - auth: Authentication utilities and bot user constants
+//   - config: Configuration and environment variable loading
+//   - errors: Error types and translation utilities
+//   - pathutil: Path validation and normalization
 //   - search: Search API (issues, PRs, code, etc.)
-//   - repo: Repository operations (fork, branch, commit)
+//   - repo: Repository operations (fork, branch, commit, batch)
 //   - pr: Pull request operations
+//   - release: Release and asset operations
 //
 // Example usage:
 //
@@ -34,80 +38,10 @@
 //	}
 package gogithub
 
-import (
-	"context"
-	"net/http"
-
-	"github.com/google/go-github/v81/github"
-	"github.com/grokify/gogithub/auth"
-	"github.com/grokify/gogithub/search"
-)
-
-// Client wraps the GitHub client with convenience methods.
-// For new code, prefer using the subpackages directly.
-type Client struct {
-	*github.Client
-	Search *search.Client
-}
-
-// NewClient creates a new client from an HTTP client.
-// Deprecated: Use auth.NewGitHubClient and search.NewClient directly.
-func NewClient(httpClient *http.Client) *Client {
-	gh := github.NewClient(httpClient)
-	return &Client{
-		Client: gh,
-		Search: search.NewClient(gh),
-	}
-}
-
-// NewClientWithToken creates a new client authenticated with a token.
-func NewClientWithToken(ctx context.Context, token string) *Client {
-	gh := auth.NewGitHubClient(ctx, token)
-	return &Client{
-		Client: gh,
-		Search: search.NewClient(gh),
-	}
-}
-
-// Re-export types for backward compatibility.
-// Deprecated: Import from subpackages directly.
-type (
-	Query  = search.Query
-	Issues = search.Issues
-	Issue  = search.Issue
-)
-
-// Re-export constants for backward compatibility.
-// Deprecated: Import from subpackages directly.
+// GitHub API base URLs.
 const (
-	ParamUser            = search.ParamUser
-	ParamState           = search.ParamState
-	ParamStateValueOpen  = search.ParamStateValueOpen
-	ParamIs              = search.ParamIs
-	ParamIsValuePR       = search.ParamIsValuePR
-	ParamPerPageValueMax = search.ParamPerPageValueMax
-
-	UsernameDependabot = search.UsernameDependabot
-	UserIDDependabot   = search.UserIDDependabot
-
-	BaseURLRepoAPI  = search.BaseURLRepoAPI
-	BaseURLRepoHTML = search.BaseURLRepoHTML
+	// BaseURLRepoAPI is the base URL for the GitHub API repository endpoints.
+	BaseURLRepoAPI = "https://api.github.com/repos"
+	// BaseURLRepoHTML is the base URL for GitHub repository web pages.
+	BaseURLRepoHTML = "https://github.com"
 )
-
-// SearchOpenPullRequests searches for open pull requests by username.
-// Deprecated: Use search.Client.SearchOpenPullRequests directly.
-func (c *Client) SearchOpenPullRequests(ctx context.Context, username string, opts *github.SearchOptions) (*github.IssuesSearchResult, *github.Response, error) {
-	return c.Search.SearchOpenPullRequests(ctx, username, opts)
-}
-
-// SearchIssues is a wrapper for SearchService.Issues().
-// Deprecated: Use search.Client.SearchIssues directly.
-func (c *Client) SearchIssues(ctx context.Context, qry Query, opts *github.SearchOptions) (*github.IssuesSearchResult, *github.Response, error) {
-	return c.Search.SearchIssues(ctx, qry, opts)
-}
-
-// SearchIssuesAll retrieves all issues matching the query with pagination.
-// Deprecated: Use search.Client.SearchIssuesAll directly.
-func (c *Client) SearchIssuesAll(ctx context.Context, qry Query, opts *github.SearchOptions) (Issues, error) {
-	return c.Search.SearchIssuesAll(ctx, qry, opts)
-}
