@@ -43,7 +43,7 @@
     {
       "id": "phase4",
       "name": "Phase 4: v0.4.0 Breaking Changes",
-      "status": "planned",
+      "status": "completed",
       "order": 4,
       "description": "Remove deprecated code and make breaking changes (targeted for v0.4.0)"
     }
@@ -197,36 +197,38 @@
       "id": "remove-compat-shims",
       "title": "Remove backward compatibility shims from root package",
       "description": "Remove deprecated re-exports from gogithub.go added in v0.3.0 for backward compatibility. Users should migrate to importing subpackages directly (auth/, search/, repo/, pr/, release/).",
-      "status": "planned",
+      "status": "completed",
       "area": "high",
       "type": "Removed",
       "phase": "phase4",
       "priority": "high",
       "breaking_change": true,
       "deprecated_in": "v0.3.0",
+      "completed_in": "v0.4.0",
       "tasks": [
-        {"id": "remove-client-type", "description": "Remove Client type wrapper from root package", "completed": false},
-        {"id": "remove-newclient", "description": "Remove NewClient() and NewClientWithToken() from root package", "completed": false},
-        {"id": "remove-type-aliases", "description": "Remove Query, Issues, Issue type aliases", "completed": false},
-        {"id": "remove-const-reexports", "description": "Remove re-exported constants (ParamUser, ParamState, etc.)", "completed": false},
-        {"id": "remove-wrapper-methods", "description": "Remove SearchOpenPullRequests, SearchIssues, SearchIssuesAll wrapper methods", "completed": false}
+        {"id": "remove-client-type", "description": "Remove Client type wrapper from root package", "completed": true},
+        {"id": "remove-newclient", "description": "Remove NewClient() and NewClientWithToken() from root package", "completed": true},
+        {"id": "remove-type-aliases", "description": "Remove Query, Issues, Issue type aliases", "completed": true},
+        {"id": "remove-const-reexports", "description": "Remove re-exported constants (ParamUser, ParamState, etc.)", "completed": true},
+        {"id": "remove-wrapper-methods", "description": "Remove SearchOpenPullRequests, SearchIssues, SearchIssuesAll wrapper methods", "completed": true}
       ],
       "migration_guide": "Replace imports: `import \"github.com/grokify/gogithub\"` → `import \"github.com/grokify/gogithub/auth\"` and `import \"github.com/grokify/gogithub/search\"`. Use `auth.NewGitHubClient()` and `search.NewClient()` instead of `gogithub.NewClient()`."
     },
     {
       "id": "relocate-constants",
       "title": "Relocate misplaced constants to appropriate packages",
-      "description": "Move constants currently in search/issues.go to more appropriate locations: bot user constants (UsernameDependabot, UserIDDependabot) to auth/ package, URL constants (BaseURLRepoAPI, BaseURLRepoHTML) to root package or new urls/ package.",
-      "status": "planned",
+      "description": "Move constants currently in search/issues.go to more appropriate locations: bot user constants (UsernameDependabot, UserIDDependabot) to auth/ package, URL constants (BaseURLRepoAPI, BaseURLRepoHTML) to root package.",
+      "status": "completed",
       "area": "medium",
       "type": "Changed",
       "phase": "phase4",
       "priority": "medium",
       "breaking_change": true,
+      "completed_in": "v0.4.0",
       "tasks": [
-        {"id": "move-bot-constants", "description": "Move UsernameDependabot, UserIDDependabot to auth/ package", "completed": false},
-        {"id": "move-url-constants", "description": "Move BaseURLRepoAPI, BaseURLRepoHTML to appropriate location", "completed": false},
-        {"id": "update-imports", "description": "Update internal imports to use new locations", "completed": false}
+        {"id": "move-bot-constants", "description": "Move UsernameDependabot, UserIDDependabot to auth/ package", "completed": true},
+        {"id": "move-url-constants", "description": "Move BaseURLRepoAPI, BaseURLRepoHTML to root package", "completed": true},
+        {"id": "update-imports", "description": "Update internal imports to use new locations", "completed": true}
       ]
     }
   ],
