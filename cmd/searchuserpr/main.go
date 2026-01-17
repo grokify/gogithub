@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/google/go-github/v81/github"
 	"github.com/grokify/gogithub/search"
 	"github.com/grokify/mogo/log/logutil"
 	flags "github.com/jessevdk/go-flags"
@@ -34,16 +35,13 @@ func main() {
 		os.Exit(0)
 	}
 
-	c := search.NewClientHTTP(nil)
+	c := search.NewClient(github.NewClient(nil))
 
 	ii := search.Issues{}
 
 	for _, acct := range opts.Accounts {
-		iss2, err := c.SearchIssuesAll(context.Background(), search.Query{
-			search.ParamUser:  acct,
-			search.ParamState: search.ParamStateValueOpen,
-			search.ParamIs:    search.ParamIsValuePR,
-		}, nil)
+		qry := search.NewQuery().User(acct).StateOpen().IsPR().Build()
+		iss2, err := c.SearchIssuesAll(context.Background(), qry, nil)
 		logutil.FatalErr(err)
 		ii = append(ii, iss2...)
 	}
