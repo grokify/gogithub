@@ -8,6 +8,42 @@
   "maintainers": ["grokify"],
   "releases": [
     {
+      "version": "0.6.0",
+      "date": "2026-01-17",
+      "highlights": [
+        {"description": "Added `graphql` package for GitHub GraphQL API support with user contribution statistics"},
+        {"description": "Added MkDocs documentation site with Material theme, auto-deployed to GitHub Pages"},
+        {"description": "Two approaches for commit statistics: quick stats (profile view) and detailed stats (additions/deletions)"}
+      ],
+      "added": [
+        {"description": "New `graphql` package for GitHub GraphQL API"},
+        {"description": "`graphql.NewClient()` and `graphql.NewEnterpriseClient()` for GraphQL client creation"},
+        {"description": "`graphql.GetContributionStats()` for quick contribution statistics (like GitHub profile)"},
+        {"description": "`graphql.GetContributionStatsMultiYear()` for multi-year contribution queries"},
+        {"description": "`graphql.GetCommitStats()` for detailed commit stats with additions/deletions"},
+        {"description": "`graphql.GetCommitStatsByVisibility()` for stats split by public/private repositories"},
+        {"description": "`graphql.Visibility` type with `VisibilityAll`, `VisibilityPublic`, `VisibilityPrivate` constants"},
+        {"description": "`graphql.ContributionStats` type with monthly contribution breakdown"},
+        {"description": "`graphql.CommitStats` type with per-repo and per-month breakdowns including line changes"},
+        {"description": "MkDocs documentation site with Material theme at https://grokify.github.io/gogithub/"},
+        {"description": "Documentation guides for all packages: auth, search, repo, pr, release, graphql, errors"},
+        {"description": "GitHub Actions workflow for automatic documentation deployment to gh-pages"}
+      ],
+      "dependencies": [
+        {"description": "Added `github.com/shurcooL/githubv4` for GitHub GraphQL API support"},
+        {"description": "Added `github.com/shurcooL/graphql` (indirect dependency)"}
+      ],
+      "documentation": [
+        {"description": "Added MkDocs configuration (mkdocs.yml) with Material theme"},
+        {"description": "Added documentation home page (docs/index.md)"},
+        {"description": "Added getting started guide (docs/getting-started.md)"},
+        {"description": "Added API reference page with links to pkg.go.dev (docs/api-reference.md)"},
+        {"description": "Added package guides: auth, search, repo, pr, release, graphql, errors"},
+        {"description": "Added .github/workflows/docs.yaml for automatic gh-pages deployment"},
+        {"description": "Updated README.md with documentation site link"}
+      ]
+    },
+    {
       "version": "0.5.0",
       "date": "2026-01-17",
       "highlights": [
