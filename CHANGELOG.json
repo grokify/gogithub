@@ -8,6 +8,38 @@
   "maintainers": ["grokify"],
   "releases": [
     {
+      "version": "0.5.0",
+      "date": "2026-01-17",
+      "highlights": [
+        {"description": "Added `QueryBuilder` for type-safe, fluent query construction"},
+        {"description": "Preserved `Query` map type for flexibility with new GitHub search qualifiers"},
+        {"description": "Removed `NewClientHTTP` - use `search.NewClient(github.NewClient(httpClient))` instead"}
+      ],
+      "added": [
+        {"description": "`QueryBuilder` type with fluent builder pattern for constructing search queries"},
+        {"description": "`NewQuery()` function to create a new `QueryBuilder`"},
+        {"description": "`QueryBuilder.User()`, `Org()`, `Repo()` methods for scope filtering"},
+        {"description": "`QueryBuilder.State()`, `StateOpen()`, `StateClosed()` methods for state filtering"},
+        {"description": "`QueryBuilder.Is()`, `IsPR()`, `IsIssue()` methods for type filtering"},
+        {"description": "`QueryBuilder.Author()`, `Assignee()`, `Label()`, `Mentions()`, `Involves()` methods"},
+        {"description": "`QueryBuilder.Set(key, value)` escape hatch for any search qualifier"},
+        {"description": "`QueryBuilder.Build()` method returning the underlying `Query` map"}
+      ],
+      "breaking": [
+        {"description": "Removed `search.NewClientHTTP()` - use `search.NewClient(github.NewClient(httpClient))` instead"}
+      ],
+      "changed": [
+        {"description": "`SearchOpenPullRequests` now uses `QueryBuilder` internally"},
+        {"description": "Example command `cmd/searchuserpr` updated to use `QueryBuilder` pattern"}
+      ],
+      "removed": [
+        {"description": "Removed `search.NewClientHTTP()` factory function"}
+      ],
+      "documentation": [
+        {"description": "Added RELEASE_NOTES_v0.5.0.md with migration guide and usage examples"}
+      ]
+    },
+    {
       "version": "0.4.0",
       "date": "2026-01-17",
       "highlights": [
