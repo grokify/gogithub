@@ -1,0 +1,254 @@
+{
+  "ir_version": "1.0",
+  "project": "gogithub",
+  "repository": "https://github.com/grokify/gogithub",
+  "generated_at": "2026-01-13T00:00:00Z",
+
+  "legend": {
+    "completed": {"emoji": "✅", "description": "Completed"},
+    "in_progress": {"emoji": "🚧", "description": "In Progress"},
+    "planned": {"emoji": "📋", "description": "Planned"},
+    "future": {"emoji": "💡", "description": "Under Consideration"}
+  },
+
+  "areas": [
+    {"id": "critical", "name": "Critical", "priority": 1},
+    {"id": "high", "name": "High Priority", "priority": 2},
+    {"id": "medium", "name": "Medium Priority", "priority": 3},
+    {"id": "enhancement", "name": "Enhancements", "priority": 4}
+  ],
+
+  "phases": [
+    {
+      "id": "phase1",
+      "name": "Phase 1: Critical Fixes",
+      "status": "planned",
+      "order": 1,
+      "description": "Address critical issues blocking production use"
+    },
+    {
+      "id": "phase2",
+      "name": "Phase 2: Code Quality",
+      "status": "planned",
+      "order": 2,
+      "description": "Improve code quality, consistency, and documentation"
+    },
+    {
+      "id": "phase3",
+      "name": "Phase 3: Feature Expansion",
+      "status": "planned",
+      "order": 3,
+      "description": "Add missing functionality and new features"
+    },
+    {
+      "id": "phase4",
+      "name": "Phase 4: v0.4.0 Breaking Changes",
+      "status": "planned",
+      "order": 4,
+      "description": "Remove deprecated code and make breaking changes (targeted for v0.4.0)"
+    }
+  ],
+
+  "items": [
+    {
+      "id": "add-tests",
+      "title": "Add comprehensive test suite",
+      "description": "Zero test files in entire codebase. Create *_test.go files for each package with >80% coverage target.",
+      "status": "planned",
+      "area": "critical",
+      "type": "Added",
+      "phase": "phase1",
+      "priority": "critical",
+      "tasks": [
+        {"id": "auth-tests", "description": "Add tests for auth package", "completed": false},
+        {"id": "search-tests", "description": "Add tests for search package", "completed": false},
+        {"id": "repo-tests", "description": "Add tests for repo package", "completed": false},
+        {"id": "pr-tests", "description": "Add tests for pr package", "completed": false},
+        {"id": "release-tests", "description": "Add tests for release package", "completed": false},
+        {"id": "cliutil-tests", "description": "Add tests for cliutil package", "completed": false}
+      ]
+    },
+    {
+      "id": "fix-hardcoded-path",
+      "title": "Fix hardcoded path in bulk_git_rm",
+      "description": "cliutil/cmd/bulk_git_rm/main.go:15 contains hardcoded user-specific path. Should accept directory as command-line flag.",
+      "status": "planned",
+      "area": "critical",
+      "type": "Fixed",
+      "phase": "phase1",
+      "priority": "critical"
+    },
+    {
+      "id": "update-readme",
+      "title": "Update README for v81",
+      "description": "README references go-github v68 but go.mod uses v81. Align documentation with actual version.",
+      "status": "planned",
+      "area": "high",
+      "type": "Changed",
+      "phase": "phase1",
+      "priority": "high"
+    },
+    {
+      "id": "extract-pagination",
+      "title": "Extract pagination utility",
+      "description": "Nearly identical pagination code exists in repo/list.go, release/release.go, and search/search.go. Create shared pagination helper to reduce duplication.",
+      "status": "planned",
+      "area": "high",
+      "type": "Changed",
+      "phase": "phase2",
+      "priority": "high"
+    },
+    {
+      "id": "fix-auth-error-unwrap",
+      "title": "Add Unwrap() to AuthError",
+      "description": "auth.AuthError doesn't implement Unwrap() unlike other custom error types. Add for Go 1.13+ error chain compatibility.",
+      "status": "planned",
+      "area": "high",
+      "type": "Fixed",
+      "phase": "phase2",
+      "priority": "high"
+    },
+    {
+      "id": "fix-query-encode",
+      "title": "Make Query.Encode() deterministic",
+      "description": "Query.Encode() iterates over map which has non-deterministic order. Sort keys before encoding to ensure consistent output.",
+      "status": "planned",
+      "area": "high",
+      "type": "Fixed",
+      "phase": "phase2",
+      "priority": "high"
+    },
+    {
+      "id": "add-cliutil-docs",
+      "title": "Add cliutil package documentation",
+      "description": "cliutil package has no package-level documentation comment. Add clear description of package purpose.",
+      "status": "planned",
+      "area": "medium",
+      "type": "Changed",
+      "phase": "phase2",
+      "priority": "medium"
+    },
+    {
+      "id": "improve-fork-async",
+      "title": "Improve fork async handling",
+      "description": "EnsureFork uses hardcoded time.Sleep() without retries. Implement proper retry mechanism with exponential backoff.",
+      "status": "planned",
+      "area": "medium",
+      "type": "Changed",
+      "phase": "phase2",
+      "priority": "medium"
+    },
+    {
+      "id": "add-release-write-ops",
+      "title": "Add release write operations",
+      "description": "Release package only has read operations. Add CreateRelease, UpdateRelease, DeleteRelease functions.",
+      "status": "planned",
+      "area": "medium",
+      "type": "Added",
+      "phase": "phase3",
+      "priority": "medium",
+      "tasks": [
+        {"id": "create-release", "description": "Add CreateRelease function", "completed": false},
+        {"id": "update-release", "description": "Add UpdateRelease function", "completed": false},
+        {"id": "delete-release", "description": "Add DeleteRelease function", "completed": false}
+      ]
+    },
+    {
+      "id": "reduce-dependencies",
+      "title": "Reduce external dependencies",
+      "description": "gocharts pulled in just for table generation in search package. Consider moving table generation to separate subpackage or module.",
+      "status": "future",
+      "area": "enhancement",
+      "type": "Changed",
+      "phase": "phase3",
+      "priority": "low"
+    },
+    {
+      "id": "add-branch-protection",
+      "title": "Add branch protection operations",
+      "description": "Add functions for managing branch protection rules.",
+      "status": "future",
+      "area": "enhancement",
+      "type": "Added",
+      "phase": "phase3",
+      "priority": "low"
+    },
+    {
+      "id": "add-webhook-ops",
+      "title": "Add webhook operations",
+      "description": "Add functions for managing repository webhooks.",
+      "status": "future",
+      "area": "enhancement",
+      "type": "Added",
+      "phase": "phase3",
+      "priority": "low"
+    },
+    {
+      "id": "standardize-clients",
+      "title": "Standardize client initialization",
+      "description": "Multiple ways to create clients exist (NewClient, NewClientWithToken, NewClientHTTP, NewGitHubClient). Document preferred approach and consider deprecating redundant factories.",
+      "status": "future",
+      "area": "enhancement",
+      "type": "Changed",
+      "phase": "phase3",
+      "priority": "low"
+    },
+    {
+      "id": "remove-compat-shims",
+      "title": "Remove backward compatibility shims from root package",
+      "description": "Remove deprecated re-exports from gogithub.go added in v0.3.0 for backward compatibility. Users should migrate to importing subpackages directly (auth/, search/, repo/, pr/, release/).",
+      "status": "planned",
+      "area": "high",
+      "type": "Removed",
+      "phase": "phase4",
+      "priority": "high",
+      "breaking_change": true,
+      "deprecated_in": "v0.3.0",
+      "tasks": [
+        {"id": "remove-client-type", "description": "Remove Client type wrapper from root package", "completed": false},
+        {"id": "remove-newclient", "description": "Remove NewClient() and NewClientWithToken() from root package", "completed": false},
+        {"id": "remove-type-aliases", "description": "Remove Query, Issues, Issue type aliases", "completed": false},
+        {"id": "remove-const-reexports", "description": "Remove re-exported constants (ParamUser, ParamState, etc.)", "completed": false},
+        {"id": "remove-wrapper-methods", "description": "Remove SearchOpenPullRequests, SearchIssues, SearchIssuesAll wrapper methods", "completed": false}
+      ],
+      "migration_guide": "Replace imports: `import \"github.com/grokify/gogithub\"` → `import \"github.com/grokify/gogithub/auth\"` and `import \"github.com/grokify/gogithub/search\"`. Use `auth.NewGitHubClient()` and `search.NewClient()` instead of `gogithub.NewClient()`."
+    },
+    {
+      "id": "relocate-constants",
+      "title": "Relocate misplaced constants to appropriate packages",
+      "description": "Move constants currently in search/issues.go to more appropriate locations: bot user constants (UsernameDependabot, UserIDDependabot) to auth/ package, URL constants (BaseURLRepoAPI, BaseURLRepoHTML) to root package or new urls/ package.",
+      "status": "planned",
+      "area": "medium",
+      "type": "Changed",
+      "phase": "phase4",
+      "priority": "medium",
+      "breaking_change": true,
+      "tasks": [
+        {"id": "move-bot-constants", "description": "Move UsernameDependabot, UserIDDependabot to auth/ package", "completed": false},
+        {"id": "move-url-constants", "description": "Move BaseURLRepoAPI, BaseURLRepoHTML to appropriate location", "completed": false},
+        {"id": "update-imports", "description": "Update internal imports to use new locations", "completed": false}
+      ]
+    }
+  ],
+
+  "sections": [
+    {
+      "id": "overview",
+      "title": "Overview",
+      "order": 1,
+      "content": [
+        {"type": "text", "value": "gogithub is a Go client library for the GitHub API, providing high-level operations for authentication, search, repositories, pull requests, and releases."},
+        {"type": "text", "value": "This roadmap tracks improvements identified during code review to enhance code quality, test coverage, and feature completeness."}
+      ]
+    },
+    {
+      "id": "contributing",
+      "title": "Contributing",
+      "order": 99,
+      "content": [
+        {"type": "text", "value": "Contributions are welcome! Priority areas:"},
+        {"type": "list", "items": ["Test coverage for all packages", "Documentation improvements", "Bug fixes for identified issues", "New GitHub API operations"]}
+      ]
+    }
+  ]
+}
