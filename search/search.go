@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/google/go-github/v81/github"
 	"github.com/grokify/mogo/encoding/jsonutil"
@@ -24,18 +23,9 @@ func NewClient(ghClient *github.Client) *Client {
 	return &Client{gh: ghClient}
 }
 
-// NewClientHTTP creates a new search client from an HTTP client.
-func NewClientHTTP(httpClient *http.Client) *Client {
-	return &Client{gh: github.NewClient(httpClient)}
-}
-
 // SearchOpenPullRequests searches for open pull requests by username.
 func (c *Client) SearchOpenPullRequests(ctx context.Context, username string, opts *github.SearchOptions) (*github.IssuesSearchResult, *github.Response, error) {
-	qry := Query{
-		ParamUser:  username,
-		ParamState: ParamStateValueOpen,
-		ParamIs:    ParamIsValuePR,
-	}
+	qry := NewQuery().User(username).StateOpen().IsPR().Build()
 	return c.SearchIssues(ctx, qry, opts)
 }
 
