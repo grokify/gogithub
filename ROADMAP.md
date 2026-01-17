@@ -33,18 +33,19 @@ cliutil/cmd/bulk_git_rm/main.go:15 contains hardcoded user-specific path. Should
 
 ## High Priority
 
+### [ ] Add QueryBuilder for type-safe query construction
+
+Add QueryBuilder type alongside existing Query map type. Provides type-safe builder methods for common qualifiers while preserving map flexibility for new/uncommon GitHub search qualifiers. Includes Set() escape hatch for any qualifier.
+
+- [ ] Create QueryBuilder struct wrapping Query map
+- [ ] Add builder methods (User, State, Is, Org, Repo, Author, Assignee, Label)
+- [ ] Add Set(key, value) escape hatch for any qualifier
+- [ ] Add Build() method returning Query map
+- [ ] Update SearchOpenPullRequests to use QueryBuilder
+
 ### [x] Add Unwrap() to AuthError
 
 auth.AuthError doesn't implement Unwrap() unlike other custom error types. Add for Go 1.13+ error chain compatibility.
-
-### [ ] Change Query to struct with builder pattern
-
-Replace Query map[string]string with a struct type using builder pattern for type-safe query construction. Enables IDE autocomplete and compile-time validation of parameter names.
-
-- [ ] Create Query struct with internal params slice
-- [ ] Add builder methods (User, State, Is, Org, Repo, Type)
-- [ ] Update Encode() to use new struct
-- [ ] Update all callers to use builder pattern
 
 ### [ ] Extract pagination utility
 

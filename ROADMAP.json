@@ -49,10 +49,10 @@
     },
     {
       "id": "phase5",
-      "name": "Phase 5: v0.5.0 Breaking Changes",
+      "name": "Phase 5: v0.5.0 API Improvements",
       "status": "planned",
       "order": 5,
-      "description": "API improvements requiring breaking changes (targeted for v0.5.0)"
+      "description": "API improvements and cleanup (targeted for v0.5.0)"
     }
   ],
 
@@ -242,21 +242,22 @@
     },
     {
       "id": "query-builder-pattern",
-      "title": "Change Query to struct with builder pattern",
-      "description": "Replace Query map[string]string with a struct type using builder pattern for type-safe query construction. Enables IDE autocomplete and compile-time validation of parameter names.",
+      "title": "Add QueryBuilder for type-safe query construction",
+      "description": "Add QueryBuilder type alongside existing Query map type. Provides type-safe builder methods for common qualifiers while preserving map flexibility for new/uncommon GitHub search qualifiers. Includes Set() escape hatch for any qualifier.",
       "status": "planned",
       "area": "high",
-      "type": "Changed",
+      "type": "Added",
       "phase": "phase5",
       "priority": "high",
-      "breaking_change": true,
+      "breaking_change": false,
       "tasks": [
-        {"id": "query-struct", "description": "Create Query struct with internal params slice", "completed": false},
-        {"id": "query-builder-methods", "description": "Add builder methods (User, State, Is, Org, Repo, Type)", "completed": false},
-        {"id": "query-encode-update", "description": "Update Encode() to use new struct", "completed": false},
-        {"id": "update-callers", "description": "Update all callers to use builder pattern", "completed": false}
+        {"id": "query-builder-type", "description": "Create QueryBuilder struct wrapping Query map", "completed": false},
+        {"id": "query-builder-methods", "description": "Add builder methods (User, State, Is, Org, Repo, Author, Assignee, Label)", "completed": false},
+        {"id": "query-builder-set", "description": "Add Set(key, value) escape hatch for any qualifier", "completed": false},
+        {"id": "query-builder-build", "description": "Add Build() method returning Query map", "completed": false},
+        {"id": "update-internal-callers", "description": "Update SearchOpenPullRequests to use QueryBuilder", "completed": false}
       ],
-      "migration_guide": "Replace `search.Query{search.ParamUser: \"grokify\"}` with `search.NewQuery().User(\"grokify\")`."
+      "usage_example": "search.NewQuery().User(\"grokify\").State(search.StateOpen).Build()"
     },
     {
       "id": "remove-newclient-http",
