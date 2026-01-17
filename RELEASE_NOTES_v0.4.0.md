@@ -35,6 +35,27 @@ The following deprecated items have been removed from the root `gogithub` packag
 | `BaseURLRepoAPI` | `search.BaseURLRepoAPI` | `gogithub.BaseURLRepoAPI` |
 | `BaseURLRepoHTML` | `search.BaseURLRepoHTML` | `gogithub.BaseURLRepoHTML` |
 
+## New Features
+
+### AuthError Now Supports Error Chains
+
+`AuthError` now implements `Unwrap()` for Go 1.13+ error chain compatibility:
+
+```go
+// You can now use errors.Is() and errors.As() with AuthError
+if errors.Is(err, someSpecificError) {
+    // Handle specific underlying error
+}
+```
+
+## Bug Fixes
+
+### Query.Encode() Now Deterministic
+
+`Query.Encode()` now sorts keys before encoding, ensuring consistent output. This fixes issues with:
+- Flaky tests due to non-deterministic map iteration order
+- Cache key mismatches for equivalent queries
+
 ## Migration Guide
 
 ### Before (v0.3.x)

@@ -33,15 +33,24 @@ cliutil/cmd/bulk_git_rm/main.go:15 contains hardcoded user-specific path. Should
 
 ## High Priority
 
-### [ ] Add Unwrap() to AuthError
+### [x] Add Unwrap() to AuthError
 
 auth.AuthError doesn't implement Unwrap() unlike other custom error types. Add for Go 1.13+ error chain compatibility.
+
+### [ ] Change Query to struct with builder pattern
+
+Replace Query map[string]string with a struct type using builder pattern for type-safe query construction. Enables IDE autocomplete and compile-time validation of parameter names.
+
+- [ ] Create Query struct with internal params slice
+- [ ] Add builder methods (User, State, Is, Org, Repo, Type)
+- [ ] Update Encode() to use new struct
+- [ ] Update all callers to use builder pattern
 
 ### [ ] Extract pagination utility
 
 Nearly identical pagination code exists in repo/list.go, release/release.go, and search/search.go. Create shared pagination helper to reduce duplication.
 
-### [ ] Make Query.Encode() deterministic
+### [x] Make Query.Encode() deterministic
 
 Query.Encode() iterates over map which has non-deterministic order. Sort keys before encoding to ensure consistent output.
 
@@ -86,6 +95,10 @@ Move constants currently in search/issues.go to more appropriate locations: bot 
 - [x] Move UsernameDependabot, UserIDDependabot to auth/ package
 - [x] Move BaseURLRepoAPI, BaseURLRepoHTML to root package
 - [x] Update internal imports to use new locations
+
+### [ ] Remove NewClientHTTP from search package
+
+Remove search.NewClientHTTP() factory function. Users should use auth.NewGitHubClient() or github.NewClient() to create the GitHub client, then pass it to search.NewClient().
 
 ---
 
