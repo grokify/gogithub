@@ -33,15 +33,15 @@ cliutil/cmd/bulk_git_rm/main.go:15 contains hardcoded user-specific path. Should
 
 ## High Priority
 
-### [ ] Add QueryBuilder for type-safe query construction
+### [x] Add QueryBuilder for type-safe query construction
 
 Add QueryBuilder type alongside existing Query map type. Provides type-safe builder methods for common qualifiers while preserving map flexibility for new/uncommon GitHub search qualifiers. Includes Set() escape hatch for any qualifier.
 
-- [ ] Create QueryBuilder struct wrapping Query map
-- [ ] Add builder methods (User, State, Is, Org, Repo, Author, Assignee, Label)
-- [ ] Add Set(key, value) escape hatch for any qualifier
-- [ ] Add Build() method returning Query map
-- [ ] Update SearchOpenPullRequests to use QueryBuilder
+- [x] Create QueryBuilder struct wrapping Query map
+- [x] Add builder methods (User, State, Is, Org, Repo, Author, Assignee, Label)
+- [x] Add Set(key, value) escape hatch for any qualifier
+- [x] Add Build() method returning Query map
+- [x] Update SearchOpenPullRequests to use QueryBuilder
 
 ### [x] Add Unwrap() to AuthError
 
@@ -97,7 +97,7 @@ Move constants currently in search/issues.go to more appropriate locations: bot 
 - [x] Move BaseURLRepoAPI, BaseURLRepoHTML to root package
 - [x] Update internal imports to use new locations
 
-### [ ] Remove NewClientHTTP from search package
+### [x] Remove NewClientHTTP from search package
 
 Remove search.NewClientHTTP() factory function. Users should use auth.NewGitHubClient() or github.NewClient() to create the GitHub client, then pass it to search.NewClient().
 

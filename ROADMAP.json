@@ -50,7 +50,7 @@
     {
       "id": "phase5",
       "name": "Phase 5: v0.5.0 API Improvements",
-      "status": "planned",
+      "status": "completed",
       "order": 5,
       "description": "API improvements and cleanup (targeted for v0.5.0)"
     }
@@ -244,31 +244,33 @@
       "id": "query-builder-pattern",
       "title": "Add QueryBuilder for type-safe query construction",
       "description": "Add QueryBuilder type alongside existing Query map type. Provides type-safe builder methods for common qualifiers while preserving map flexibility for new/uncommon GitHub search qualifiers. Includes Set() escape hatch for any qualifier.",
-      "status": "planned",
+      "status": "completed",
       "area": "high",
       "type": "Added",
       "phase": "phase5",
       "priority": "high",
       "breaking_change": false,
+      "completed_in": "v0.5.0",
       "tasks": [
-        {"id": "query-builder-type", "description": "Create QueryBuilder struct wrapping Query map", "completed": false},
-        {"id": "query-builder-methods", "description": "Add builder methods (User, State, Is, Org, Repo, Author, Assignee, Label)", "completed": false},
-        {"id": "query-builder-set", "description": "Add Set(key, value) escape hatch for any qualifier", "completed": false},
-        {"id": "query-builder-build", "description": "Add Build() method returning Query map", "completed": false},
-        {"id": "update-internal-callers", "description": "Update SearchOpenPullRequests to use QueryBuilder", "completed": false}
+        {"id": "query-builder-type", "description": "Create QueryBuilder struct wrapping Query map", "completed": true},
+        {"id": "query-builder-methods", "description": "Add builder methods (User, State, Is, Org, Repo, Author, Assignee, Label)", "completed": true},
+        {"id": "query-builder-set", "description": "Add Set(key, value) escape hatch for any qualifier", "completed": true},
+        {"id": "query-builder-build", "description": "Add Build() method returning Query map", "completed": true},
+        {"id": "update-internal-callers", "description": "Update SearchOpenPullRequests to use QueryBuilder", "completed": true}
       ],
-      "usage_example": "search.NewQuery().User(\"grokify\").State(search.StateOpen).Build()"
+      "usage_example": "search.NewQuery().User(\"grokify\").StateOpen().IsPR().Build()"
     },
     {
       "id": "remove-newclient-http",
       "title": "Remove NewClientHTTP from search package",
       "description": "Remove search.NewClientHTTP() factory function. Users should use auth.NewGitHubClient() or github.NewClient() to create the GitHub client, then pass it to search.NewClient().",
-      "status": "planned",
+      "status": "completed",
       "area": "medium",
       "type": "Removed",
       "phase": "phase5",
       "priority": "medium",
       "breaking_change": true,
+      "completed_in": "v0.5.0",
       "migration_guide": "Replace `search.NewClientHTTP(httpClient)` with `search.NewClient(github.NewClient(httpClient))`."
     }
   ],
