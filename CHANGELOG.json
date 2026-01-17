@@ -26,8 +26,8 @@
         {"description": "Moved `BaseURLRepoAPI` and `BaseURLRepoHTML` from `search` to root `gogithub` package"}
       ],
       "added": [
-        {"description": "`AuthError.Unwrap()` method for Go 1.13+ error chain compatibility"},
-        {"description": "`AuthError.Err` field to wrap underlying errors"}
+        {"description": "`AuthError.Unwrap()` method for Go 1.13+ error chain compatibility", "commit": "ca95de0"},
+        {"description": "`AuthError.Err` field to wrap underlying errors", "commit": "ca95de0"}
       ],
       "changed": [
         {"description": "Root package now contains only package documentation and URL constants"},
@@ -36,7 +36,7 @@
         {"description": "`search/issues.go` now imports URL constants from root package"}
       ],
       "fixed": [
-        {"description": "`Query.Encode()` now produces deterministic output by sorting keys"}
+        {"description": "`Query.Encode()` now produces deterministic output by sorting keys", "commit": "9be7777"}
       ],
       "removed": [
         {"description": "Removed `Client` type wrapper from root package"},
