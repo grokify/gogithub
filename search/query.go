@@ -1,15 +1,25 @@
 package search
 
-import "strings"
+import (
+	"sort"
+	"strings"
+)
 
 // Query represents a GitHub search query.
 type Query map[string]string
 
 // Encode implements GitHub API query encoding.
+// Keys are sorted to ensure deterministic output.
 func (q Query) Encode() string {
-	var parts []string
-	for k, v := range q {
-		parts = append(parts, k+":"+v)
+	keys := make([]string, 0, len(q))
+	for k := range q {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	parts := make([]string, 0, len(q))
+	for _, k := range keys {
+		parts = append(parts, k+":"+q[k])
 	}
 	return strings.Join(parts, " ")
 }
