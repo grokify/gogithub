@@ -27,6 +27,8 @@ require (
 	github.com/olekukonko/tablewriter v1.1.3 // indirect
 	github.com/richardlehane/mscfb v1.0.6 // indirect
 	github.com/richardlehane/msoleps v1.0.6 // indirect
+	github.com/shurcooL/githubv4 v0.0.0-20240727222349-48295856cce7 // indirect
+	github.com/shurcooL/graphql v0.0.0-20230722043721-ed46e5a46466 // indirect
 	github.com/tiendc/go-deepcopy v1.7.2 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/quicktemplate v1.8.0 // indirect
