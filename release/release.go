@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/go-github/v81/github"
+	"github.com/google/go-github/v82/github"
 )
 
 // ListReleases lists all releases for a repository with pagination.
@@ -92,4 +92,38 @@ func ListReleaseAssets(ctx context.Context, gh *github.Client, owner, repo strin
 	}
 
 	return allAssets, nil
+}
+
+// CreateRelease creates a new release for a repository.
+func CreateRelease(ctx context.Context, gh *github.Client, owner, repo string, release *github.RepositoryRelease) (*github.RepositoryRelease, error) {
+	created, _, err := gh.Repositories.CreateRelease(ctx, owner, repo, release)
+	if err != nil {
+		return nil, fmt.Errorf("create release: %w", err)
+	}
+	return created, nil
+}
+
+// CreateReleaseSimple creates a release with common options.
+func CreateReleaseSimple(ctx context.Context, gh *github.Client, owner, repo, tagName, name, body string, draft, prerelease, generateNotes bool) (*github.RepositoryRelease, error) {
+	release := &github.RepositoryRelease{
+		TagName:              github.Ptr(tagName),
+		Name:                 github.Ptr(name),
+		Body:                 github.Ptr(body),
+		Draft:                github.Ptr(draft),
+		Prerelease:           github.Ptr(prerelease),
+		GenerateReleaseNotes: github.Ptr(generateNotes),
+	}
+	return CreateRelease(ctx, gh, owner, repo, release)
+}
+
+// DeleteRelease deletes a release by ID.
+func DeleteRelease(ctx context.Context, gh *github.Client, owner, repo string, releaseID int64) error {
+	_, err := gh.Repositories.DeleteRelease(ctx, owner, repo, releaseID)
+	return err
+}
+
+// EditRelease updates a release.
+func EditRelease(ctx context.Context, gh *github.Client, owner, repo string, releaseID int64, release *github.RepositoryRelease) (*github.RepositoryRelease, error) {
+	updated, _, err := gh.Repositories.EditRelease(ctx, owner, repo, releaseID, release)
+	return updated, err
 }
