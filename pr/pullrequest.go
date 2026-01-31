@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/go-github/v81/github"
+	"github.com/google/go-github/v82/github"
 )
 
 // PRError indicates a failure to create a pull request.
@@ -84,4 +84,92 @@ func ListPRFiles(ctx context.Context, gh *github.Client, owner, repo string, num
 func ListPRComments(ctx context.Context, gh *github.Client, owner, repo string, number int) ([]*github.PullRequestComment, error) {
 	comments, _, err := gh.PullRequests.ListComments(ctx, owner, repo, number, nil)
 	return comments, err
+}
+
+// ApprovePR adds an approval review to a pull request.
+func ApprovePR(ctx context.Context, gh *github.Client, owner, repo string, number int, body string) (*github.PullRequestReview, error) {
+	review := &github.PullRequestReviewRequest{
+		Event: github.Ptr("APPROVE"),
+		Body:  github.Ptr(body),
+	}
+	result, _, err := gh.PullRequests.CreateReview(ctx, owner, repo, number, review)
+	return result, err
+}
+
+// RequestChangesPR requests changes on a pull request.
+func RequestChangesPR(ctx context.Context, gh *github.Client, owner, repo string, number int, body string) (*github.PullRequestReview, error) {
+	review := &github.PullRequestReviewRequest{
+		Event: github.Ptr("REQUEST_CHANGES"),
+		Body:  github.Ptr(body),
+	}
+	result, _, err := gh.PullRequests.CreateReview(ctx, owner, repo, number, review)
+	return result, err
+}
+
+// CommentPR adds a comment review to a pull request.
+func CommentPR(ctx context.Context, gh *github.Client, owner, repo string, number int, body string) (*github.PullRequestReview, error) {
+	review := &github.PullRequestReviewRequest{
+		Event: github.Ptr("COMMENT"),
+		Body:  github.Ptr(body),
+	}
+	result, _, err := gh.PullRequests.CreateReview(ctx, owner, repo, number, review)
+	return result, err
+}
+
+// MergeableState represents the mergeable state of a PR.
+type MergeableState struct {
+	Mergeable bool
+	State     string // clean, dirty, blocked, behind, unstable, unknown
+	Message   string
+}
+
+// IsMergeable checks if a PR can be merged and returns detailed status.
+func IsMergeable(ctx context.Context, gh *github.Client, owner, repo string, number int) (*MergeableState, error) {
+	pr, _, err := gh.PullRequests.Get(ctx, owner, repo, number)
+	if err != nil {
+		return nil, err
+	}
+
+	state := &MergeableState{
+		Mergeable: pr.GetMergeable(),
+		State:     pr.GetMergeableState(),
+	}
+
+	if pr.GetDraft() {
+		state.Mergeable = false
+		state.Message = "PR is a draft"
+		return state, nil
+	}
+
+	if pr.GetState() != "open" {
+		state.Mergeable = false
+		state.Message = "PR is not open"
+		return state, nil
+	}
+
+	switch state.State {
+	case "clean":
+		state.Message = "PR is ready to merge"
+	case "unstable":
+		state.Message = "Some checks are pending"
+	case "blocked":
+		state.Mergeable = false
+		state.Message = "PR is blocked by required checks or reviews"
+	case "behind":
+		state.Mergeable = false
+		state.Message = "PR is behind the base branch"
+	case "dirty":
+		state.Mergeable = false
+		state.Message = "PR has merge conflicts"
+	default:
+		state.Message = "Unknown mergeable state: " + state.State
+	}
+
+	return state, nil
+}
+
+// ListPRReviews lists reviews on a pull request.
+func ListPRReviews(ctx context.Context, gh *github.Client, owner, repo string, number int) ([]*github.PullRequestReview, error) {
+	reviews, _, err := gh.PullRequests.ListReviews(ctx, owner, repo, number, nil)
+	return reviews, err
 }
