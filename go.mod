@@ -3,7 +3,7 @@ module github.com/grokify/gogithub
 go 1.24.0
 
 require (
-	github.com/google/go-github/v81 v81.0.0
+	github.com/google/go-github/v82 v82.0.0
 	github.com/grokify/gocharts/v2 v2.26.8
 	github.com/grokify/mogo v0.72.7
 	github.com/jessevdk/go-flags v1.6.1

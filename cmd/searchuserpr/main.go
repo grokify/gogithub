@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/google/go-github/v81/github"
+	"github.com/google/go-github/v82/github"
 	"github.com/grokify/gogithub/search"
 	"github.com/grokify/mogo/log/logutil"
 	flags "github.com/jessevdk/go-flags"
