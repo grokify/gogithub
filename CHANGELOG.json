@@ -8,6 +8,59 @@
   "maintainers": ["grokify"],
   "releases": [
     {
+      "version": "v0.7.0",
+      "date": "2026-01-30",
+      "highlights": [
+        {"description": "**Breaking**: Upgraded `go-github` from v81 to v82"},
+        {"description": "New `checks` package for GitHub Check Runs API (CI status, waiting for checks)"},
+        {"description": "New `tag` package for Git tag operations (create, list, delete tags)"},
+        {"description": "Extended `pr` package with review and approval functions"},
+        {"description": "Extended `release` package with create/delete operations"}
+      ],
+      "breaking": [
+        {"description": "Upgraded `github.com/google/go-github` from v81 to v82 - update your imports accordingly", "commit": "e2e20fc"}
+      ],
+      "added": [
+        {"description": "New `checks` package for GitHub Check Runs API", "commit": "8cf1789"},
+        {"description": "`checks.ListCheckRuns()` - list check runs for a commit SHA or branch", "commit": "8cf1789"},
+        {"description": "`checks.ListCheckRunsForPR()` - list check runs for a pull request", "commit": "8cf1789"},
+        {"description": "`checks.GetChecksStatus()` - get aggregate status (passed/failed/pending counts)", "commit": "8cf1789"},
+        {"description": "`checks.AllChecksPassed()` - check if all runs completed successfully", "commit": "8cf1789"},
+        {"description": "`checks.WaitForChecks()` - poll until all checks complete or timeout", "commit": "8cf1789"},
+        {"description": "`checks.GetCheckRun()` - get a specific check run by ID", "commit": "8cf1789"},
+        {"description": "`checks.ListCheckSuites()` - list check suites for a commit", "commit": "8cf1789"},
+        {"description": "`checks.ChecksStatus` type with Total, Passed, Failed, Pending, AllPassed, AnyFailed, AnyPending fields", "commit": "8cf1789"},
+        {"description": "New `tag` package for Git tag operations", "commit": "d331ec9"},
+        {"description": "`tag.ListTags()` - list all tags for a repository with pagination", "commit": "d331ec9"},
+        {"description": "`tag.GetTagSHA()` - get the commit SHA for a tag", "commit": "d331ec9"},
+        {"description": "`tag.CreateTag()` - create an annotated tag", "commit": "d331ec9"},
+        {"description": "`tag.CreateLightweightTag()` - create a lightweight tag (reference only)", "commit": "d331ec9"},
+        {"description": "`tag.DeleteTag()` - delete a tag", "commit": "d331ec9"},
+        {"description": "`tag.TagExists()` - check if a tag exists", "commit": "d331ec9"},
+        {"description": "`tag.GetTagNames()` - get just the tag names from a repository", "commit": "d331ec9"},
+        {"description": "`pr.ApprovePR()` - add an approval review to a pull request", "commit": "1ab80ba"},
+        {"description": "`pr.RequestChangesPR()` - request changes on a pull request", "commit": "1ab80ba"},
+        {"description": "`pr.CommentPR()` - add a comment review to a pull request", "commit": "1ab80ba"},
+        {"description": "`pr.IsMergeable()` - check if a PR can be merged with detailed status", "commit": "1ab80ba"},
+        {"description": "`pr.ListPRReviews()` - list all reviews on a pull request", "commit": "1ab80ba"},
+        {"description": "`pr.MergeableState` type with Mergeable, State, Message fields", "commit": "1ab80ba"},
+        {"description": "`release.CreateRelease()` - create a new release for a repository", "commit": "e09af77"},
+        {"description": "`release.CreateReleaseSimple()` - create a release with common options", "commit": "e09af77"},
+        {"description": "`release.DeleteRelease()` - delete a release by ID", "commit": "e09af77"},
+        {"description": "`release.EditRelease()` - update a release", "commit": "e09af77"}
+      ],
+      "dependencies": [
+        {"description": "Upgraded `github.com/google/go-github` from v81 to v82", "commit": "e2e20fc"}
+      ],
+      "documentation": [
+        {"description": "Added v0.7.0 changelog entry with all new features", "commit": "0dde90f"},
+        {"description": "Updated README directory structure with checks and tag packages", "commit": "0dde90f"},
+        {"description": "Updated README with examples for checks, tag, and release packages", "commit": "0dde90f"},
+        {"description": "Added docs/releases/v0.7.0.md with comprehensive release notes", "commit": "0dde90f"},
+        {"description": "Updated go-github version reference from v81 to v82 in README", "commit": "0dde90f"}
+      ]
+    },
+    {
       "version": "v0.6.0",
       "date": "2026-01-17",
       "highlights": [

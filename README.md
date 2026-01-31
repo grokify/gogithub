@@ -57,9 +57,13 @@ gogithub/
 │   ├── list.go        # ListOrgRepos, ListUserRepos, GetRepo
 │   └── batch.go       # Batch for atomic multi-file commits
 ├── pr/                # Pull request operations
-│   └── pullrequest.go # CreatePR, GetPR, ListPRs, MergePR, ClosePR
+│   └── pullrequest.go # CreatePR, GetPR, ListPRs, MergePR, ApprovePR, IsMergeable
 ├── release/           # Release operations
-│   └── release.go     # ListReleases, GetLatestRelease, ListReleaseAssets
+│   └── release.go     # ListReleases, GetLatestRelease, CreateRelease, DeleteRelease
+├── checks/            # Check runs operations
+│   └── checks.go      # ListCheckRuns, WaitForChecks, AllChecksPassed
+├── tag/               # Git tag operations
+│   └── tag.go         # ListTags, CreateTag, GetTagSHA, TagExists
 ├── cliutil/           # CLI utilities
 │   └── status.go      # Git status helpers
 └── cmd/               # Example commands
@@ -152,6 +156,83 @@ func main() {
 }
 ```
 
+### Waiting for CI Checks
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "time"
+
+    "github.com/grokify/gogithub/auth"
+    "github.com/grokify/gogithub/checks"
+)
+
+func main() {
+    ctx := context.Background()
+    gh := auth.NewGitHubClient(ctx, "your-github-token")
+
+    // Wait for all checks to complete (with 10 minute timeout)
+    checkRuns, allPassed, err := checks.WaitForChecks(ctx, gh, "owner", "repo", "commit-sha",
+        10*time.Minute, 30*time.Second)
+    if err != nil {
+        panic(err)
+    }
+
+    // Get aggregate status
+    status := checks.GetChecksStatus(checkRuns)
+    fmt.Printf("Checks: %d passed, %d failed, %d pending\n",
+        status.Passed, status.Failed, status.Pending)
+
+    if allPassed {
+        fmt.Println("All checks passed!")
+    }
+}
+```
+
+### Creating Tags and Releases
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+
+    "github.com/grokify/gogithub/auth"
+    "github.com/grokify/gogithub/release"
+    "github.com/grokify/gogithub/tag"
+)
+
+func main() {
+    ctx := context.Background()
+    gh := auth.NewGitHubClient(ctx, "your-github-token")
+
+    // Create an annotated tag
+    err := tag.CreateTag(ctx, gh, "owner", "repo", "v1.0.0", "commit-sha", "Release v1.0.0")
+    if err != nil {
+        panic(err)
+    }
+
+    // Create a release
+    rel, err := release.CreateReleaseSimple(ctx, gh, "owner", "repo",
+        "v1.0.0",           // tag name
+        "Version 1.0.0",    // release name
+        "Release notes...", // body
+        false,              // draft
+        false,              // prerelease
+        true,               // generate notes
+    )
+    if err != nil {
+        panic(err)
+    }
+
+    fmt.Printf("Release created: %s\n", rel.GetHTMLURL())
+}
+```
+
 ## Adding New Functionality
 
 When adding new GitHub API functionality, follow this structure:
@@ -211,7 +292,7 @@ package gist
 
 import (
     "context"
-    "github.com/google/go-github/v81/github"
+    "github.com/google/go-github/v82/github"
 )
 
 func Create(ctx context.Context, gh *github.Client, description string, public bool, files map[string]string) (*github.Gist, error) {
@@ -247,7 +328,7 @@ issues, _ := c.SearchIssuesAll(ctx, search.Query{...}, nil)
 
 ## Dependencies
 
-- [google/go-github](https://github.com/google/go-github) v81 - GitHub API client
+- [google/go-github](https://github.com/google/go-github) v82 - GitHub API client
 - [golang.org/x/oauth2](https://golang.org/x/oauth2) - OAuth2 authentication
 
 ## License
