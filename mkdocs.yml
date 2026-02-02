@@ -43,12 +43,14 @@ nav:
   - Getting Started: getting-started.md
   - Guides:
       - Authentication: guides/auth.md
+      - User Profile Statistics: guides/profile.md
       - Search API: guides/search.md
       - Repository Operations: guides/repo.md
       - Pull Requests: guides/pr.md
       - Releases: guides/release.md
       - GraphQL API: guides/graphql.md
       - Error Handling: guides/errors.md
+      - Testing: guides/testing.md
   - Release Notes:
       - v0.7.0: releases/v0.7.0.md
       - v0.6.0: releases/v0.6.0.md
