@@ -44,6 +44,7 @@
         {"description": "Added `github.com/spf13/cobra` v1.10.2 for CLI", "commit": "653ed99"}
       ],
       "documentation": [
+        {"description": "Added `docs/guides/cli.md` - comprehensive CLI usage guide", "commit": "5f944e5"},
         {"description": "Added `docs/guides/profile.md` - comprehensive profile package guide", "commit": "7829ff2"},
         {"description": "Added `docs/guides/testing.md` - testing guide with integration test instructions", "commit": "8670f87"},
         {"description": "Expanded `docs/guides/auth.md` with detailed token requirements for fine-grained PATs", "commit": "14a05c4"},
