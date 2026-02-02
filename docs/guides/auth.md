@@ -138,13 +138,94 @@ client := graphql.NewEnterpriseClient(ctx, "your-token", "https://github.mycompa
 
 ## Token Scopes
 
+### Basic Scopes
+
 | Scope | Required For |
 |-------|--------------|
 | (none) | Read public data, GraphQL queries on public repos |
 | `public_repo` | Write to public repositories |
 | `repo` | Full access to private repositories |
-| `read:user` | Read user profile data |
+| `read:user` | Read user profile data, contribution statistics |
 | `read:org` | Read organization membership |
+
+### Token Requirements by Use Case
+
+#### Public Data Only (Recommended Starting Point)
+
+For reading public user statistics, contribution data, and public repository information, you need **minimal permissions**:
+
+| Token Type | Configuration |
+|------------|---------------|
+| Fine-grained PAT | Repository access: "Public Repositories (read-only)", no other permissions |
+| Classic PAT | No scopes required (just a valid token) |
+| GitHub CLI | Default `gh auth login` works |
+
+This is sufficient for:
+
+- User contribution statistics (`profile`, `graphql` packages)
+- Public repository data (commits, releases, contributors)
+- Search across public repositories
+
+#### Private Repository Access
+
+For accessing private repositories, you need additional permissions:
+
+| Token Type | Configuration |
+|------------|---------------|
+| Fine-grained PAT | Repository access: select specific repos, Contents: Read |
+| Classic PAT | `repo` scope |
+
+#### Write Operations
+
+For creating commits, PRs, releases, etc.:
+
+| Token Type | Configuration |
+|------------|---------------|
+| Fine-grained PAT | Repository access: select repos, Contents: Read and write |
+| Classic PAT | `repo` (private) or `public_repo` (public only) |
+
+### Creating a Token
+
+=== "Fine-Grained Token (Recommended)"
+
+    Fine-grained tokens provide the most secure, minimal-permission approach.
+
+    **For public data only:**
+
+    1. Go to [GitHub Settings > Fine-grained tokens](https://github.com/settings/tokens?type=beta)
+    2. Click "Generate new token"
+    3. Set **Repository access** to "Public Repositories (read-only)"
+    4. Leave all **Permissions** sections empty (no permissions needed)
+    5. Click "Generate token" and copy it
+
+    **For private repository access:**
+
+    1. Go to [GitHub Settings > Fine-grained tokens](https://github.com/settings/tokens?type=beta)
+    2. Click "Generate new token"
+    3. Set **Repository access** to "Only select repositories" and choose your repos
+    4. Under **Repository permissions**, set "Contents" to "Read-only"
+    5. Click "Generate token" and copy it
+
+=== "GitHub CLI"
+
+    ```bash
+    # Login with default scopes (sufficient for most read operations)
+    gh auth login
+
+    # Get current token for use in your code
+    gh auth token
+    ```
+
+=== "Classic PAT"
+
+    1. Go to [GitHub Settings > Personal access tokens (classic)](https://github.com/settings/tokens)
+    2. Click "Generate new token (classic)"
+    3. For public data: no scopes needed
+    4. For private repos: select `repo` scope
+    5. Copy the token
+
+!!! tip "Start Minimal"
+    Start with a fine-grained token with "Public Repositories (read-only)" access and no permissions. This is sufficient for most read operations on public data. Add permissions only when needed.
 
 ## Bot User Detection
 
