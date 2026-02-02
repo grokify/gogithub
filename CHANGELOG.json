@@ -8,6 +8,61 @@
   "maintainers": ["grokify"],
   "releases": [
     {
+      "version": "v0.8.0",
+      "date": "2026-02-01",
+      "highlights": [
+        {"description": "New `profile` package for comprehensive GitHub user contribution statistics"},
+        {"description": "New `gogithub` CLI tool with progress bars and multiple output formats"},
+        {"description": "Contributor statistics wrapper in `repo` package with 202 Accepted retry handling"},
+        {"description": "Integration tests that run against real GitHub API when token is available"}
+      ],
+      "added": [
+        {"description": "New `profile` package for user contribution statistics aggregation", "commit": "e57ae36"},
+        {"description": "`profile.GetUserProfile()` - fetch comprehensive profile stats from multiple API sources", "commit": "e57ae36"},
+        {"description": "`profile.UserProfile` type with commits, PRs, issues, reviews, repos, additions/deletions", "commit": "e57ae36"},
+        {"description": "`profile.ContributionCalendar` type with weekly/daily grid and streak tracking", "commit": "e57ae36"},
+        {"description": "`profile.ActivityTimeline` type with monthly activity breakdown", "commit": "e57ae36"},
+        {"description": "`profile.ProgressInfo` type for stage-based progress reporting", "commit": "e57ae36"},
+        {"description": "Calendar streak calculations: `LongestStreak()`, `CurrentStreak()`, `DaysWithContributions()`", "commit": "e57ae36"},
+        {"description": "GitHub-style monthly summaries: `CommitSummary()`, `PRSummary()`, `IssueSummary()`", "commit": "e57ae36"},
+        {"description": "`repo.ListContributorStats()` - list all contributors for a repository", "commit": "a2447e7"},
+        {"description": "`repo.GetContributorStats()` - get stats for a specific contributor", "commit": "a2447e7"},
+        {"description": "`repo.GetContributorSummary()` - get aggregated summary with first/last commit dates", "commit": "a2447e7"},
+        {"description": "`repo.ContributorSummary` type with TotalCommits, TotalAdditions, TotalDeletions, FirstCommit, LastCommit", "commit": "a2447e7"},
+        {"description": "Automatic 202 Accepted retry handling with exponential backoff for contributor stats", "commit": "a2447e7"},
+        {"description": "New `gogithub` CLI tool built with Cobra", "commit": "653ed99"},
+        {"description": "`gogithub profile` command for fetching user contribution statistics", "commit": "653ed99"},
+        {"description": "`gogithub search-prs` command for searching open PRs by user", "commit": "653ed99"},
+        {"description": "CLI progress display with Unicode progress bars and stage indicators", "commit": "653ed99"},
+        {"description": "CLI output formats: summary, JSON, raw+aggregate JSON files", "commit": "653ed99"},
+        {"description": "CLI can regenerate aggregate from raw file without API calls (`--input` flag)", "commit": "653ed99"},
+        {"description": "Integration tests for profile package (8 tests)", "commit": "3aae93f"},
+        {"description": "Integration tests for repo/contributors (6 tests)", "commit": "3aae93f"},
+        {"description": "Integration tests automatically skip when GITHUB_TOKEN is not set", "commit": "3aae93f"}
+      ],
+      "dependencies": [
+        {"description": "Added `github.com/spf13/cobra` v1.10.2 for CLI", "commit": "653ed99"}
+      ],
+      "documentation": [
+        {"description": "Added `docs/guides/profile.md` - comprehensive profile package guide", "commit": "7829ff2"},
+        {"description": "Added `docs/guides/testing.md` - testing guide with integration test instructions", "commit": "8670f87"},
+        {"description": "Expanded `docs/guides/auth.md` with detailed token requirements for fine-grained PATs", "commit": "14a05c4"},
+        {"description": "Added `docs/releases/v0.8.0.md` release notes", "commit": "b13afc8"},
+        {"description": "Updated mkdocs.yml navigation with Testing guide and v0.8.0 release notes", "commit": "451dbc9"},
+        {"description": "Updated getting-started.md with link to testing guide", "commit": "451dbc9"},
+        {"description": "Updated README.md directory structure with profile, repo/contributors, cmd/gogithub", "commit": "4b87f5b"}
+      ],
+      "chores": [
+        {"description": "Updated .gitignore for CLI binary and MkDocs site directory", "commit": "1ba3f1e"}
+      ],
+      "tests": [
+        {"description": "Added unit tests for `repo.ContributorSummary` type", "commit": "d9ea699"},
+        {"description": "Added unit tests for `profile.UserProfile` (summary, top repos, filtering)", "commit": "96efa24"},
+        {"description": "Added unit tests for `profile.ContributionCalendar` (levels, streaks, lookups)", "commit": "96efa24"},
+        {"description": "Added unit tests for `profile.ActivityTimeline` (aggregation, summaries)", "commit": "96efa24"}
+      ]
+    },
+    {
       "version": "v0.7.0",
       "date": "2026-01-30",
       "highlights": [
