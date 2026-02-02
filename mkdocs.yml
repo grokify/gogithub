@@ -43,6 +43,7 @@ nav:
   - Getting Started: getting-started.md
   - Guides:
       - Authentication: guides/auth.md
+      - Command Line Interface: guides/cli.md
       - User Profile Statistics: guides/profile.md
       - Search API: guides/search.md
       - Repository Operations: guides/repo.md
