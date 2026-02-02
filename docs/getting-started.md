@@ -157,3 +157,4 @@ fmt.Printf("Additions: %d, Deletions: %d\n", commitStats.Additions, commitStats.
 - [Authentication Guide](guides/auth.md) - Detailed authentication options
 - [Search API Guide](guides/search.md) - Query syntax and examples
 - [GraphQL Guide](guides/graphql.md) - Contribution statistics
+- [Testing Guide](guides/testing.md) - Running unit and integration tests
