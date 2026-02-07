@@ -11,36 +11,47 @@
       "version": "v0.9.0",
       "date": "2026-02-04",
       "highlights": [
+        {"description": "Profile Viewer web application for visualizing GitHub contribution statistics"},
         {"description": "Monthly release counts for contributed repositories via `--include-releases` flag"},
         {"description": "Improved progress reporting with per-repository updates and item counts"},
-        {"description": "Progress rendering extracted to reusable `mogo/fmt/progress` package"},
         {"description": "Added `net_additions` field to aggregate output (additions minus deletions)"}
       ],
       "added": [
-        {"description": "`--include-releases` CLI flag to fetch release counts for contributed repositories"},
-        {"description": "Monthly release aggregation based on release `published_at` date"},
-        {"description": "`total_releases` field in aggregate JSON output"},
-        {"description": "`releases` field in monthly breakdown JSON output"},
-        {"description": "`net_additions` field in aggregate JSON (total_additions - total_deletions)"},
-        {"description": "`profile.MonthlyActivity.Releases` field for monthly release counts"},
-        {"description": "`graphql.GetCommitStatsWithProgress()` function with progress callback"},
-        {"description": "`graphql.CommitStatsProgressFunc` type for progress reporting"}
+        {"description": "Profile Viewer web app with stats card, contribution calendar, and charts", "commit": "16d92db"},
+        {"description": "Stats card SVG/PNG export for embedding in documentation", "commit": "16d92db"},
+        {"description": "GitHub-style contribution calendar heatmap visualization", "commit": "16d92db"},
+        {"description": "Monthly activity bar/line charts with Chart.js", "commit": "16d92db"},
+        {"description": "Dark mode support with automatic theme detection", "commit": "16d92db"},
+        {"description": "`--include-releases` CLI flag to fetch release counts for contributed repositories", "commit": "0b99753"},
+        {"description": "Monthly release aggregation based on release `published_at` date", "commit": "fe10cf6"},
+        {"description": "`total_releases` field in aggregate JSON output", "commit": "0b99753"},
+        {"description": "`releases` field in monthly breakdown JSON output", "commit": "0b99753"},
+        {"description": "`net_additions` field in aggregate JSON (total_additions - total_deletions)", "commit": "0b99753"},
+        {"description": "`profile.MonthlyActivity.Releases` field for monthly release counts", "commit": "fe10cf6"},
+        {"description": "`graphql.GetCommitStatsWithProgress()` function with progress callback", "commit": "bfe8ea1"},
+        {"description": "`graphql.CommitStatsProgressFunc` type for progress reporting", "commit": "bfe8ea1"}
       ],
       "changed": [
-        {"description": "CLI now uses `mogo/fmt/progress.MultiStageRenderer` for progress display"},
-        {"description": "Progress bar item count `(n/m)` moved to after percentage for consistent alignment"},
-        {"description": "Stage 2 progress bar (Fetching commit details) now updates after each repository"},
-        {"description": "Release fetching now aggregates by month and filters to profile date range"}
+        {"description": "CLI now uses `mogo/fmt/progress.MultiStageRenderer` for progress display", "commit": "0b99753"},
+        {"description": "Stage 2 progress bar (Fetching commit details) now updates after each repository", "commit": "0b99753"},
+        {"description": "Release fetching now aggregates by month and filters to profile date range", "commit": "fe10cf6"}
       ],
       "removed": [
-        {"description": "Removed local `renderProgressBar()` function in favor of `mogo/fmt/progress.RenderBar()`"}
+        {"description": "Removed local `renderProgressBar()` function in favor of `mogo/fmt/progress.RenderBar()`", "commit": "0b99753"}
+      ],
+      "dependencies": [
+        {"description": "Updated `github.com/grokify/mogo` from v0.72.7 to v0.73.0 for `fmt/progress` package", "commit": "0b99753"}
       ],
       "documentation": [
-        {"description": "Added `--include-releases` flag to CLI flags table in docs/guides/cli.md"},
-        {"description": "Added example for including release counts in CLI documentation"},
-        {"description": "Added 'Release Data' section explaining API overhead and recommendations"},
-        {"description": "Updated JSON output example with `net_additions`, `total_releases`, and monthly `releases` fields"},
-        {"description": "Updated Tips section with release data caching advice"}
+        {"description": "Added Profile Viewer guide with deployment and customization instructions", "commit": "e36b612"},
+        {"description": "Added `--include-releases` flag to CLI flags table in docs/guides/cli.md", "commit": "d732c3f"},
+        {"description": "Added example for including release counts in CLI documentation", "commit": "d732c3f"},
+        {"description": "Added 'Release Data' section explaining API overhead and recommendations", "commit": "d732c3f"},
+        {"description": "Updated JSON output example with `net_additions`, `total_releases`, and monthly `releases` fields", "commit": "d732c3f"},
+        {"description": "Updated Tips section with release data caching advice", "commit": "d732c3f"}
+      ],
+      "chores": [
+        {"description": "Updated .gitignore for web app node_modules and dist directories", "commit": "0f09bef"}
       ]
     },
     {
