@@ -100,10 +100,20 @@ type commitHistoryQuery struct {
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
+// CommitStatsProgressFunc is called to report progress during commit stats fetching.
+// current is the number of repositories processed, total is the total number of repositories.
+type CommitStatsProgressFunc func(current, total int)
+
 // GetCommitStats retrieves detailed commit statistics including additions and deletions.
 // This method iterates through all repositories the user has contributed to and aggregates
 // commit data. Use the visibility parameter to filter by public/private repositories.
 func GetCommitStats(ctx context.Context, client *githubv4.Client, username string, from, to time.Time, visibility Visibility) (*CommitStats, error) {
+	return GetCommitStatsWithProgress(ctx, client, username, from, to, visibility, nil)
+}
+
+// GetCommitStatsWithProgress is like GetCommitStats but accepts a progress callback.
+// The callback is invoked after each repository is processed.
+func GetCommitStatsWithProgress(ctx context.Context, client *githubv4.Client, username string, from, to time.Time, visibility Visibility, progress CommitStatsProgressFunc) (*CommitStats, error) {
 	// First, get the user's ID for author filtering
 	userID, err := getUserID(ctx, client, username)
 	if err != nil {
@@ -126,12 +136,16 @@ func GetCommitStats(ctx context.Context, client *githubv4.Client, username strin
 	}
 
 	monthlyMap := make(map[string]*MonthlyCommitStats)
+	totalRepos := len(repos)
 
 	// Iterate through each repository and get commit history
-	for _, repo := range repos {
+	for i, repo := range repos {
 		repoStats, monthData, err := getRepoCommitStats(ctx, client, repo.Owner, repo.Name, repo.IsPrivate, userID, from, to)
 		if err != nil {
 			// Skip repos we can't access (might have lost access)
+			if progress != nil {
+				progress(i+1, totalRepos)
+			}
 			continue
 		}
 
@@ -157,6 +171,11 @@ func GetCommitStats(ctx context.Context, client *githubv4.Client, username strin
 					}
 				}
 			}
+		}
+
+		// Report progress after each repo
+		if progress != nil {
+			progress(i+1, totalRepos)
 		}
 	}
 
