@@ -45,6 +45,7 @@ nav:
       - Authentication: guides/auth.md
       - Command Line Interface: guides/cli.md
       - User Profile Statistics: guides/profile.md
+      - Profile Viewer: guides/profile-viewer.md
       - Search API: guides/search.md
       - Repository Operations: guides/repo.md
       - Pull Requests: guides/pr.md
