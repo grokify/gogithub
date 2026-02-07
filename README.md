@@ -37,49 +37,49 @@ The package is organized into subdirectories by operation type for scalability:
 
 ```
 gogithub/
-├── gogithub.go        # Client factory, backward-compatible re-exports
-├── auth/              # Authentication utilities
-│   └── auth.go        # NewGitHubClient, GetAuthenticatedUser
-├── config/            # Configuration utilities
-│   └── config.go      # Config struct, FromEnv, GitHub Enterprise support
-├── errors/            # Error types and translation
-│   └── errors.go      # APIError, Translate, IsNotFound, IsRateLimited
-├── graphql/           # GraphQL API for contribution statistics
-│   ├── client.go      # NewClient, NewEnterpriseClient
-│   ├── contributions.go # GetContributionStats, GetContributionStatsMultiYear
-│   └── commitstats.go # GetCommitStats, GetCommitStatsByVisibility
-├── profile/           # User profile aggregation
-│   ├── profile.go     # UserProfile, GetUserProfile
-│   ├── calendar.go    # ContributionCalendar, streaks
-│   └── activity.go    # MonthlyActivity, ActivityTimeline
-├── pathutil/          # Path validation and normalization
-│   └── pathutil.go    # Validate, Normalize, Join, Split
-├── search/            # Search API operations
-│   ├── search.go      # SearchIssues, SearchIssuesAll
-│   ├── query.go       # Query builder, parameter constants
-│   └── issues.go      # Issues type, table generation
-├── repo/              # Repository operations
-│   ├── fork.go        # EnsureFork, GetDefaultBranch
-│   ├── branch.go      # CreateBranch, GetBranchSHA, DeleteBranch
-│   ├── commit.go      # CreateCommit (Git tree API), ReadLocalFiles
-│   ├── list.go        # ListOrgRepos, ListUserRepos, GetRepo
-│   ├── contributors.go # ListContributorStats, GetContributorSummary
-│   └── batch.go       # Batch for atomic multi-file commits
-├── pr/                # Pull request operations
-│   └── pullrequest.go # CreatePR, GetPR, ListPRs, MergePR, ApprovePR, IsMergeable
-├── release/           # Release operations
-│   └── release.go     # ListReleases, GetLatestRelease, CreateRelease, DeleteRelease
-├── checks/            # Check runs operations
-│   └── checks.go      # ListCheckRuns, WaitForChecks, AllChecksPassed
-├── tag/               # Git tag operations
-│   └── tag.go         # ListTags, CreateTag, GetTagSHA, TagExists
-├── cliutil/           # CLI utilities
-│   └── status.go      # Git status helpers
-├── cmd/               # CLI tools
-│   ├── gogithub/      # Main CLI (profile, search-prs commands)
-│   └── searchuserpr/  # Search user PRs example
-└── web/               # Profile Viewer web application
-    └── src/           # TypeScript source (Vite, Chart.js)
+├── gogithub.go           # Client factory, backward-compatible re-exports
+├── auth/                 # Authentication utilities
+│   └── auth.go           # NewGitHubClient, GetAuthenticatedUser
+├── config/               # Configuration utilities
+│   └── config.go         # Config struct, FromEnv, GitHub Enterprise support
+├── errors/               # Error types and translation
+│   └── errors.go         # APIError, Translate, IsNotFound, IsRateLimited
+├── graphql/              # GraphQL API for contribution statistics
+│   ├── client.go         # NewClient, NewEnterpriseClient
+│   ├── contributions.go  # GetContributionStats, GetContributionStatsMultiYear
+│   └── commitstats.go    # GetCommitStats, GetCommitStatsByVisibility
+├── profile/              # User profile aggregation
+│   ├── profile.go        # UserProfile, GetUserProfile
+│   ├── calendar.go       # ContributionCalendar, streaks
+│   └── activity.go       # MonthlyActivity, ActivityTimeline
+├── pathutil/             # Path validation and normalization
+│   └── pathutil.go       # Validate, Normalize, Join, Split
+├── search/               # Search API operations
+│   ├── search.go         # SearchIssues, SearchIssuesAll
+│   ├── query.go          # Query builder, parameter constants
+│   └── issues.go         # Issues type, table generation
+├── repo/                 # Repository operations
+│   ├── fork.go           # EnsureFork, GetDefaultBranch
+│   ├── branch.go         # CreateBranch, GetBranchSHA, DeleteBranch
+│   ├── commit.go         # CreateCommit (Git tree API), ReadLocalFiles
+│   ├── list.go           # ListOrgRepos, ListUserRepos, GetRepo
+│   ├── contributors.go   # ListContributorStats, GetContributorSummary
+│   └── batch.go          # Batch for atomic multi-file commits
+├── pr/                   # Pull request operations
+│   └── pullrequest.go    # CreatePR, GetPR, ListPRs, MergePR, ApprovePR, IsMergeable
+├── release/              # Release operations
+│   └── release.go        # ListReleases, GetLatestRelease, CreateRelease, DeleteRelease
+├── checks/               # Check runs operations
+│   └── checks.go         # ListCheckRuns, WaitForChecks, AllChecksPassed
+├── tag/                  # Git tag operations
+│   └── tag.go            # ListTags, CreateTag, GetTagSHA, TagExists
+├── cliutil/              # CLI utilities
+│   └── status.go         # Git status helpers
+├── cmd/                  # CLI tools
+│   ├── gogithub/         # Main CLI (profile, search-prs commands)
+│   └── searchuserpr/     # Search user PRs example
+└── web/                  # Profile Viewer web application
+    └── src/              # TypeScript source (Vite, Chart.js)
 ```
 
 ## Usage
