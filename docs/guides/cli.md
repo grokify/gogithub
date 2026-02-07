@@ -48,6 +48,7 @@ gogithub profile --user <username> [flags]
 | `--output-raw` | | Output raw JSON file with all data | |
 | `--output-aggregate` | | Output aggregate JSON file | |
 | `--input` | `-i` | Input raw JSON file (skip API calls) | |
+| `--include-releases` | | Fetch release counts for contributed repos | `false` |
 
 #### Examples
 
@@ -121,6 +122,15 @@ The raw JSON contains all per-repository data and can be used to regenerate aggr
 gogithub profile --input raw.json --output aggregate.json
 ```
 
+**Include release counts:**
+
+```bash
+gogithub profile --user grokify --from 2024-01-01 --to 2024-12-31 \
+    --include-releases --output-raw raw.json
+```
+
+This fetches release data for all contributed repositories and aggregates by month based on each release's publish date. See [Release Data](#release-data) for details on API overhead.
+
 #### Output Formats
 
 **Summary** (default): Human-readable text with sections for contributions, code changes, activity streaks, top repositories, and monthly breakdown.
@@ -139,6 +149,8 @@ gogithub profile --input raw.json --output aggregate.json
   "total_reviews": 30,
   "total_additions": 738054,
   "total_deletions": 294379,
+  "net_additions": 443675,
+  "total_releases": 8,
   "repos_contributed_to": 71,
   "calendar": {
     "total_contributions": 1500,
@@ -152,12 +164,18 @@ gogithub profile --input raw.json --output aggregate.json
       "month": 1,
       "month_name": "January",
       "commits": 95,
+      "issues": 2,
+      "prs": 5,
+      "reviews": 3,
+      "releases": 2,
       "additions": 50000,
       "deletions": 20000
     }
   ]
 }
 ```
+
+Note: `total_releases` and monthly `releases` are only populated when using `--include-releases`.
 
 **Raw JSON** (`--output-raw`): Complete data including per-repository details and full calendar data. Use this for archival or to regenerate aggregates later.
 
@@ -171,6 +189,24 @@ The output shows two commit counts:
 | `commits_default_branch` | Commits found traversing default branch history |
 
 These may differ because `total_commits` includes all branches while `commits_default_branch` only traverses default branches (but provides additions/deletions data).
+
+#### Release Data
+
+The `--include-releases` flag fetches release counts for all repositories you contributed to during the specified period. Releases are aggregated by month based on their `published_at` date.
+
+**API overhead:**
+
+| Without `--include-releases` | With `--include-releases` |
+|------------------------------|---------------------------|
+| 2-4 GraphQL calls total | 2-4 GraphQL calls + 1 REST call per repository |
+
+For example, if you contributed to 71 repositories, enabling releases adds 71+ additional API calls. Each repository with more than 100 releases requires additional paginated calls.
+
+**Recommendations:**
+
+- Use `--output-raw` to cache the data and avoid repeated API calls
+- Regenerate aggregates from cached raw data using `--input` (no API calls needed)
+- Only enable `--include-releases` when you need release statistics
 
 ### search-prs
 
@@ -227,9 +263,11 @@ Long-running commands show real-time progress with:
 ## Tips
 
 1. **Offline aggregate generation**: Fetch raw data once, then regenerate aggregates without API calls:
+
    ```bash
    # Fetch once (makes API calls)
-   gogithub profile --user grokify --from 2024-01-01 --to 2024-12-31 --output-raw data.json
+   gogithub profile --user grokify --from 2024-01-01 --to 2024-12-31 \
+       --include-releases --output-raw data.json
 
    # Regenerate anytime (no API calls)
    gogithub profile --input data.json --format json
@@ -240,3 +278,5 @@ Long-running commands show real-time progress with:
 3. **Large date ranges**: For ranges over 1 year, the tool automatically splits queries to work within GitHub's API limits.
 
 4. **Rate limiting**: The tool respects GitHub's rate limits. For large queries, consider using a token with higher limits.
+
+5. **Release data caching**: Since `--include-releases` adds significant API overhead, always use `--output-raw` to cache the results. The raw JSON preserves all release data for future aggregate generation.
