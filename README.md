@@ -75,8 +75,11 @@ gogithub/
 │   └── tag.go         # ListTags, CreateTag, GetTagSHA, TagExists
 ├── cliutil/           # CLI utilities
 │   └── status.go      # Git status helpers
-└── cmd/               # Example commands
-    └── searchuserpr/  # Search user PRs example
+├── cmd/               # CLI tools
+│   ├── gogithub/      # Main CLI (profile, search-prs commands)
+│   └── searchuserpr/  # Search user PRs example
+└── web/               # Profile Viewer web application
+    └── src/           # TypeScript source (Vite, Chart.js)
 ```
 
 ## Usage
