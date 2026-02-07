@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-github/v82/github"
 	"github.com/grokify/gogithub/graphql"
 	"github.com/grokify/gogithub/profile"
+	"github.com/grokify/mogo/fmt/progress"
 	"github.com/spf13/cobra"
 )
 
@@ -23,6 +24,7 @@ var (
 	profileOutputRaw       string
 	profileOutputAggregate string
 	profileInput           string
+	profileIncludeReleases bool
 )
 
 var profileCmd = &cobra.Command{
@@ -42,6 +44,10 @@ Examples:
   gogithub profile --user grokify --from 2024-01-01 --to 2024-01-31 \
     --output-raw raw.json --output-aggregate aggregate.json
 
+  # Include release counts (requires additional API calls)
+  gogithub profile --user grokify --from 2024-01-01 --to 2024-01-31 \
+    --include-releases --output-raw raw.json
+
   # Generate aggregate from existing raw file (no API calls)
   gogithub profile --input raw.json --output aggregate.json
 
@@ -60,6 +66,7 @@ func init() {
 	profileCmd.Flags().StringVar(&profileOutputRaw, "output-raw", "", "Output raw JSON file (includes all per-repo data)")
 	profileCmd.Flags().StringVar(&profileOutputAggregate, "output-aggregate", "", "Output aggregate JSON file")
 	profileCmd.Flags().StringVarP(&profileInput, "input", "i", "", "Input raw JSON file (skips API calls)")
+	profileCmd.Flags().BoolVar(&profileIncludeReleases, "include-releases", false, "Fetch release counts for contributed repositories")
 }
 
 func runProfile(cmd *cobra.Command, args []string) error {
@@ -119,48 +126,24 @@ func runProfileFromAPI() error {
 	fmt.Fprintf(os.Stderr, "Fetching profile for '%s' from %s to %s\n\n",
 		profileUser, from.Format("2006-01-02"), to.Format("2006-01-02"))
 
-	// Track last stage to avoid duplicate "done" messages
-	lastStage := 0
-	lastDone := false
+	// Create progress renderer
+	renderer := progress.NewMultiStageRenderer(os.Stderr)
 
-	// Progress callback that writes to stderr with stage information and progress bar
+	// Progress callback that converts profile.ProgressInfo to progress.StageInfo
 	progressFunc := func(info profile.ProgressInfo) {
-		// Clear line and move cursor to beginning for updates
-		clearLine := "\r\033[K"
-
-		// Calculate percentage
-		var pct int
-		if info.Done {
-			pct = 100
-		} else if info.Current > 0 && info.Total > 0 {
-			pct = (info.Current * 100) / info.Total
-		} else {
-			pct = 0
-		}
-
-		// Build progress bar (20 chars wide)
-		bar := renderProgressBar(pct, 20)
-
-		if info.Done {
-			if lastStage == info.Stage && lastDone {
-				return // Already printed done for this stage
-			}
-			// Print completed stage with full bar
-			fmt.Fprintf(os.Stderr, "%s[%d/%d] %-34s %s %3d%%\n",
-				clearLine, info.Stage, info.TotalStages, info.Description, bar, pct)
-			lastDone = true
-		} else {
-			lastDone = false
-			// Show stage with current progress bar
-			fmt.Fprintf(os.Stderr, "%s[%d/%d] %-34s %s %3d%%",
-				clearLine, info.Stage, info.TotalStages, info.Description, bar, pct)
-		}
-		lastStage = info.Stage
+		renderer.Update(progress.StageInfo{
+			Stage:       info.Stage,
+			TotalStages: info.TotalStages,
+			Description: info.Description,
+			Current:     info.Current,
+			Total:       info.Total,
+			Done:        info.Done,
+		})
 	}
 
 	opts := &profile.Options{
 		Visibility:      graphql.VisibilityAll,
-		IncludeReleases: false,
+		IncludeReleases: profileIncludeReleases,
 		Progress:        progressFunc,
 	}
 
@@ -283,6 +266,9 @@ type RawJSON struct {
 	TotalAdditions int `json:"total_additions"`
 	TotalDeletions int `json:"total_deletions"`
 
+	// Release stats (optional, requires IncludeReleases option)
+	TotalReleases int `json:"total_releases,omitempty"`
+
 	// Per-repo details (full data)
 	Repos []RepoJSON `json:"repos"`
 
@@ -314,6 +300,10 @@ type AggregateJSON struct {
 	// Code stats (from default branch traversal)
 	TotalAdditions int `json:"total_additions"`
 	TotalDeletions int `json:"total_deletions"`
+	NetAdditions   int `json:"net_additions"`
+
+	// Release stats (optional, requires IncludeReleases option)
+	TotalReleases int `json:"total_releases,omitempty"`
 
 	// Repo summary
 	ReposContributedTo int `json:"repos_contributed_to"`
@@ -356,6 +346,7 @@ type MonthlyJSON struct {
 	Issues    int    `json:"issues"`
 	PRs       int    `json:"prs"`
 	Reviews   int    `json:"reviews"`
+	Releases  int    `json:"releases"`
 	Additions int    `json:"additions"`
 	Deletions int    `json:"deletions"`
 }
@@ -399,6 +390,7 @@ func profileToRaw(p *profile.UserProfile) *RawJSON {
 	}
 
 	// Monthly
+	totalReleases := 0
 	if p.Activity != nil {
 		for _, m := range p.Activity.Months {
 			raw.Monthly = append(raw.Monthly, MonthlyJSON{
@@ -409,11 +401,14 @@ func profileToRaw(p *profile.UserProfile) *RawJSON {
 				Issues:    m.Issues,
 				PRs:       m.PRs,
 				Reviews:   m.Reviews,
+				Releases:  m.Releases,
 				Additions: m.Additions,
 				Deletions: m.Deletions,
 			})
+			totalReleases += m.Releases
 		}
 	}
+	raw.TotalReleases = totalReleases
 
 	// Calendar
 	if p.Calendar != nil {
@@ -457,6 +452,7 @@ func profileToAggregate(p *profile.UserProfile) *AggregateJSON {
 		CommitsDefaultBranch:    p.CommitsDefaultBranch,
 		TotalAdditions:          p.TotalAdditions,
 		TotalDeletions:          p.TotalDeletions,
+		NetAdditions:            p.TotalAdditions - p.TotalDeletions,
 		ReposContributedTo:      p.ReposContributedTo,
 		Monthly:                 []MonthlyJSON{},
 	}
@@ -472,6 +468,7 @@ func profileToAggregate(p *profile.UserProfile) *AggregateJSON {
 	}
 
 	// Monthly breakdown
+	totalReleases := 0
 	if p.Activity != nil {
 		for _, m := range p.Activity.Months {
 			agg.Monthly = append(agg.Monthly, MonthlyJSON{
@@ -482,11 +479,14 @@ func profileToAggregate(p *profile.UserProfile) *AggregateJSON {
 				Issues:    m.Issues,
 				PRs:       m.PRs,
 				Reviews:   m.Reviews,
+				Releases:  m.Releases,
 				Additions: m.Additions,
 				Deletions: m.Deletions,
 			})
+			totalReleases += m.Releases
 		}
 	}
+	agg.TotalReleases = totalReleases
 
 	return agg
 }
@@ -506,6 +506,8 @@ func rawToAggregate(raw *RawJSON) *AggregateJSON {
 		CommitsDefaultBranch:    raw.CommitsDefaultBranch,
 		TotalAdditions:          raw.TotalAdditions,
 		TotalDeletions:          raw.TotalDeletions,
+		NetAdditions:            raw.TotalAdditions - raw.TotalDeletions,
+		TotalReleases:           raw.TotalReleases,
 		ReposContributedTo:      len(raw.Repos),
 		Monthly:                 raw.Monthly,
 	}
@@ -638,24 +640,4 @@ func formatSummary(p *profile.UserProfile) string {
 	}
 
 	return sb.String()
-}
-
-// renderProgressBar creates a visual progress bar string.
-// width is the number of characters for the bar (excluding brackets).
-// Returns a string like "[████████░░░░░░░░░░░░]"
-func renderProgressBar(percent, width int) string {
-	if percent < 0 {
-		percent = 0
-	}
-	if percent > 100 {
-		percent = 100
-	}
-
-	filled := (percent * width) / 100
-	empty := width - filled
-
-	// Use Unicode block characters for a smooth look
-	// █ (full block) for filled, ░ (light shade) for empty
-	bar := strings.Repeat("█", filled) + strings.Repeat("░", empty)
-	return "[" + bar + "]"
 }
