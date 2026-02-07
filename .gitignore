@@ -3,3 +3,7 @@
 _*
 /gogithub
 /site/
+
+# Web app
+/web/node_modules/
+/web/dist/
