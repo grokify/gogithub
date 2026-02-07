@@ -13,10 +13,11 @@ type MonthlyActivity struct {
 	Month time.Month
 
 	// Contribution counts
-	Commits int
-	Issues  int
-	PRs     int
-	Reviews int
+	Commits  int
+	Issues   int
+	PRs      int
+	Reviews  int
+	Releases int // Releases published in contributed repos this month
 
 	// Commit details
 	Additions int
