@@ -159,7 +159,10 @@ func GetUserProfile(ctx context.Context, restClient *github.Client, gqlClient *g
 
 	// Stage 2: Fetch detailed commit stats (additions/deletions per repo)
 	report(2, "Fetching commit details", 0, 0, false)
-	commitStats, err := graphql.GetCommitStats(ctx, gqlClient, username, from, to, opts.Visibility)
+	commitStatsProgress := func(current, total int) {
+		report(2, "Fetching commit details", current, total, false)
+	}
+	commitStats, err := graphql.GetCommitStatsWithProgress(ctx, gqlClient, username, from, to, opts.Visibility, commitStatsProgress)
 	if err != nil {
 		return nil, fmt.Errorf("get commit stats: %w", err)
 	}
@@ -300,7 +303,7 @@ func buildActivityTimeline(username string, from, to time.Time, contribStats *gr
 	return timeline
 }
 
-// fetchReleaseCounts fetches release counts for repositories.
+// fetchReleaseCounts fetches release counts for repositories and aggregates by month.
 // Errors fetching individual repos are silently ignored (e.g., lost access, deleted repo).
 func fetchReleaseCounts(ctx context.Context, restClient *github.Client, profile *UserProfile, maxRepos int, progress ProgressFunc, totalStages int) {
 	total := len(profile.RepoStats)
@@ -321,6 +324,9 @@ func fetchReleaseCounts(ctx context.Context, restClient *github.Client, profile 
 
 	report(0, false)
 
+	// Track releases by month for aggregation
+	releasesByMonth := make(map[string]int) // "2024-01" -> count
+
 	count := 0
 	for i := range profile.RepoStats {
 		if maxRepos > 0 && count >= maxRepos {
@@ -333,10 +339,44 @@ func fetchReleaseCounts(ctx context.Context, restClient *github.Client, profile 
 			// Skip repos we can't access (might have lost access or repo deleted)
 			continue
 		}
-		repo.Releases = len(releases)
+
+		// Count releases and aggregate by month
+		repoReleaseCount := 0
+		for _, rel := range releases {
+			pubAt := rel.GetPublishedAt()
+			if pubAt.IsZero() {
+				// Fall back to created_at if not published
+				pubAt = rel.GetCreatedAt()
+			}
+			if pubAt.IsZero() {
+				repoReleaseCount++
+				continue
+			}
+
+			// Check if release is within profile date range
+			relTime := pubAt.Time
+			if relTime.Before(profile.From) || relTime.After(profile.To) {
+				continue
+			}
+
+			repoReleaseCount++
+			key := relTime.Format("2006-01")
+			releasesByMonth[key]++
+		}
+		repo.Releases = repoReleaseCount
 		count++
 		report(count, false)
 	}
+
+	// Update monthly activity with release counts
+	if profile.Activity != nil {
+		for i := range profile.Activity.Months {
+			month := &profile.Activity.Months[i]
+			key := time.Date(month.Year, month.Month, 1, 0, 0, 0, 0, time.UTC).Format("2006-01")
+			month.Releases = releasesByMonth[key]
+		}
+	}
+
 	report(count, true)
 }
 
