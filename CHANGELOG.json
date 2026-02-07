@@ -8,6 +8,42 @@
   "maintainers": ["grokify"],
   "releases": [
     {
+      "version": "v0.9.0",
+      "date": "2026-02-04",
+      "highlights": [
+        {"description": "Monthly release counts for contributed repositories via `--include-releases` flag"},
+        {"description": "Improved progress reporting with per-repository updates and item counts"},
+        {"description": "Progress rendering extracted to reusable `mogo/fmt/progress` package"},
+        {"description": "Added `net_additions` field to aggregate output (additions minus deletions)"}
+      ],
+      "added": [
+        {"description": "`--include-releases` CLI flag to fetch release counts for contributed repositories"},
+        {"description": "Monthly release aggregation based on release `published_at` date"},
+        {"description": "`total_releases` field in aggregate JSON output"},
+        {"description": "`releases` field in monthly breakdown JSON output"},
+        {"description": "`net_additions` field in aggregate JSON (total_additions - total_deletions)"},
+        {"description": "`profile.MonthlyActivity.Releases` field for monthly release counts"},
+        {"description": "`graphql.GetCommitStatsWithProgress()` function with progress callback"},
+        {"description": "`graphql.CommitStatsProgressFunc` type for progress reporting"}
+      ],
+      "changed": [
+        {"description": "CLI now uses `mogo/fmt/progress.MultiStageRenderer` for progress display"},
+        {"description": "Progress bar item count `(n/m)` moved to after percentage for consistent alignment"},
+        {"description": "Stage 2 progress bar (Fetching commit details) now updates after each repository"},
+        {"description": "Release fetching now aggregates by month and filters to profile date range"}
+      ],
+      "removed": [
+        {"description": "Removed local `renderProgressBar()` function in favor of `mogo/fmt/progress.RenderBar()`"}
+      ],
+      "documentation": [
+        {"description": "Added `--include-releases` flag to CLI flags table in docs/guides/cli.md"},
+        {"description": "Added example for including release counts in CLI documentation"},
+        {"description": "Added 'Release Data' section explaining API overhead and recommendations"},
+        {"description": "Updated JSON output example with `net_additions`, `total_releases`, and monthly `releases` fields"},
+        {"description": "Updated Tips section with release data caching advice"}
+      ]
+    },
+    {
       "version": "v0.8.0",
       "date": "2026-02-01",
       "highlights": [
