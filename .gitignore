@@ -4,6 +4,9 @@ _*
 /gogithub
 /site/
 
+# Profile command output files
+gogithub_profile_*_raw_*.json
+
 # Web app
 /web/node_modules/
 /web/dist/
