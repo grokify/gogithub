@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/go-github/v82/github"
+	"github.com/google/go-github/v84/github"
 	"github.com/grokify/mogo/encoding/jsonutil"
 	"github.com/grokify/mogo/errors/errorsutil"
 	"github.com/grokify/mogo/io/ioutil"

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/google/go-github/v82/github"
+	"github.com/google/go-github/v84/github"
 )
 
 // CommitError indicates a failure to create a commit.

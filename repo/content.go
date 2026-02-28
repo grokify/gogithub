@@ -6,7 +6,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/google/go-github/v82/github"
+	"github.com/google/go-github/v84/github"
 )
 
 // ContentOptions specifies options for fetching repository content.
