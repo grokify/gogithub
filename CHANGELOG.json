@@ -1,12 +1,59 @@
 {
-  "ir_version": "1.0",
+  "irVersion": "1.0",
   "project": "gogithub",
   "repository": "https://github.com/grokify/gogithub",
   "description": "A high-level Go module for interacting with the GitHub API",
   "versioning": "semver",
-  "commit_convention": "conventional",
+  "commitConvention": "conventional",
   "maintainers": ["grokify"],
   "releases": [
+    {
+      "version": "v0.10.0",
+      "date": "2026-02-28",
+      "highlights": [
+        {"description": "README.md generation with GitHub-style contribution heatmap visualization"},
+        {"description": "SVG stats cards with multiple themes (default, dark, dracula, etc.)"},
+        {"description": "Monthly activity charts as SVG or JSON IR for custom rendering"},
+        {"description": "Upgraded go-github from v82 to v84 for latest GitHub API features"}
+      ],
+      "added": [
+        {"description": "New `profile/readme` package for generating GitHub profile README files", "commit": "b380872"},
+        {"description": "`readme.Generate()` function for template-based README generation", "commit": "b380872"},
+        {"description": "`readme.RenderHeatmap()` for GitHub-style contribution calendar using Unicode blocks", "commit": "b380872"},
+        {"description": "Configurable README generation via JSON config file", "commit": "b380872"},
+        {"description": "New `profile/svg` package for generating embeddable visualizations", "commit": "8e1769e"},
+        {"description": "`svg.GenerateStatsCard()` for stats card with theme support", "commit": "8e1769e"},
+        {"description": "`svg.GenerateMonthlyChart()` for monthly activity bar charts", "commit": "8e1769e"},
+        {"description": "`svg.GenerateStackedBarChart()` for commit type breakdown", "commit": "8e1769e"},
+        {"description": "Built-in themes: default, dark, dracula, nord, gruvbox, solarized", "commit": "8e1769e"},
+        {"description": "Icon support for common metrics (commits, PRs, issues, etc.)", "commit": "8e1769e"},
+        {"description": "`profile/svg/chart` subpackage for chart primitives", "commit": "8e1769e"},
+        {"description": "`--output-readme` CLI flag for README.md generation", "commit": "b26893c"},
+        {"description": "`--output-svg` CLI flag for SVG stats card generation", "commit": "b26893c"},
+        {"description": "`--output-chart` CLI flag for monthly chart SVG", "commit": "b26893c"},
+        {"description": "`--output-chart-json` CLI flag for chart data as JSON IR", "commit": "b26893c"},
+        {"description": "`--svg-theme` CLI flag for selecting card theme", "commit": "b26893c"},
+        {"description": "`--svg-title` CLI flag for custom card title", "commit": "b26893c"},
+        {"description": "`--readme-config` CLI flag for README config file path", "commit": "b26893c"},
+        {"description": "GitHub Actions workflow for automatic profile README updates", "commit": "8b2b1c9"}
+      ],
+      "changed": [
+        {"description": "Upgraded `github.com/google/go-github` from v82 to v84", "commit": "44008e4"},
+        {"description": "Updated documentation examples to use go-github/v84", "commit": "9a82a44"}
+      ],
+      "dependencies": [
+        {"description": "Upgraded `github.com/google/go-github` from v82 to v84", "commit": "44008e4"}
+      ],
+      "documentation": [
+        {"description": "Added `docs/guides/profile-svg.md` guide for SVG stats card generation", "commit": "9a82a44"},
+        {"description": "Added `docs/guides/readme-config-example.json` for README generation config", "commit": "9a82a44"},
+        {"description": "Updated `docs/guides/profile.md` with v84 import paths", "commit": "9a82a44"},
+        {"description": "Updated README.md code examples to use go-github/v84", "commit": "9a82a44"}
+      ],
+      "chores": [
+        {"description": "Updated .gitignore to exclude profile output test files", "commit": "5daf573"}
+      ]
+    },
     {
       "version": "v0.9.0",
       "date": "2026-02-04",
