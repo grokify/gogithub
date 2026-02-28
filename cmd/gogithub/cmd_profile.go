@@ -8,9 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-github/v82/github"
+	"github.com/google/go-github/v84/github"
 	"github.com/grokify/gogithub/graphql"
 	"github.com/grokify/gogithub/profile"
+	"github.com/grokify/gogithub/profile/readme"
+	"github.com/grokify/gogithub/profile/svg"
 	"github.com/grokify/mogo/fmt/progress"
 	"github.com/spf13/cobra"
 )
@@ -23,6 +25,13 @@ var (
 	profileOutput          string
 	profileOutputRaw       string
 	profileOutputAggregate string
+	profileOutputReadme    string
+	profileReadmeConfig    string
+	profileOutputSVG       string
+	profileSVGTheme        string
+	profileSVGTitle        string
+	profileOutputChart     string
+	profileOutputChartJSON string
 	profileInput           string
 	profileIncludeReleases bool
 )
@@ -51,6 +60,27 @@ Examples:
   # Generate aggregate from existing raw file (no API calls)
   gogithub profile --input raw.json --output aggregate.json
 
+  # Generate README from API
+  gogithub profile --user grokify --output-readme README.md --readme-config config.json
+
+  # Generate README from existing raw JSON
+  gogithub profile --input raw.json --output-readme README.md --readme-config config.json
+
+  # Generate SVG stats card
+  gogithub profile --user grokify --output-svg stats.svg
+
+  # Generate SVG with custom theme
+  gogithub profile --user grokify --output-svg stats.svg --svg-theme dark
+
+  # Generate SVG from existing raw JSON (no API calls)
+  gogithub profile --input raw.json --output-svg stats.svg --svg-theme tokyonight
+
+  # Generate monthly lines chart (JSON IR + SVG)
+  gogithub profile --user grokify --output-chart-json chart.json --output-chart chart.svg
+
+  # Generate chart from existing raw JSON
+  gogithub profile --input raw.json --output-chart lines.svg --svg-theme dark
+
 Environment:
   GITHUB_TOKEN    Required for fetching from API. Not needed with --input.
                   Use a fine-grained token with "Public Repositories (read-only)"`,
@@ -65,6 +95,13 @@ func init() {
 	profileCmd.Flags().StringVarP(&profileOutput, "output", "o", "", "Output file (defaults to stdout)")
 	profileCmd.Flags().StringVar(&profileOutputRaw, "output-raw", "", "Output raw JSON file (includes all per-repo data)")
 	profileCmd.Flags().StringVar(&profileOutputAggregate, "output-aggregate", "", "Output aggregate JSON file")
+	profileCmd.Flags().StringVar(&profileOutputReadme, "output-readme", "", "Output README.md file")
+	profileCmd.Flags().StringVar(&profileReadmeConfig, "readme-config", "", "README config JSON file")
+	profileCmd.Flags().StringVar(&profileOutputSVG, "output-svg", "", "Output SVG stats card file")
+	profileCmd.Flags().StringVar(&profileSVGTheme, "svg-theme", "default", "SVG theme: default, dark, radical, tokyonight, gruvbox, dracula, nord, catppuccin")
+	profileCmd.Flags().StringVar(&profileSVGTitle, "svg-title", "", "Custom title for SVG card (default: username's GitHub Stats)")
+	profileCmd.Flags().StringVar(&profileOutputChart, "output-chart", "", "Output monthly lines chart SVG file")
+	profileCmd.Flags().StringVar(&profileOutputChartJSON, "output-chart-json", "", "Output monthly lines chart JSON IR file")
 	profileCmd.Flags().StringVarP(&profileInput, "input", "i", "", "Input raw JSON file (skips API calls)")
 	profileCmd.Flags().BoolVar(&profileIncludeReleases, "include-releases", false, "Fetch release counts for contributed repositories")
 }
@@ -94,6 +131,43 @@ func runProfileFromInput() error {
 	var raw RawJSON
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return fmt.Errorf("parse input JSON: %w", err)
+	}
+
+	p := rawToProfile(&raw)
+
+	// Generate SVG if requested
+	if profileOutputSVG != "" {
+		if err := generateSVG(p, profileOutputSVG, profileSVGTheme, profileSVGTitle); err != nil {
+			return err
+		}
+	}
+
+	// Generate chart JSON IR if requested
+	if profileOutputChartJSON != "" {
+		if err := generateChartJSON(p, profileOutputChartJSON, profileSVGTheme); err != nil {
+			return err
+		}
+	}
+
+	// Generate chart SVG if requested
+	if profileOutputChart != "" {
+		if err := generateChartSVG(p, profileOutputChart, profileSVGTheme, profileSVGTitle); err != nil {
+			return err
+		}
+	}
+
+	// Generate README if requested
+	if profileOutputReadme != "" {
+		if err := generateReadme(p, profileOutputReadme, profileReadmeConfig); err != nil {
+			return err
+		}
+	}
+
+	// If specific outputs were requested, return early
+	if profileOutputSVG != "" || profileOutputChartJSON != "" || profileOutputChart != "" || profileOutputReadme != "" {
+		if profileOutput == "" {
+			return nil
+		}
 	}
 
 	// Generate aggregate from raw
@@ -152,8 +226,8 @@ func runProfileFromAPI() error {
 		return fmt.Errorf("get user profile: %w", err)
 	}
 
-	// Mode: Generate both raw and aggregate files
-	if profileOutputRaw != "" || profileOutputAggregate != "" {
+	// Mode: Generate specific output files
+	if profileOutputRaw != "" || profileOutputAggregate != "" || profileOutputReadme != "" || profileOutputSVG != "" || profileOutputChart != "" || profileOutputChartJSON != "" {
 		return outputBothFormats(p)
 	}
 
@@ -195,6 +269,34 @@ func outputBothFormats(p *profile.UserProfile) error {
 			return fmt.Errorf("marshal aggregate JSON: %w", err)
 		}
 		if err := writeOutput(string(data)+"\n", profileOutputAggregate, "aggregate"); err != nil {
+			return err
+		}
+	}
+
+	// Generate README if requested
+	if profileOutputReadme != "" {
+		if err := generateReadme(p, profileOutputReadme, profileReadmeConfig); err != nil {
+			return err
+		}
+	}
+
+	// Generate SVG if requested
+	if profileOutputSVG != "" {
+		if err := generateSVG(p, profileOutputSVG, profileSVGTheme, profileSVGTitle); err != nil {
+			return err
+		}
+	}
+
+	// Generate chart JSON IR if requested
+	if profileOutputChartJSON != "" {
+		if err := generateChartJSON(p, profileOutputChartJSON, profileSVGTheme); err != nil {
+			return err
+		}
+	}
+
+	// Generate chart SVG if requested
+	if profileOutputChart != "" {
+		if err := generateChartSVG(p, profileOutputChart, profileSVGTheme, profileSVGTitle); err != nil {
 			return err
 		}
 	}
@@ -575,6 +677,149 @@ func formatAggregateJSON(p *profile.UserProfile) (string, error) {
 		return "", err
 	}
 	return string(data) + "\n", nil
+}
+
+// generateReadme creates a README file from profile data and optional config.
+func generateReadme(p *profile.UserProfile, outputPath, configPath string) error {
+	// Load config if provided
+	var cfg *readme.Config
+	if configPath != "" {
+		data, err := os.ReadFile(configPath)
+		if err != nil {
+			return fmt.Errorf("read readme config: %w", err)
+		}
+		cfg = &readme.Config{}
+		if err := json.Unmarshal(data, cfg); err != nil {
+			return fmt.Errorf("parse readme config: %w", err)
+		}
+	}
+
+	// Create generator and generate README
+	gen, err := readme.NewGenerator()
+	if err != nil {
+		return fmt.Errorf("create readme generator: %w", err)
+	}
+
+	if err := gen.GenerateToFile(p, cfg, outputPath); err != nil {
+		return fmt.Errorf("generate readme: %w", err)
+	}
+
+	fmt.Fprintf(os.Stderr, "Wrote %s\n", outputPath)
+	return nil
+}
+
+// generateSVG creates an SVG stats card from profile data.
+func generateSVG(p *profile.UserProfile, outputPath, themeName, title string) error {
+	svgContent := svg.GenerateSVG(p, themeName, title)
+
+	if err := os.WriteFile(outputPath, []byte(svgContent), 0600); err != nil {
+		return fmt.Errorf("write SVG file: %w", err)
+	}
+
+	fmt.Fprintf(os.Stderr, "Wrote %s\n", outputPath)
+	return nil
+}
+
+// generateChartJSON creates a JSON IR for the monthly lines chart.
+func generateChartJSON(p *profile.UserProfile, outputPath, themeName string) error {
+	jsonBytes, err := svg.GenerateMonthlyLinesJSON(p, themeName)
+	if err != nil {
+		return fmt.Errorf("generate chart JSON: %w", err)
+	}
+
+	if err := os.WriteFile(outputPath, jsonBytes, 0600); err != nil {
+		return fmt.Errorf("write chart JSON file: %w", err)
+	}
+
+	fmt.Fprintf(os.Stderr, "Wrote %s\n", outputPath)
+	return nil
+}
+
+// generateChartSVG creates an SVG monthly lines chart from profile data.
+func generateChartSVG(p *profile.UserProfile, outputPath, themeName, title string) error {
+	svgContent := svg.GenerateMonthlyLinesSVG(p, themeName, title)
+
+	if err := os.WriteFile(outputPath, []byte(svgContent), 0600); err != nil {
+		return fmt.Errorf("write chart SVG file: %w", err)
+	}
+
+	fmt.Fprintf(os.Stderr, "Wrote %s\n", outputPath)
+	return nil
+}
+
+// rawToProfile converts RawJSON back to a UserProfile for README generation.
+func rawToProfile(raw *RawJSON) *profile.UserProfile {
+	p := &profile.UserProfile{
+		Username:                raw.Username,
+		From:                    raw.From,
+		To:                      raw.To,
+		TotalCommits:            raw.TotalCommits,
+		TotalIssues:             raw.TotalIssues,
+		TotalPRs:                raw.TotalPRs,
+		TotalReviews:            raw.TotalReviews,
+		TotalReposCreated:       raw.TotalReposCreated,
+		RestrictedContributions: raw.RestrictedContributions,
+		CommitsDefaultBranch:    raw.CommitsDefaultBranch,
+		TotalAdditions:          raw.TotalAdditions,
+		TotalDeletions:          raw.TotalDeletions,
+		ReposContributedTo:      len(raw.Repos),
+	}
+
+	// Convert repo stats
+	for _, r := range raw.Repos {
+		p.RepoStats = append(p.RepoStats, profile.RepoContribution{
+			FullName:  r.FullName,
+			IsPrivate: r.IsPrivate,
+			Commits:   r.Commits,
+			Additions: r.Additions,
+			Deletions: r.Deletions,
+		})
+	}
+
+	// Convert calendar data
+	if raw.Calendar != nil {
+		var days []profile.CalendarDay
+		for _, w := range raw.Calendar.Weeks {
+			for _, d := range w.Days {
+				date, err := time.Parse("2006-01-02", d.Date)
+				if err != nil {
+					continue
+				}
+				days = append(days, profile.CalendarDay{
+					Date:              date,
+					Weekday:           date.Weekday(),
+					ContributionCount: d.ContributionCount,
+					Level:             profile.ContributionLevel(d.Level),
+				})
+			}
+		}
+		p.Calendar = profile.NewCalendarFromDays(days)
+	}
+
+	// Convert monthly data to Activity
+	if len(raw.Monthly) > 0 {
+		p.Activity = &profile.ActivityTimeline{
+			Username: raw.Username,
+			From:     raw.From,
+			To:       raw.To,
+			Months:   make([]profile.MonthlyActivity, 0, len(raw.Monthly)),
+		}
+		for _, m := range raw.Monthly {
+			p.Activity.Months = append(p.Activity.Months, profile.MonthlyActivity{
+				Year:      m.Year,
+				Month:     time.Month(m.Month),
+				Commits:   m.Commits,
+				Issues:    m.Issues,
+				PRs:       m.PRs,
+				Reviews:   m.Reviews,
+				Releases:  m.Releases,
+				Additions: m.Additions,
+				Deletions: m.Deletions,
+			})
+		}
+	}
+
+	return p
 }
 
 func formatSummary(p *profile.UserProfile) string {
