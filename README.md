@@ -257,7 +257,7 @@ import (
     "fmt"
     "time"
 
-    "github.com/google/go-github/v82/github"
+    "github.com/google/go-github/v84/github"
     "github.com/grokify/gogithub/graphql"
     "github.com/grokify/gogithub/profile"
 )
@@ -353,7 +353,7 @@ package gist
 
 import (
     "context"
-    "github.com/google/go-github/v82/github"
+    "github.com/google/go-github/v84/github"
 )
 
 func Create(ctx context.Context, gh *github.Client, description string, public bool, files map[string]string) (*github.Gist, error) {

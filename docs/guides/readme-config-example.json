@@ -1,0 +1,29 @@
+{
+  "greeting": "Hi there",
+  "bio": "Software engineer passionate about developer tools and APIs",
+  "current_work": "Currently working on [gogithub](https://github.com/grokify/gogithub)",
+  "learning": "Currently learning Rust and WebAssembly",
+  "organizations": [
+    {
+      "name": "AgentPlexus",
+      "url": "https://github.com/agentplexus",
+      "description": "AI agent orchestration"
+    }
+  ],
+  "blog": {
+    "text": "Blog",
+    "url": "https://example.com/blog"
+  },
+  "linkedin": {
+    "text": "LinkedIn",
+    "url": "https://linkedin.com/in/username"
+  },
+  "twitter": {
+    "text": "Twitter",
+    "url": "https://twitter.com/username"
+  },
+  "show_stats": true,
+  "show_top_repos": true,
+  "show_heatmap": true,
+  "top_repos_count": 5
+}
