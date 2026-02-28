@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/go-github/v82/github"
+	"github.com/google/go-github/v84/github"
 )
 
 // PRError indicates a failure to create a pull request.

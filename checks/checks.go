@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/go-github/v82/github"
+	"github.com/google/go-github/v84/github"
 )
 
 // ListCheckRuns lists check runs for a commit SHA or branch.
