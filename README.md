@@ -51,7 +51,19 @@ gogithub/
 ├── profile/              # User profile aggregation
 │   ├── profile.go        # UserProfile, GetUserProfile
 │   ├── calendar.go       # ContributionCalendar, streaks
-│   └── activity.go       # MonthlyActivity, ActivityTimeline
+│   ├── activity.go       # MonthlyActivity, ActivityTimeline
+│   ├── readme/           # README.md generation
+│   │   ├── readme.go     # Generate, DefaultConfig
+│   │   ├── heatmap.go    # RenderHeatmap (Unicode contribution calendar)
+│   │   └── template.go   # Template helpers
+│   └── svg/              # SVG visualization generation
+│       ├── card.go       # GenerateStatsCard
+│       ├── stats.go      # Stats rendering
+│       ├── theme.go      # Theme definitions (dark, dracula, nord, etc.)
+│       ├── icons.go      # Metric icons
+│       └── chart/        # Chart primitives
+│           ├── bar.go    # Bar chart rendering
+│           └── types.go  # Chart data types
 ├── pathutil/             # Path validation and normalization
 │   └── pathutil.go       # Validate, Normalize, Join, Split
 ├── search/               # Search API operations
@@ -294,6 +306,60 @@ func main() {
 }
 ```
 
+### Profile Output Formats
+
+Generate profile visualizations in multiple formats:
+
+```bash
+# Generate all outputs
+gogithub profile --user grokify --from 2024-01-01 --to 2024-12-31 \
+    --output-readme README.md \
+    --output-svg stats.svg --svg-theme dracula \
+    --output-chart chart.svg \
+    --output-chart-json chart.json
+```
+
+#### README with Contribution Heatmap
+
+Generate a GitHub profile README with a Unicode contribution calendar:
+
+```go
+import "github.com/grokify/gogithub/profile/readme"
+
+config := readme.DefaultConfig()
+config.ShowHeatmap = true
+
+output, err := readme.Generate(profile, config)
+```
+
+#### SVG Stats Card
+
+Generate embeddable stats cards with theme support:
+
+```go
+import "github.com/grokify/gogithub/profile/svg"
+
+// Available themes: default, dark, dracula, nord, gruvbox, solarized
+card, err := svg.GenerateStatsCard(profile, svg.ThemeDracula, "My GitHub Stats")
+```
+
+#### Monthly Activity Charts
+
+Generate charts as SVG or JSON intermediate representation:
+
+```go
+import "github.com/grokify/gogithub/profile/svg"
+
+// SVG chart
+chartSVG, err := svg.GenerateMonthlyChart(profile.Timeline, svg.ChartOptions{
+    Width:  800,
+    Height: 400,
+})
+
+// JSON IR for custom rendering
+chartJSON, err := svg.GenerateChartJSON(profile.Timeline)
+```
+
 ## Adding New Functionality
 
 When adding new GitHub API functionality, follow this structure:
@@ -389,7 +455,7 @@ issues, _ := c.SearchIssuesAll(ctx, search.Query{...}, nil)
 
 ## Dependencies
 
-- [google/go-github](https://github.com/google/go-github) v82 - GitHub API client
+- [google/go-github](https://github.com/google/go-github) v84 - GitHub API client
 - [golang.org/x/oauth2](https://golang.org/x/oauth2) - OAuth2 authentication
 
 ## License
