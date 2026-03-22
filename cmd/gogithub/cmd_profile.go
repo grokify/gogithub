@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -25,6 +27,7 @@ var (
 	profileOutput          string
 	profileOutputRaw       string
 	profileOutputAggregate string
+	profileOutputMonthly   string
 	profileOutputReadme    string
 	profileReadmeConfig    string
 	profileOutputSVG       string
@@ -81,6 +84,14 @@ Examples:
   # Generate chart from existing raw JSON
   gogithub profile --input raw.json --output-chart lines.svg --svg-theme dark
 
+  # Generate monthly activity JSON (creates or merges with existing file)
+  gogithub profile --user grokify --from 2024-01-01 --to 2024-01-31 \
+    --output-monthly monthly.json
+
+  # Add more months to existing file (automatically merges)
+  gogithub profile --user grokify --from 2024-02-01 --to 2024-02-28 \
+    --output-monthly monthly.json
+
 Environment:
   GITHUB_TOKEN    Required for fetching from API. Not needed with --input.
                   Use a fine-grained token with "Public Repositories (read-only)"`,
@@ -95,6 +106,7 @@ func init() {
 	profileCmd.Flags().StringVarP(&profileOutput, "output", "o", "", "Output file (defaults to stdout)")
 	profileCmd.Flags().StringVar(&profileOutputRaw, "output-raw", "", "Output raw JSON file (includes all per-repo data)")
 	profileCmd.Flags().StringVar(&profileOutputAggregate, "output-aggregate", "", "Output aggregate JSON file")
+	profileCmd.Flags().StringVar(&profileOutputMonthly, "output-monthly", "", "Output monthly JSON file (merges with existing)")
 	profileCmd.Flags().StringVar(&profileOutputReadme, "output-readme", "", "Output README.md file")
 	profileCmd.Flags().StringVar(&profileReadmeConfig, "readme-config", "", "README config JSON file")
 	profileCmd.Flags().StringVar(&profileOutputSVG, "output-svg", "", "Output SVG stats card file")
@@ -163,8 +175,15 @@ func runProfileFromInput() error {
 		}
 	}
 
+	// Generate monthly JSON if requested (with merge)
+	if profileOutputMonthly != "" {
+		if err := writeMonthlyOutput(p, profileOutputMonthly); err != nil {
+			return err
+		}
+	}
+
 	// If specific outputs were requested, return early
-	if profileOutputSVG != "" || profileOutputChartJSON != "" || profileOutputChart != "" || profileOutputReadme != "" {
+	if profileOutputSVG != "" || profileOutputChartJSON != "" || profileOutputChart != "" || profileOutputReadme != "" || profileOutputMonthly != "" {
 		if profileOutput == "" {
 			return nil
 		}
@@ -227,7 +246,7 @@ func runProfileFromAPI() error {
 	}
 
 	// Mode: Generate specific output files
-	if profileOutputRaw != "" || profileOutputAggregate != "" || profileOutputReadme != "" || profileOutputSVG != "" || profileOutputChart != "" || profileOutputChartJSON != "" {
+	if profileOutputRaw != "" || profileOutputAggregate != "" || profileOutputMonthly != "" || profileOutputReadme != "" || profileOutputSVG != "" || profileOutputChart != "" || profileOutputChartJSON != "" {
 		return outputBothFormats(p)
 	}
 
@@ -269,6 +288,13 @@ func outputBothFormats(p *profile.UserProfile) error {
 			return fmt.Errorf("marshal aggregate JSON: %w", err)
 		}
 		if err := writeOutput(string(data)+"\n", profileOutputAggregate, "aggregate"); err != nil {
+			return err
+		}
+	}
+
+	// Generate and write monthly JSON (with merge)
+	if profileOutputMonthly != "" {
+		if err := writeMonthlyOutput(p, profileOutputMonthly); err != nil {
 			return err
 		}
 	}
@@ -459,6 +485,96 @@ type RepoJSON struct {
 	Commits   int    `json:"commits"`
 	Additions int    `json:"additions"`
 	Deletions int    `json:"deletions"`
+}
+
+// MonthlyOutputJSON is the output structure for --output-monthly.
+// This format is designed for incremental updates and merging.
+type MonthlyOutputJSON struct {
+	Username    string        `json:"username"`
+	GeneratedAt time.Time     `json:"generatedAt"`
+	Months      []MonthlyJSON `json:"months"`
+}
+
+// writeMonthlyOutput writes monthly data to a file, merging with existing data if present.
+// Months are sorted in descending chronological order (newest first).
+func writeMonthlyOutput(p *profile.UserProfile, outputPath string) error {
+	// Build new months from profile
+	newMonths := make([]MonthlyJSON, 0)
+	if p.Activity != nil {
+		for _, m := range p.Activity.Months {
+			newMonths = append(newMonths, MonthlyJSON{
+				Year:      m.Year,
+				Month:     int(m.Month),
+				MonthName: m.MonthName(),
+				Commits:   m.Commits,
+				Issues:    m.Issues,
+				PRs:       m.PRs,
+				Reviews:   m.Reviews,
+				Releases:  m.Releases,
+				Additions: m.Additions,
+				Deletions: m.Deletions,
+			})
+		}
+	}
+
+	// Try to read existing file
+	var existing MonthlyOutputJSON
+	existingData, err := os.ReadFile(outputPath)
+	if err == nil {
+		if err := json.Unmarshal(existingData, &existing); err != nil {
+			return fmt.Errorf("parse existing monthly file: %w", err)
+		}
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("read existing monthly file: %w", err)
+	}
+
+	// Merge: create map of existing months, then update/add new months
+	monthMap := make(map[string]MonthlyJSON)
+	for _, m := range existing.Months {
+		key := fmt.Sprintf("%04d-%02d", m.Year, m.Month)
+		monthMap[key] = m
+	}
+	for _, m := range newMonths {
+		key := fmt.Sprintf("%04d-%02d", m.Year, m.Month)
+		monthMap[key] = m // Overwrites existing or adds new
+	}
+
+	// Convert map back to slice
+	merged := make([]MonthlyJSON, 0, len(monthMap))
+	for _, m := range monthMap {
+		merged = append(merged, m)
+	}
+
+	// Sort descending by year, then month (newest first)
+	sort.Slice(merged, func(i, j int) bool {
+		if merged[i].Year != merged[j].Year {
+			return merged[i].Year > merged[j].Year
+		}
+		return merged[i].Month > merged[j].Month
+	})
+
+	// Build output
+	output := MonthlyOutputJSON{
+		Username:    p.Username,
+		GeneratedAt: time.Now().UTC(),
+		Months:      merged,
+	}
+
+	data, err := json.MarshalIndent(output, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal monthly JSON: %w", err)
+	}
+
+	if err := os.WriteFile(outputPath, append(data, '\n'), 0600); err != nil {
+		return fmt.Errorf("write monthly file: %w", err)
+	}
+
+	action := "Wrote"
+	if len(existing.Months) > 0 {
+		action = "Merged"
+	}
+	fmt.Fprintf(os.Stderr, "%s %s (%d months)\n", action, outputPath, len(merged))
+	return nil
 }
 
 func profileToRaw(p *profile.UserProfile) *RawJSON {
