@@ -142,27 +142,28 @@ This fetches release data for all contributed repositories and aggregates by mon
   "username": "grokify",
   "from": "2024-01-01T00:00:00Z",
   "to": "2024-12-31T23:59:59Z",
-  "total_commits": 1125,
-  "commits_default_branch": 1081,
-  "total_prs": 45,
-  "total_issues": 12,
-  "total_reviews": 30,
-  "total_additions": 738054,
-  "total_deletions": 294379,
-  "net_additions": 443675,
-  "total_releases": 8,
-  "repos_contributed_to": 71,
+  "generatedAt": "2024-12-31T12:00:00Z",
+  "totalCommits": 1125,
+  "commitsDefaultBranch": 1081,
+  "totalPrs": 45,
+  "totalIssues": 12,
+  "totalReviews": 30,
+  "totalAdditions": 738054,
+  "totalDeletions": 294379,
+  "netAdditions": 443675,
+  "totalReleases": 8,
+  "reposContributedTo": 71,
   "calendar": {
-    "total_contributions": 1500,
-    "days_with_contributions": 280,
-    "longest_streak": 45,
-    "current_streak": 12
+    "totalContributions": 1500,
+    "daysWithContributions": 280,
+    "longestStreak": 45,
+    "currentStreak": 12
   },
   "monthly": [
     {
       "year": 2024,
       "month": 1,
-      "month_name": "January",
+      "monthName": "January",
       "commits": 95,
       "issues": 2,
       "prs": 5,
@@ -175,7 +176,7 @@ This fetches release data for all contributed repositories and aggregates by mon
 }
 ```
 
-Note: `total_releases` and monthly `releases` are only populated when using `--include-releases`.
+Note: `totalReleases` and monthly `releases` are only populated when using `--include-releases`.
 
 **Raw JSON** (`--output-raw`): Complete data including per-repository details and full calendar data. Use this for archival or to regenerate aggregates later.
 
@@ -185,10 +186,10 @@ The output shows two commit counts:
 
 | Field | Description |
 |-------|-------------|
-| `total_commits` | GitHub's official count (shown on profile page) |
-| `commits_default_branch` | Commits found traversing default branch history |
+| `totalCommits` | GitHub's official count (shown on profile page) |
+| `commitsDefaultBranch` | Commits found traversing default branch history |
 
-These may differ because `total_commits` includes all branches while `commits_default_branch` only traverses default branches (but provides additions/deletions data).
+These may differ because `totalCommits` includes all branches while `commitsDefaultBranch` only traverses default branches (but provides additions/deletions data).
 
 #### Release Data
 
