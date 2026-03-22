@@ -47,6 +47,7 @@ gogithub profile --user <username> [flags]
 | `--output` | `-o` | Output file (stdout if not specified) | |
 | `--output-raw` | | Output raw JSON file with all data | |
 | `--output-aggregate` | | Output aggregate JSON file | |
+| `--output-monthly` | | Output monthly JSON file (merges with existing) | |
 | `--input` | `-i` | Input raw JSON file (skip API calls) | |
 | `--include-releases` | | Fetch release counts for contributed repos | `false` |
 
@@ -131,6 +132,27 @@ gogithub profile --user grokify --from 2024-01-01 --to 2024-12-31 \
 
 This fetches release data for all contributed repositories and aggregates by month based on each release's publish date. See [Release Data](#release-data) for details on API overhead.
 
+**Generate monthly JSON with auto-merge:**
+
+```bash
+# First fetch - creates the file
+gogithub profile --user grokify --from 2024-01-01 --to 2024-01-31 \
+    --output-monthly monthly.json
+
+# Later - add more months (automatically merges with existing data)
+gogithub profile --user grokify --from 2024-02-01 --to 2024-03-31 \
+    --output-monthly monthly.json
+```
+
+The `--output-monthly` flag:
+
+- Creates a new file if it doesn't exist
+- Merges with existing data if the file exists (new data overwrites same month)
+- Keeps months sorted in descending chronological order (newest first)
+- Outputs a focused format with just username, timestamp, and monthly array
+
+This is useful for incrementally building a history of contributions over time.
+
 #### Output Formats
 
 **Summary** (default): Human-readable text with sections for contributions, code changes, activity streaks, top repositories, and monthly breakdown.
@@ -177,6 +199,43 @@ This fetches release data for all contributed repositories and aggregates by mon
 ```
 
 Note: `totalReleases` and monthly `releases` are only populated when using `--include-releases`.
+
+**Monthly JSON** (`--output-monthly`): Focused format for tracking monthly contributions over time:
+
+```json
+{
+  "username": "grokify",
+  "generatedAt": "2024-12-31T12:00:00Z",
+  "months": [
+    {
+      "year": 2024,
+      "month": 3,
+      "monthName": "March",
+      "commits": 120,
+      "issues": 5,
+      "prs": 10,
+      "reviews": 15,
+      "releases": 1,
+      "additions": 8000,
+      "deletions": 3000
+    },
+    {
+      "year": 2024,
+      "month": 2,
+      "monthName": "February",
+      "commits": 95,
+      "issues": 2,
+      "prs": 5,
+      "reviews": 3,
+      "releases": 2,
+      "additions": 50000,
+      "deletions": 20000
+    }
+  ]
+}
+```
+
+Months are sorted in descending order (newest first). When merging, existing months are updated with new data.
 
 **Raw JSON** (`--output-raw`): Complete data including per-repository details and full calendar data. Use this for archival or to regenerate aggregates later.
 
@@ -281,3 +340,13 @@ Long-running commands show real-time progress with:
 4. **Rate limiting**: The tool respects GitHub's rate limits. For large queries, consider using a token with higher limits.
 
 5. **Release data caching**: Since `--include-releases` adds significant API overhead, always use `--output-raw` to cache the results. The raw JSON preserves all release data for future aggregate generation.
+
+6. **Incremental monthly tracking**: Use `--output-monthly` to build a running history of contributions:
+
+   ```bash
+   # Run monthly to accumulate data
+   gogithub profile --user grokify --from 2024-03-01 --to 2024-03-31 \
+       --output-monthly ~/contributions.json
+   ```
+
+   The file automatically merges new months with existing data, keeping everything sorted chronologically.
