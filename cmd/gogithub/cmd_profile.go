@@ -349,27 +349,27 @@ type RawJSON struct {
 	Username    string    `json:"username"`
 	From        time.Time `json:"from"`
 	To          time.Time `json:"to"`
-	GeneratedAt time.Time `json:"generated_at"`
+	GeneratedAt time.Time `json:"generatedAt"`
 
 	// Summary counts - GitHub official count from contributionsCollection
-	TotalCommits            int `json:"total_commits"`
-	TotalIssues             int `json:"total_issues"`
-	TotalPRs                int `json:"total_prs"`
-	TotalReviews            int `json:"total_reviews"`
-	TotalReposCreated       int `json:"total_repos_created"`
-	RestrictedContributions int `json:"restricted_contributions,omitempty"`
+	TotalCommits            int `json:"totalCommits"`
+	TotalIssues             int `json:"totalIssues"`
+	TotalPRs                int `json:"totalPrs"`
+	TotalReviews            int `json:"totalReviews"`
+	TotalReposCreated       int `json:"totalReposCreated"`
+	RestrictedContributions int `json:"restrictedContributions,omitempty"`
 
-	// Commits from default branch traversal (may differ from total_commits)
+	// Commits from default branch traversal (may differ from totalCommits)
 	// This count only includes commits on default branches and may miss
 	// feature branches, squash-merged commits, and inaccessible repos.
-	CommitsDefaultBranch int `json:"commits_default_branch"`
+	CommitsDefaultBranch int `json:"commitsDefaultBranch"`
 
 	// Code stats (from default branch traversal)
-	TotalAdditions int `json:"total_additions"`
-	TotalDeletions int `json:"total_deletions"`
+	TotalAdditions int `json:"totalAdditions"`
+	TotalDeletions int `json:"totalDeletions"`
 
 	// Release stats (optional, requires IncludeReleases option)
-	TotalReleases int `json:"total_releases,omitempty"`
+	TotalReleases int `json:"totalReleases,omitempty"`
 
 	// Per-repo details (full data)
 	Repos []RepoJSON `json:"repos"`
@@ -386,29 +386,29 @@ type AggregateJSON struct {
 	Username    string    `json:"username"`
 	From        time.Time `json:"from"`
 	To          time.Time `json:"to"`
-	GeneratedAt time.Time `json:"generated_at"`
+	GeneratedAt time.Time `json:"generatedAt"`
 
 	// Summary counts - GitHub official count from contributionsCollection
-	TotalCommits            int `json:"total_commits"`
-	TotalIssues             int `json:"total_issues"`
-	TotalPRs                int `json:"total_prs"`
-	TotalReviews            int `json:"total_reviews"`
-	TotalReposCreated       int `json:"total_repos_created"`
-	RestrictedContributions int `json:"restricted_contributions,omitempty"`
+	TotalCommits            int `json:"totalCommits"`
+	TotalIssues             int `json:"totalIssues"`
+	TotalPRs                int `json:"totalPrs"`
+	TotalReviews            int `json:"totalReviews"`
+	TotalReposCreated       int `json:"totalReposCreated"`
+	RestrictedContributions int `json:"restrictedContributions,omitempty"`
 
-	// Commits from default branch traversal (may differ from total_commits)
-	CommitsDefaultBranch int `json:"commits_default_branch"`
+	// Commits from default branch traversal (may differ from totalCommits)
+	CommitsDefaultBranch int `json:"commitsDefaultBranch"`
 
 	// Code stats (from default branch traversal)
-	TotalAdditions int `json:"total_additions"`
-	TotalDeletions int `json:"total_deletions"`
-	NetAdditions   int `json:"net_additions"`
+	TotalAdditions int `json:"totalAdditions"`
+	TotalDeletions int `json:"totalDeletions"`
+	NetAdditions   int `json:"netAdditions"`
 
 	// Release stats (optional, requires IncludeReleases option)
-	TotalReleases int `json:"total_releases,omitempty"`
+	TotalReleases int `json:"totalReleases,omitempty"`
 
 	// Repo summary
-	ReposContributedTo int `json:"repos_contributed_to"`
+	ReposContributedTo int `json:"reposContributedTo"`
 
 	// Calendar stats (computed)
 	Calendar *CalendarStatsJSON `json:"calendar,omitempty"`
@@ -418,32 +418,32 @@ type AggregateJSON struct {
 }
 
 type CalendarDataJSON struct {
-	TotalContributions int            `json:"total_contributions"`
+	TotalContributions int            `json:"totalContributions"`
 	Weeks              []CalendarWeek `json:"weeks,omitempty"`
 }
 
 type CalendarWeek struct {
-	StartDate string        `json:"start_date"`
+	StartDate string        `json:"startDate"`
 	Days      []CalendarDay `json:"days"`
 }
 
 type CalendarDay struct {
 	Date              string `json:"date"`
-	ContributionCount int    `json:"contribution_count"`
+	ContributionCount int    `json:"contributionCount"`
 	Level             int    `json:"level"`
 }
 
 type CalendarStatsJSON struct {
-	TotalContributions    int `json:"total_contributions"`
-	DaysWithContributions int `json:"days_with_contributions"`
-	LongestStreak         int `json:"longest_streak"`
-	CurrentStreak         int `json:"current_streak"`
+	TotalContributions    int `json:"totalContributions"`
+	DaysWithContributions int `json:"daysWithContributions"`
+	LongestStreak         int `json:"longestStreak"`
+	CurrentStreak         int `json:"currentStreak"`
 }
 
 type MonthlyJSON struct {
 	Year      int    `json:"year"`
 	Month     int    `json:"month"`
-	MonthName string `json:"month_name"`
+	MonthName string `json:"monthName"`
 	Commits   int    `json:"commits"`
 	Issues    int    `json:"issues"`
 	PRs       int    `json:"prs"`
@@ -454,8 +454,8 @@ type MonthlyJSON struct {
 }
 
 type RepoJSON struct {
-	FullName  string `json:"full_name"`
-	IsPrivate bool   `json:"is_private"`
+	FullName  string `json:"fullName"`
+	IsPrivate bool   `json:"isPrivate"`
 	Commits   int    `json:"commits"`
 	Additions int    `json:"additions"`
 	Deletions int    `json:"deletions"`
