@@ -173,3 +173,69 @@ func ListPRReviews(ctx context.Context, gh *github.Client, owner, repo string, n
 	reviews, _, err := gh.PullRequests.ListReviews(ctx, owner, repo, number, nil)
 	return reviews, err
 }
+
+// GetPRDiff fetches the diff for a pull request.
+func GetPRDiff(ctx context.Context, gh *github.Client, owner, repo string, number int) (string, error) {
+	diff, _, err := gh.PullRequests.GetRaw(ctx, owner, repo, number, github.RawOptions{Type: github.Diff})
+	if err != nil {
+		return "", fmt.Errorf("getting diff: %w", err)
+	}
+	return diff, nil
+}
+
+// GetPRPatch fetches the patch for a pull request.
+func GetPRPatch(ctx context.Context, gh *github.Client, owner, repo string, number int) (string, error) {
+	patch, _, err := gh.PullRequests.GetRaw(ctx, owner, repo, number, github.RawOptions{Type: github.Patch})
+	if err != nil {
+		return "", fmt.Errorf("getting patch: %w", err)
+	}
+	return patch, nil
+}
+
+// CreateLineComment adds a comment on a specific line in a PR diff.
+func CreateLineComment(ctx context.Context, gh *github.Client, owner, repo string, number int, commitID, path, body string, line int) (*github.PullRequestComment, error) {
+	comment, _, err := gh.PullRequests.CreateComment(ctx, owner, repo, number, &github.PullRequestComment{
+		Body:     github.Ptr(body),
+		CommitID: github.Ptr(commitID),
+		Path:     github.Ptr(path),
+		Line:     github.Ptr(line),
+		Side:     github.Ptr("RIGHT"),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("creating line comment: %w", err)
+	}
+	return comment, nil
+}
+
+// CreateIssueComment adds a general comment to a pull request (as an issue comment).
+func CreateIssueComment(ctx context.Context, gh *github.Client, owner, repo string, number int, body string) (*github.IssueComment, error) {
+	comment, _, err := gh.Issues.CreateComment(ctx, owner, repo, number, &github.IssueComment{
+		Body: github.Ptr(body),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("creating issue comment: %w", err)
+	}
+	return comment, nil
+}
+
+// ReviewEvent represents the type of review action.
+type ReviewEvent string
+
+const (
+	ReviewEventApprove        ReviewEvent = "APPROVE"
+	ReviewEventRequestChanges ReviewEvent = "REQUEST_CHANGES"
+	ReviewEventComment        ReviewEvent = "COMMENT"
+)
+
+// CreateReview creates a pull request review with the specified event type.
+func CreateReview(ctx context.Context, gh *github.Client, owner, repo string, number int, event ReviewEvent, body string) (*github.PullRequestReview, error) {
+	review := &github.PullRequestReviewRequest{
+		Event: github.Ptr(string(event)),
+		Body:  github.Ptr(body),
+	}
+	result, _, err := gh.PullRequests.CreateReview(ctx, owner, repo, number, review)
+	if err != nil {
+		return nil, fmt.Errorf("creating review: %w", err)
+	}
+	return result, nil
+}
