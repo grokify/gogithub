@@ -3,6 +3,7 @@ module github.com/grokify/gogithub
 go 1.25.0
 
 require (
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-github/v84 v84.0.0
 	github.com/grokify/gocharts/v2 v2.27.0
 	github.com/grokify/mogo v0.74.0
