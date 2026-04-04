@@ -9,7 +9,7 @@
   "releases": [
     {
       "version": "v0.11.0",
-      "date": "unreleased",
+      "date": "2026-04-04",
       "highlights": [
         {"description": "GitHub App authentication for automated workflows and CI/CD pipelines"},
         {"description": "SARIF upload helpers for integrating static analysis with GitHub Code Scanning"},
@@ -37,13 +37,33 @@
         {"description": "`--output-monthly` CLI flag for generating monthly contribution JSON with auto-merge", "commit": "e951ea6"}
       ],
       "changed": [
-        {"description": "All JSON output struct tags now use camelCase instead of snake_case", "commit": "261ee4a"}
+        {"description": "All JSON output struct tags now use camelCase instead of snake_case", "commit": "261ee4a"},
+        {"description": "Use `osutil.ReadDirFilesSecure` for symlink-safe file reading in `repo.ReadLocalFiles`", "commit": "3815005"}
+      ],
+      "dependencies": [
+        {"description": "Added `github.com/golang-jwt/jwt/v5` for GitHub App JWT signing", "commit": "375e43d"},
+        {"description": "Updated `github.com/grokify/mogo` from v0.73.4 to v0.74.1", "commit": "0cdf0d9"},
+        {"description": "Updated `github.com/grokify/gocharts/v2` from v2.26.9 to v2.27.0", "commit": "0ccd69e"},
+        {"description": "Updated `golang.org/x/oauth2` from v0.35.0 to v0.36.0", "commit": "bfa0803"}
+      ],
+      "tests": [
+        {"description": "Added unit tests for `auth.AppConfig` loading and path expansion", "commit": "60e44fc"},
+        {"description": "Added unit tests for `auth.AuthError` type", "commit": "60e44fc"},
+        {"description": "Added unit tests for `checks.GetChecksStatus` and `AllChecksPassed`", "commit": "60e44fc"},
+        {"description": "Added unit tests for `pr.PRError`, `ReviewEvent` constants, and `MergeableState`", "commit": "60e44fc"},
+        {"description": "Added unit tests for `search.Issue` methods and `Query` builder", "commit": "60e44fc"}
       ],
       "documentation": [
-        {"description": "Added GitHub App authentication section to `docs/guides/auth.md`"},
-        {"description": "Added PR review and diff functions to `docs/guides/pr.md`"},
-        {"description": "Updated `docs/guides/cli.md` with `--output-monthly` flag documentation"},
-        {"description": "Added `sarif/` package to README.md directory structure"}
+        {"description": "Added GitHub App authentication section to `docs/guides/auth.md`", "commit": "b53b55f"},
+        {"description": "Added PR review and diff functions to `docs/guides/pr.md`", "commit": "b53b55f"},
+        {"description": "Updated `docs/guides/cli.md` with `--output-monthly` flag documentation", "commit": "e951ea6"},
+        {"description": "Added `sarif/` package to README.md directory structure", "commit": "b53b55f"},
+        {"description": "Updated README.md shield links for CI workflows", "commit": "3b37958"}
+      ],
+      "chores": [
+        {"description": "Moved CI workflows to reusable workflows from grokify/.github", "commit": "956b392"},
+        {"description": "Added CodeQL SAST workflow for security analysis", "commit": "20da81c"},
+        {"description": "Renamed workflow files: `ci.yaml` → `go-ci.yaml`, `lint.yaml` → `go-lint.yaml`", "commit": "e481ae5"}
       ]
     },
     {
