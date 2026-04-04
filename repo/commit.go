@@ -2,11 +2,11 @@ package repo
 
 import (
 	"context"
-	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/google/go-github/v84/github"
+	"github.com/grokify/mogo/os/osutil"
 )
 
 // CommitError indicates a failure to create a commit.
@@ -87,41 +87,24 @@ func CreateCommit(ctx context.Context, gh *github.Client, owner, repo, branch, m
 
 // ReadLocalFiles reads all files from a local directory recursively.
 // The prefix is prepended to relative paths for the destination.
+// Uses osutil.ReadDirFilesSecure for symlink-safe file operations.
 func ReadLocalFiles(dir, prefix string) ([]FileContent, error) {
-	var files []FileContent
+	fileMap, err := osutil.ReadDirFilesSecure(dir)
+	if err != nil {
+		return nil, err
+	}
 
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if info.IsDir() {
-			return nil
-		}
-
-		content, err := os.ReadFile(path)
-		if err != nil {
-			return err
-		}
-
-		// Calculate relative path
-		relPath, err := filepath.Rel(dir, path)
-		if err != nil {
-			return err
-		}
-
-		// Combine with prefix
-		fullPath := filepath.Join(prefix, relPath)
-		// Normalize to forward slashes for GitHub
+	files := make([]FileContent, 0, len(fileMap))
+	for path, content := range fileMap {
+		// Combine with prefix and normalize to forward slashes for GitHub
+		fullPath := filepath.Join(prefix, path)
 		fullPath = strings.ReplaceAll(fullPath, "\\", "/")
 
 		files = append(files, FileContent{
 			Path:    fullPath,
 			Content: content,
 		})
+	}
 
-		return nil
-	})
-
-	return files, err
+	return files, nil
 }
