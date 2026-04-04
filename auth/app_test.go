@@ -61,9 +61,10 @@ func TestGetAppConfigPath(t *testing.T) {
 		originalXDG := os.Getenv("XDG_CONFIG_HOME")
 		defer os.Setenv("XDG_CONFIG_HOME", originalXDG)
 
-		os.Setenv("XDG_CONFIG_HOME", "/custom/config")
+		configDir := filepath.Join(string(filepath.Separator), "custom", "config")
+		os.Setenv("XDG_CONFIG_HOME", configDir)
 		result := getAppConfigPath()
-		expected := "/custom/config/gogithub/app.json"
+		expected := filepath.Join(configDir, "gogithub", "app.json")
 		if result != expected {
 			t.Errorf("getAppConfigPath() = %q, want %q", result, expected)
 		}
