@@ -8,6 +8,45 @@
   "maintainers": ["grokify"],
   "releases": [
     {
+      "version": "v0.11.0",
+      "date": "unreleased",
+      "highlights": [
+        {"description": "GitHub App authentication for automated workflows and CI/CD pipelines"},
+        {"description": "SARIF upload helpers for integrating static analysis with GitHub Code Scanning"},
+        {"description": "Enhanced PR review capabilities with diff, comments, and line-level feedback"},
+        {"description": "New `--output-monthly` flag for incremental contribution tracking"}
+      ],
+      "breaking": [
+        {"description": "JSON output fields renamed from snake_case to camelCase (e.g., `total_commits` → `totalCommits`, `month_name` → `monthName`)", "commit": "261ee4a"}
+      ],
+      "added": [
+        {"description": "New `sarif` package for GitHub Code Scanning integration", "commit": "2a28bb9"},
+        {"description": "`sarif.Upload()` and `sarif.UploadFile()` for uploading SARIF analysis results", "commit": "2a28bb9"},
+        {"description": "`sarif.GetUploadStatus()` for checking SARIF processing status", "commit": "2a28bb9"},
+        {"description": "`sarif.WaitForProcessing()` for polling until upload is processed", "commit": "2a28bb9"},
+        {"description": "`sarif.UploadAndWait()` convenience function for upload with automatic status polling", "commit": "2a28bb9"},
+        {"description": "GitHub App authentication via `auth.NewAppClient()`", "commit": "375e43d"},
+        {"description": "`auth.AppConfig` type for GitHub App configuration", "commit": "375e43d"},
+        {"description": "`auth.LoadAppConfig()` for loading config from environment or file", "commit": "375e43d"},
+        {"description": "`auth.ListAppInstallations()` for listing App installations", "commit": "375e43d"},
+        {"description": "`pr.GetPRDiff()` for retrieving PR diff content", "commit": "b81bebb"},
+        {"description": "`pr.ListPRReviews()` for listing all reviews on a PR", "commit": "b81bebb"},
+        {"description": "`pr.CreateReview()` for submitting PR reviews with approve/request changes/comment", "commit": "b81bebb"},
+        {"description": "`pr.CreateLineComment()` for adding comments on specific lines", "commit": "b81bebb"},
+        {"description": "`pr.CreateIssueComment()` for adding general comments to PRs", "commit": "b81bebb"},
+        {"description": "`--output-monthly` CLI flag for generating monthly contribution JSON with auto-merge", "commit": "e951ea6"}
+      ],
+      "changed": [
+        {"description": "All JSON output struct tags now use camelCase instead of snake_case", "commit": "261ee4a"}
+      ],
+      "documentation": [
+        {"description": "Added GitHub App authentication section to `docs/guides/auth.md`"},
+        {"description": "Added PR review and diff functions to `docs/guides/pr.md`"},
+        {"description": "Updated `docs/guides/cli.md` with `--output-monthly` flag documentation"},
+        {"description": "Added `sarif/` package to README.md directory structure"}
+      ]
+    },
+    {
       "version": "v0.10.0",
       "date": "2026-02-28",
       "highlights": [
