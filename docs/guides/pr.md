@@ -97,6 +97,98 @@ pullRequest, err := pr.ClosePR(ctx, gh, "owner", "repo", 123)
 fmt.Printf("PR state: %s\n", pullRequest.GetState())  // "closed"
 ```
 
+## Reviews and Comments
+
+### Get PR Diff
+
+Retrieve the diff content for a pull request:
+
+```go
+diff, err := pr.GetPRDiff(ctx, gh, "owner", "repo", 123)
+if err != nil {
+    return err
+}
+fmt.Println(diff)  // Raw diff output
+```
+
+### List Reviews
+
+```go
+reviews, err := pr.ListPRReviews(ctx, gh, "owner", "repo", 123)
+for _, review := range reviews {
+    fmt.Printf("%s: %s - %s\n",
+        review.GetUser().GetLogin(),
+        review.GetState(),
+        review.GetBody())
+}
+```
+
+### Submit a Review
+
+Use `CreateReview` to submit a formal review:
+
+```go
+// Approve the PR
+review, err := pr.CreateReview(ctx, gh, "owner", "repo", 123,
+    pr.ReviewEventApprove,
+    "LGTM! Great work.",
+)
+
+// Request changes
+review, err := pr.CreateReview(ctx, gh, "owner", "repo", 123,
+    pr.ReviewEventRequestChanges,
+    "Please address the comments below.",
+)
+
+// Add a comment review (neither approve nor request changes)
+review, err := pr.CreateReview(ctx, gh, "owner", "repo", 123,
+    pr.ReviewEventComment,
+    "Some observations about the implementation...",
+)
+```
+
+Review events:
+
+| Event | Description |
+|-------|-------------|
+| `pr.ReviewEventApprove` | Approve the PR |
+| `pr.ReviewEventRequestChanges` | Request changes before merging |
+| `pr.ReviewEventComment` | General comment without approval status |
+
+### Add Comments
+
+**General PR comment** (appears in the conversation):
+
+```go
+comment, err := pr.CreateIssueComment(ctx, gh, "owner", "repo", 123,
+    "Thanks for the contribution! I have a few suggestions.",
+)
+```
+
+**Line-level comment** (appears on specific code):
+
+```go
+comment, err := pr.CreateLineComment(ctx, gh, "owner", "repo", 123,
+    "abc123def",           // Commit SHA
+    "src/main.go",         // File path
+    "Consider using a constant here for better readability.",
+    42,                    // Line number
+)
+```
+
+### List PR Comments
+
+```go
+comments, err := pr.ListPRComments(ctx, gh, "owner", "repo", 123)
+for _, c := range comments {
+    fmt.Printf("%s at %s:%d: %s\n",
+        c.GetUser().GetLogin(),
+        c.GetPath(),
+        c.GetLine(),
+        c.GetBody())
+}
+```
+
 ## Complete Workflow Example
 
 Here's a complete example of creating a contribution via PR:

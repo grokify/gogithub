@@ -87,6 +87,8 @@ gogithub/
 │   └── release.go        # ListReleases, GetLatestRelease, CreateRelease, DeleteRelease
 ├── checks/               # Check runs operations
 │   └── checks.go         # ListCheckRuns, WaitForChecks, AllChecksPassed
+├── sarif/                # SARIF upload for GitHub Code Scanning
+│   └── sarif.go          # Upload, UploadFile, GetUploadStatus, WaitForProcessing
 ├── tag/                  # Git tag operations
 │   └── tag.go            # ListTags, CreateTag, GetTagSHA, TagExists
 ├── cliutil/              # CLI utilities

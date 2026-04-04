@@ -117,6 +117,99 @@ if cfg.IsEnterprise() {
 }
 ```
 
+## GitHub App Authentication
+
+For automated workflows and CI/CD pipelines, GitHub Apps provide better security and higher rate limits than personal access tokens.
+
+### Configuration
+
+GitHub App authentication requires three pieces of information:
+
+| Field | Description |
+|-------|-------------|
+| `AppID` | The GitHub App's ID (found in App settings) |
+| `InstallationID` | The installation ID for your org/repo |
+| `PrivateKey` | The App's private key (PEM format) |
+
+### From Environment Variables
+
+```go
+import "github.com/grokify/gogithub/auth"
+
+cfg, err := auth.LoadAppConfig()
+if err != nil {
+    panic(err)
+}
+
+gh, err := auth.NewAppClient(ctx, cfg)
+if err != nil {
+    panic(err)
+}
+```
+
+Environment variables:
+
+| Variable | Description |
+|----------|-------------|
+| `GITHUB_APP_ID` | The GitHub App ID |
+| `GITHUB_INSTALLATION_ID` | Installation ID for target org/repo |
+| `GITHUB_PRIVATE_KEY_PATH` | Path to private key PEM file |
+| `GITHUB_PRIVATE_KEY` | Private key PEM content (alternative to path) |
+
+### From Config File
+
+Create `~/.config/gogithub/app.json`:
+
+```json
+{
+  "app_id": 123456,
+  "installation_id": 78901234,
+  "private_key_path": "~/.config/gogithub/private-key.pem"
+}
+```
+
+Then load it:
+
+```go
+cfg, err := auth.LoadAppConfig()  // Auto-discovers config file
+// or
+cfg, err := auth.LoadAppConfigFromFile("/path/to/app.json")
+```
+
+### Manual Configuration
+
+```go
+cfg := &auth.AppConfig{
+    AppID:          123456,
+    InstallationID: 78901234,
+    PrivateKey:     privateKeyBytes,  // PEM-encoded private key
+}
+
+gh, err := auth.NewAppClient(ctx, cfg)
+```
+
+### List App Installations
+
+To find the installation ID for your App:
+
+```go
+installations, err := auth.ListAppInstallations(ctx, cfg)
+for _, inst := range installations {
+    fmt.Printf("ID: %d, Account: %s (%s)\n", inst.ID, inst.Account, inst.Type)
+}
+```
+
+### Creating a GitHub App
+
+1. Go to **Settings > Developer settings > GitHub Apps > New GitHub App**
+2. Set the required permissions for your use case
+3. Generate a private key and download the PEM file
+4. Install the App on your organization or repositories
+5. Note the App ID and Installation ID from the settings
+
+!!! tip "App vs Installation Tokens"
+    GitHub Apps use short-lived installation tokens (1 hour) that are automatically created from the App's private key. This is more secure than long-lived personal access tokens.
+
 ## GraphQL API Client
 
 For the GraphQL API (used for contribution statistics), use a separate client:
