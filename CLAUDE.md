@@ -35,7 +35,7 @@ go test ./...
 # Lint (required before commits)
 golangci-lint run
 
-# Generate changelog
+# Generate changelog (requires schangelog from github.com/grokify/schangelog)
 schangelog generate CHANGELOG.json -o CHANGELOG.md
 ```
 
@@ -72,7 +72,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 | File | Purpose |
 |------|---------|
 | `CHANGELOG.json` | Structured changelog (source of truth) |
-| `CHANGELOG.md` | Generated markdown changelog |
+| `CHANGELOG.md` | Generated from JSON using `schangelog` binary (do not edit manually) |
 | `TASKS.md` | Refactoring tasks and future ideas |
 | `mkdocs.yml` | Documentation site configuration |
 | `docs/releases/` | Release notes by version |
