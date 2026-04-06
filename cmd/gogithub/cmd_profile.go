@@ -20,23 +20,26 @@ import (
 )
 
 var (
-	profileUser            string
-	profileFrom            string
-	profileTo              string
-	profileFormat          string
-	profileOutput          string
-	profileOutputRaw       string
-	profileOutputAggregate string
-	profileOutputMonthly   string
-	profileOutputReadme    string
-	profileReadmeConfig    string
-	profileOutputSVG       string
-	profileSVGTheme        string
-	profileSVGTitle        string
-	profileOutputChart     string
-	profileOutputChartJSON string
-	profileInput           string
-	profileIncludeReleases bool
+	profileUser              string
+	profileFrom              string
+	profileTo                string
+	profileFormat            string
+	profileOutput            string
+	profileOutputRaw         string
+	profileOutputAggregate   string
+	profileOutputMonthly     string
+	profileOutputMonthlyDir  string
+	profileOutputReadme      string
+	profileReadmeConfig      string
+	profileOutputSVG         string
+	profileSVGTheme          string
+	profileSVGTitle          string
+	profileOutputChart       string
+	profileOutputChartJSON   string
+	profileInput             string
+	profileIncludeReleases   bool
+	profileReleaseOrgs       string
+	profileVisibility        string
 )
 
 var profileCmd = &cobra.Command{
@@ -92,6 +95,21 @@ Examples:
   gogithub profile --user grokify --from 2024-02-01 --to 2024-02-28 \
     --output-monthly monthly.json
 
+  # Generate separate monthly files in a directory
+  gogithub profile --user grokify --from 2024-01-01 --to 2024-03-31 \
+    --output-monthly-dir ./stats/
+
+  # Include releases only from specific orgs
+  gogithub profile --user grokify --from 2024-01-01 --to 2024-03-31 \
+    --include-releases --release-orgs grokify,plexusone \
+    --output-monthly-dir ./stats/
+
+  # Public repos only
+  gogithub profile --user grokify --visibility public --output-monthly monthly.json
+
+  # Private repos only
+  gogithub profile --user grokify --visibility private --output-monthly monthly.json
+
 Environment:
   GITHUB_TOKEN    Required for fetching from API. Not needed with --input.
                   Use a fine-grained token with "Public Repositories (read-only)"`,
@@ -116,6 +134,9 @@ func init() {
 	profileCmd.Flags().StringVar(&profileOutputChartJSON, "output-chart-json", "", "Output monthly lines chart JSON IR file")
 	profileCmd.Flags().StringVarP(&profileInput, "input", "i", "", "Input raw JSON file (skips API calls)")
 	profileCmd.Flags().BoolVar(&profileIncludeReleases, "include-releases", false, "Fetch release counts for contributed repositories")
+	profileCmd.Flags().StringVar(&profileReleaseOrgs, "release-orgs", "", "Comma-separated list of orgs/owners to count releases for (e.g., grokify,plexusone)")
+	profileCmd.Flags().StringVar(&profileOutputMonthlyDir, "output-monthly-dir", "", "Output directory for individual monthly JSON files")
+	profileCmd.Flags().StringVar(&profileVisibility, "visibility", "all", "Repository visibility filter: all, public, private")
 }
 
 func runProfile(cmd *cobra.Command, args []string) error {
@@ -147,6 +168,17 @@ func runProfileFromInput() error {
 
 	p := rawToProfile(&raw)
 
+	// Build opts from CLI flags for metadata
+	visibility, err := parseVisibility(profileVisibility)
+	if err != nil {
+		return err
+	}
+	opts := &profile.Options{
+		Visibility:      visibility,
+		IncludeReleases: profileIncludeReleases,
+		ReleaseOrgs:     parseCommaSeparated(profileReleaseOrgs),
+	}
+
 	// Generate SVG if requested
 	if profileOutputSVG != "" {
 		if err := generateSVG(p, profileOutputSVG, profileSVGTheme, profileSVGTitle); err != nil {
@@ -177,13 +209,24 @@ func runProfileFromInput() error {
 
 	// Generate monthly JSON if requested (with merge)
 	if profileOutputMonthly != "" {
-		if err := writeMonthlyOutput(p, profileOutputMonthly); err != nil {
+		if err := writeMonthlyOutput(p, profileOutputMonthly, opts); err != nil {
 			return err
 		}
 	}
 
+	// Generate individual monthly files in directory
+	if profileOutputMonthlyDir != "" {
+		written, err := profile.WriteMonthlyFiles(profileOutputMonthlyDir, p, opts)
+		if err != nil {
+			return fmt.Errorf("write monthly files: %w", err)
+		}
+		for _, path := range written {
+			fmt.Fprintf(os.Stderr, "Wrote %s\n", path)
+		}
+	}
+
 	// If specific outputs were requested, return early
-	if profileOutputSVG != "" || profileOutputChartJSON != "" || profileOutputChart != "" || profileOutputReadme != "" || profileOutputMonthly != "" {
+	if profileOutputSVG != "" || profileOutputChartJSON != "" || profileOutputChart != "" || profileOutputReadme != "" || profileOutputMonthly != "" || profileOutputMonthlyDir != "" {
 		if profileOutput == "" {
 			return nil
 		}
@@ -234,9 +277,15 @@ func runProfileFromAPI() error {
 		})
 	}
 
+	visibility, err := parseVisibility(profileVisibility)
+	if err != nil {
+		return err
+	}
+
 	opts := &profile.Options{
-		Visibility:      graphql.VisibilityAll,
+		Visibility:      visibility,
 		IncludeReleases: profileIncludeReleases,
+		ReleaseOrgs:     parseCommaSeparated(profileReleaseOrgs),
 		Progress:        progressFunc,
 	}
 
@@ -246,8 +295,8 @@ func runProfileFromAPI() error {
 	}
 
 	// Mode: Generate specific output files
-	if profileOutputRaw != "" || profileOutputAggregate != "" || profileOutputMonthly != "" || profileOutputReadme != "" || profileOutputSVG != "" || profileOutputChart != "" || profileOutputChartJSON != "" {
-		return outputBothFormats(p)
+	if profileOutputRaw != "" || profileOutputAggregate != "" || profileOutputMonthly != "" || profileOutputMonthlyDir != "" || profileOutputReadme != "" || profileOutputSVG != "" || profileOutputChart != "" || profileOutputChartJSON != "" {
+		return outputBothFormats(p, opts)
 	}
 
 	// Mode: Single output (legacy behavior)
@@ -267,7 +316,7 @@ func runProfileFromAPI() error {
 	return writeOutput(output, profileOutput, "output")
 }
 
-func outputBothFormats(p *profile.UserProfile) error {
+func outputBothFormats(p *profile.UserProfile, opts *profile.Options) error {
 	// Generate and write raw JSON
 	if profileOutputRaw != "" {
 		raw := profileToRaw(p)
@@ -294,8 +343,19 @@ func outputBothFormats(p *profile.UserProfile) error {
 
 	// Generate and write monthly JSON (with merge)
 	if profileOutputMonthly != "" {
-		if err := writeMonthlyOutput(p, profileOutputMonthly); err != nil {
+		if err := writeMonthlyOutput(p, profileOutputMonthly, opts); err != nil {
 			return err
+		}
+	}
+
+	// Generate individual monthly files in directory
+	if profileOutputMonthlyDir != "" {
+		written, err := profile.WriteMonthlyFiles(profileOutputMonthlyDir, p, opts)
+		if err != nil {
+			return fmt.Errorf("write monthly files: %w", err)
+		}
+		for _, path := range written {
+			fmt.Fprintf(os.Stderr, "Wrote %s\n", path)
 		}
 	}
 
@@ -477,6 +537,13 @@ type MonthlyJSON struct {
 	Releases  int    `json:"releases"`
 	Additions int    `json:"additions"`
 	Deletions int    `json:"deletions"`
+	// Computed fields for enhanced monthly stats
+	NetAdditions         int `json:"netAdditions"`
+	RepoCountContributed int `json:"repoCountContributed"`
+	RepoCountCreated     int `json:"repoCountCreated"`
+	// Underlying data for repo tracking
+	CommitsByRepo map[string]int `json:"commitsByRepo,omitempty"`
+	ReposCreated  []string       `json:"reposCreated,omitempty"`
 }
 
 type RepoJSON struct {
@@ -489,30 +556,46 @@ type RepoJSON struct {
 
 // MonthlyOutputJSON is the output structure for --output-monthly.
 // This format is designed for incremental updates and merging.
+// QueryMetadataJSON captures the parameters used to generate the output.
+type QueryMetadataJSON struct {
+	Username        string    `json:"username"`
+	From            string    `json:"from"`                     // YYYY-MM-DD format
+	To              string    `json:"to"`                       // YYYY-MM-DD format
+	Visibility      string    `json:"visibility"`               // all, public, private
+	IncludeReleases bool      `json:"includeReleases"`
+	ReleaseOrgs     []string  `json:"releaseOrgs,omitempty"`
+	GeneratedAt     time.Time `json:"generatedAt"`
+}
+
 type MonthlyOutputJSON struct {
-	Username    string        `json:"username"`
-	GeneratedAt time.Time     `json:"generatedAt"`
-	Months      []MonthlyJSON `json:"months"`
+	Metadata QueryMetadataJSON `json:"metadata"`
+	Username string            `json:"username"`
+	Months   []MonthlyJSON     `json:"months"`
 }
 
 // writeMonthlyOutput writes monthly data to a file, merging with existing data if present.
 // Months are sorted in descending chronological order (newest first).
-func writeMonthlyOutput(p *profile.UserProfile, outputPath string) error {
+func writeMonthlyOutput(p *profile.UserProfile, outputPath string, opts *profile.Options) error {
 	// Build new months from profile
 	newMonths := make([]MonthlyJSON, 0)
 	if p.Activity != nil {
 		for _, m := range p.Activity.Months {
 			newMonths = append(newMonths, MonthlyJSON{
-				Year:      m.Year,
-				Month:     int(m.Month),
-				MonthName: m.MonthName(),
-				Commits:   m.Commits,
-				Issues:    m.Issues,
-				PRs:       m.PRs,
-				Reviews:   m.Reviews,
-				Releases:  m.Releases,
-				Additions: m.Additions,
-				Deletions: m.Deletions,
+				Year:                 m.Year,
+				Month:                int(m.Month),
+				MonthName:            m.MonthName(),
+				Commits:              m.Commits,
+				Issues:               m.Issues,
+				PRs:                  m.PRs,
+				Reviews:              m.Reviews,
+				Releases:             m.Releases,
+				Additions:            m.Additions,
+				Deletions:            m.Deletions,
+				NetAdditions:         m.NetAdditions(),
+				RepoCountContributed: m.CommitRepoCount(),
+				RepoCountCreated:     m.RepoCountCreated(),
+				CommitsByRepo:        m.CommitsByRepo,
+				ReposCreated:         m.ReposCreated,
 			})
 		}
 	}
@@ -553,11 +636,34 @@ func writeMonthlyOutput(p *profile.UserProfile, outputPath string) error {
 		return merged[i].Month > merged[j].Month
 	})
 
+	// Build metadata
+	visibility := "all"
+	var releaseOrgs []string
+	includeReleases := false
+	if opts != nil {
+		switch opts.Visibility {
+		case graphql.VisibilityPublic:
+			visibility = "public"
+		case graphql.VisibilityPrivate:
+			visibility = "private"
+		}
+		releaseOrgs = opts.ReleaseOrgs
+		includeReleases = opts.IncludeReleases
+	}
+
 	// Build output
 	output := MonthlyOutputJSON{
-		Username:    p.Username,
-		GeneratedAt: time.Now().UTC(),
-		Months:      merged,
+		Metadata: QueryMetadataJSON{
+			Username:        p.Username,
+			From:            p.From.Format("2006-01-02"),
+			To:              p.To.Format("2006-01-02"),
+			Visibility:      visibility,
+			IncludeReleases: includeReleases,
+			ReleaseOrgs:     releaseOrgs,
+			GeneratedAt:     time.Now().UTC(),
+		},
+		Username: p.Username,
+		Months:   merged,
 	}
 
 	data, err := json.MarshalIndent(output, "", "  ")
@@ -612,16 +718,21 @@ func profileToRaw(p *profile.UserProfile) *RawJSON {
 	if p.Activity != nil {
 		for _, m := range p.Activity.Months {
 			raw.Monthly = append(raw.Monthly, MonthlyJSON{
-				Year:      m.Year,
-				Month:     int(m.Month),
-				MonthName: m.MonthName(),
-				Commits:   m.Commits,
-				Issues:    m.Issues,
-				PRs:       m.PRs,
-				Reviews:   m.Reviews,
-				Releases:  m.Releases,
-				Additions: m.Additions,
-				Deletions: m.Deletions,
+				Year:                 m.Year,
+				Month:                int(m.Month),
+				MonthName:            m.MonthName(),
+				Commits:              m.Commits,
+				Issues:               m.Issues,
+				PRs:                  m.PRs,
+				Reviews:              m.Reviews,
+				Releases:             m.Releases,
+				Additions:            m.Additions,
+				Deletions:            m.Deletions,
+				NetAdditions:         m.NetAdditions(),
+				RepoCountContributed: m.CommitRepoCount(),
+				RepoCountCreated:     m.RepoCountCreated(),
+				CommitsByRepo:        m.CommitsByRepo,
+				ReposCreated:         m.ReposCreated,
 			})
 			totalReleases += m.Releases
 		}
@@ -690,16 +801,21 @@ func profileToAggregate(p *profile.UserProfile) *AggregateJSON {
 	if p.Activity != nil {
 		for _, m := range p.Activity.Months {
 			agg.Monthly = append(agg.Monthly, MonthlyJSON{
-				Year:      m.Year,
-				Month:     int(m.Month),
-				MonthName: m.MonthName(),
-				Commits:   m.Commits,
-				Issues:    m.Issues,
-				PRs:       m.PRs,
-				Reviews:   m.Reviews,
-				Releases:  m.Releases,
-				Additions: m.Additions,
-				Deletions: m.Deletions,
+				Year:                 m.Year,
+				Month:                int(m.Month),
+				MonthName:            m.MonthName(),
+				Commits:              m.Commits,
+				Issues:               m.Issues,
+				PRs:                  m.PRs,
+				Reviews:              m.Reviews,
+				Releases:             m.Releases,
+				Additions:            m.Additions,
+				Deletions:            m.Deletions,
+				NetAdditions:         m.NetAdditions(),
+				RepoCountContributed: m.CommitRepoCount(),
+				RepoCountCreated:     m.RepoCountCreated(),
+				CommitsByRepo:        m.CommitsByRepo,
+				ReposCreated:         m.ReposCreated,
 			})
 			totalReleases += m.Releases
 		}
@@ -921,16 +1037,22 @@ func rawToProfile(raw *RawJSON) *profile.UserProfile {
 			Months:   make([]profile.MonthlyActivity, 0, len(raw.Monthly)),
 		}
 		for _, m := range raw.Monthly {
+			commitsByRepo := m.CommitsByRepo
+			if commitsByRepo == nil {
+				commitsByRepo = make(map[string]int)
+			}
 			p.Activity.Months = append(p.Activity.Months, profile.MonthlyActivity{
-				Year:      m.Year,
-				Month:     time.Month(m.Month),
-				Commits:   m.Commits,
-				Issues:    m.Issues,
-				PRs:       m.PRs,
-				Reviews:   m.Reviews,
-				Releases:  m.Releases,
-				Additions: m.Additions,
-				Deletions: m.Deletions,
+				Year:          m.Year,
+				Month:         time.Month(m.Month),
+				Commits:       m.Commits,
+				Issues:        m.Issues,
+				PRs:           m.PRs,
+				Reviews:       m.Reviews,
+				Releases:      m.Releases,
+				Additions:     m.Additions,
+				Deletions:     m.Deletions,
+				CommitsByRepo: commitsByRepo,
+				ReposCreated:  m.ReposCreated,
 			})
 		}
 	}
@@ -1001,4 +1123,38 @@ func formatSummary(p *profile.UserProfile) string {
 	}
 
 	return sb.String()
+}
+
+// parseCommaSeparated splits a comma-separated string into a slice.
+// Returns nil for empty input.
+func parseCommaSeparated(s string) []string {
+	if s == "" {
+		return nil
+	}
+	parts := strings.Split(s, ",")
+	result := make([]string, 0, len(parts))
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			result = append(result, p)
+		}
+	}
+	if len(result) == 0 {
+		return nil
+	}
+	return result
+}
+
+// parseVisibility converts a visibility string to graphql.Visibility.
+func parseVisibility(s string) (graphql.Visibility, error) {
+	switch strings.ToLower(strings.TrimSpace(s)) {
+	case "all", "":
+		return graphql.VisibilityAll, nil
+	case "public":
+		return graphql.VisibilityPublic, nil
+	case "private":
+		return graphql.VisibilityPrivate, nil
+	default:
+		return graphql.VisibilityAll, fmt.Errorf("invalid visibility %q: use 'all', 'public', or 'private'", s)
+	}
 }
