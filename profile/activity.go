@@ -145,6 +145,59 @@ type RepoCommitCount struct {
 	Commits int
 }
 
+// NetAdditions returns the net lines changed (additions - deletions).
+func (m *MonthlyActivity) NetAdditions() int {
+	return m.Additions - m.Deletions
+}
+
+// RepoCountCreated returns the number of repositories created this month.
+func (m *MonthlyActivity) RepoCountCreated() int {
+	return len(m.ReposCreated)
+}
+
+// MonthlyStats is the JSON-serializable representation of monthly activity.
+// This includes all computed fields for easy consumption by external tools.
+type MonthlyStats struct {
+	Year      int    `json:"year"`
+	Month     int    `json:"month"`
+	MonthName string `json:"monthName"`
+
+	// Contribution counts
+	Commits  int `json:"commits"`
+	Issues   int `json:"issues"`
+	PRs      int `json:"prs"`
+	Reviews  int `json:"reviews"`
+	Releases int `json:"releases"`
+
+	// Code changes
+	Additions    int `json:"additions"`
+	Deletions    int `json:"deletions"`
+	NetAdditions int `json:"netAdditions"`
+
+	// Repository counts
+	RepoCountContributed int `json:"repoCountContributed"`
+	RepoCountCreated     int `json:"repoCountCreated"`
+}
+
+// ToMonthlyStats converts MonthlyActivity to a JSON-serializable MonthlyStats.
+func (m *MonthlyActivity) ToMonthlyStats() MonthlyStats {
+	return MonthlyStats{
+		Year:                 m.Year,
+		Month:                int(m.Month),
+		MonthName:            m.MonthName(),
+		Commits:              m.Commits,
+		Issues:               m.Issues,
+		PRs:                  m.PRs,
+		Reviews:              m.Reviews,
+		Releases:             m.Releases,
+		Additions:            m.Additions,
+		Deletions:            m.Deletions,
+		NetAdditions:         m.NetAdditions(),
+		RepoCountContributed: m.CommitRepoCount(),
+		RepoCountCreated:     m.RepoCountCreated(),
+	}
+}
+
 // ActivityTimeline represents a chronological list of monthly activity.
 type ActivityTimeline struct {
 	Username string
@@ -238,4 +291,24 @@ func (t *ActivityTimeline) SortByDateDesc() {
 		}
 		return t.Months[i].Month > t.Months[j].Month
 	})
+}
+
+// ToMonthlyStats converts all months to MonthlyStats slice.
+func (t *ActivityTimeline) ToMonthlyStats() []MonthlyStats {
+	stats := make([]MonthlyStats, 0, len(t.Months))
+	for _, m := range t.Months {
+		stats = append(stats, m.ToMonthlyStats())
+	}
+	return stats
+}
+
+// GetMonthStats returns MonthlyStats for a specific year/month.
+// Returns nil if not found.
+func (t *ActivityTimeline) GetMonthStats(year int, month time.Month) *MonthlyStats {
+	m := t.GetMonth(year, month)
+	if m == nil {
+		return nil
+	}
+	stats := m.ToMonthlyStats()
+	return &stats
 }
