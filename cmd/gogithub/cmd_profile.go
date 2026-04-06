@@ -11,35 +11,36 @@ import (
 	"time"
 
 	"github.com/google/go-github/v84/github"
+	"github.com/grokify/mogo/fmt/progress"
+	"github.com/spf13/cobra"
+
 	"github.com/grokify/gogithub/graphql"
 	"github.com/grokify/gogithub/profile"
 	"github.com/grokify/gogithub/profile/readme"
 	"github.com/grokify/gogithub/profile/svg"
-	"github.com/grokify/mogo/fmt/progress"
-	"github.com/spf13/cobra"
 )
 
 var (
-	profileUser              string
-	profileFrom              string
-	profileTo                string
-	profileFormat            string
-	profileOutput            string
-	profileOutputRaw         string
-	profileOutputAggregate   string
-	profileOutputMonthly     string
-	profileOutputMonthlyDir  string
-	profileOutputReadme      string
-	profileReadmeConfig      string
-	profileOutputSVG         string
-	profileSVGTheme          string
-	profileSVGTitle          string
-	profileOutputChart       string
-	profileOutputChartJSON   string
-	profileInput             string
-	profileIncludeReleases   bool
-	profileReleaseOrgs       string
-	profileVisibility        string
+	profileUser             string
+	profileFrom             string
+	profileTo               string
+	profileFormat           string
+	profileOutput           string
+	profileOutputRaw        string
+	profileOutputAggregate  string
+	profileOutputMonthly    string
+	profileOutputMonthlyDir string
+	profileOutputReadme     string
+	profileReadmeConfig     string
+	profileOutputSVG        string
+	profileSVGTheme         string
+	profileSVGTitle         string
+	profileOutputChart      string
+	profileOutputChartJSON  string
+	profileInput            string
+	profileIncludeReleases  bool
+	profileReleaseOrgs      string
+	profileVisibility       string
 )
 
 var profileCmd = &cobra.Command{
@@ -559,9 +560,9 @@ type RepoJSON struct {
 // QueryMetadataJSON captures the parameters used to generate the output.
 type QueryMetadataJSON struct {
 	Username        string    `json:"username"`
-	From            string    `json:"from"`                     // YYYY-MM-DD format
-	To              string    `json:"to"`                       // YYYY-MM-DD format
-	Visibility      string    `json:"visibility"`               // all, public, private
+	From            string    `json:"from"`       // YYYY-MM-DD format
+	To              string    `json:"to"`         // YYYY-MM-DD format
+	Visibility      string    `json:"visibility"` // all, public, private
 	IncludeReleases bool      `json:"includeReleases"`
 	ReleaseOrgs     []string  `json:"releaseOrgs,omitempty"`
 	GeneratedAt     time.Time `json:"generatedAt"`

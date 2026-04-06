@@ -6,19 +6,20 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/grokify/gogithub/profile"
 	"github.com/spf13/cobra"
+
+	"github.com/grokify/gogithub/profile"
 )
 
 var (
-	statsReportInputDir     string
-	statsReportOutputJSON   string
-	statsReportOutputMD     string
-	statsReportOutputHTML   string
-	statsReportOutputText   string
-	statsReportTitle        string
-	statsReportShowDetails  bool
-	statsReportDataURL      string
+	statsReportInputDir      string
+	statsReportOutputJSON    string
+	statsReportOutputMD      string
+	statsReportOutputHTML    string
+	statsReportOutputText    string
+	statsReportTitle         string
+	statsReportShowDetails   bool
+	statsReportDataURL       string
 	statsReportRegenerateCmd string
 )
 

@@ -16,10 +16,10 @@ import (
 // This enables reproducibility and consistent generation of additional data.
 type QueryMetadata struct {
 	// Query parameters
-	Username   string   `json:"username"`
-	From       string   `json:"from"`                 // YYYY-MM-DD format
-	To         string   `json:"to"`                   // YYYY-MM-DD format
-	Visibility string   `json:"visibility"`           // all, public, private
+	Username    string   `json:"username"`
+	From        string   `json:"from"`                  // YYYY-MM-DD format
+	To          string   `json:"to"`                    // YYYY-MM-DD format
+	Visibility  string   `json:"visibility"`            // all, public, private
 	ReleaseOrgs []string `json:"releaseOrgs,omitempty"` // orgs to filter releases
 
 	// Feature flags
