@@ -8,6 +8,34 @@
   "maintainers": ["grokify"],
   "releases": [
     {
+      "version": "v0.12.1",
+      "date": "2026-04-05",
+      "highlights": [
+        {"description": "Code quality improvements: constants extraction, token client deduplication, and go-github iterator adoption"},
+        {"description": "Enhanced documentation with usage examples and clarified behavior"},
+        {"description": "Expanded test coverage for constants and error types"}
+      ],
+      "refactored": [
+        {"description": "Use `auth.NewTokenClient` in graphql package to eliminate duplicate OAuth2 client creation", "commit": "8b3093e"},
+        {"description": "Extract Git reference prefixes (`RefHeadsPrefix`, `RefTagsPrefix`) to `repo/constants.go`", "commit": "e8879cf"},
+        {"description": "Extract file mode constants (`FileModeRegular`, `FileModeExecutable`, etc.) to `repo/constants.go`", "commit": "e8879cf"},
+        {"description": "Extract `ErrAlreadyExists` error fragment to constants for consistent error matching", "commit": "e8879cf"},
+        {"description": "Extract `JWTExpiry` constant in `auth/app.go` for GitHub App JWT validity duration", "commit": "8d5f601"},
+        {"description": "Replace manual pagination loops with go-github v84 built-in iterators (`ListReleasesIter`, `ListTagsIter`, `ListCheckRunsForRefIter`, `ListCheckSuitesForRefIter`)", "commit": "9c5336c"}
+      ],
+      "documentation": [
+        {"description": "Add usage example to `Batch` type documentation showing Write/Delete/Commit workflow", "commit": "1f0f739"},
+        {"description": "Clarify `search.Issue.MustAuthorUsername()` and `MustAuthorUserID()` return default values on error (not panic)", "commit": "1f0f739"},
+        {"description": "Add `TASKS.md` for tracking refactoring opportunities and progress", "commit": "53aa6ee"}
+      ],
+      "tests": [
+        {"description": "Add tests for Git reference and file mode constants in `repo/constants_test.go`", "commit": "6da1e28"},
+        {"description": "Add tests for error types (`CommitError`, `BranchError`, `ForkError`, `BatchError`) in `repo/errors_test.go`", "commit": "6da1e28"},
+        {"description": "Add tests for tag constants in `tag/constants_test.go`", "commit": "6da1e28"},
+        {"description": "Add test for `JWTExpiry` constant in `auth/app_test.go`", "commit": "6da1e28"}
+      ]
+    },
+    {
       "version": "v0.12.0",
       "date": "2026-04-06",
       "highlights": [
