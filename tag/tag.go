@@ -10,25 +10,15 @@ import (
 )
 
 // ListTags lists all tags for a repository.
+// Uses go-github's built-in iterator for automatic pagination handling.
 func ListTags(ctx context.Context, gh *github.Client, owner, repo string) ([]*github.RepositoryTag, error) {
 	var allTags []*github.RepositoryTag
 
-	opts := &github.ListOptions{
-		PerPage: 100,
-	}
-
-	for {
-		tags, resp, err := gh.Repositories.ListTags(ctx, owner, repo, opts)
+	for tag, err := range gh.Repositories.ListTagsIter(ctx, owner, repo, nil) {
 		if err != nil {
 			return nil, fmt.Errorf("list tags: %w", err)
 		}
-
-		allTags = append(allTags, tags...)
-
-		if resp.NextPage == 0 {
-			break
-		}
-		opts.Page = resp.NextPage
+		allTags = append(allTags, tag)
 	}
 
 	return allTags, nil

@@ -9,25 +9,15 @@ import (
 )
 
 // ListReleases lists all releases for a repository with pagination.
+// Uses go-github's built-in iterator for automatic pagination handling.
 func ListReleases(ctx context.Context, gh *github.Client, owner, repo string) ([]*github.RepositoryRelease, error) {
 	var allReleases []*github.RepositoryRelease
 
-	opts := &github.ListOptions{
-		PerPage: 100,
-	}
-
-	for {
-		releases, resp, err := gh.Repositories.ListReleases(ctx, owner, repo, opts)
+	for release, err := range gh.Repositories.ListReleasesIter(ctx, owner, repo, nil) {
 		if err != nil {
 			return nil, fmt.Errorf("list releases: %w", err)
 		}
-
-		allReleases = append(allReleases, releases...)
-
-		if resp.NextPage == 0 {
-			break
-		}
-		opts.Page = resp.NextPage
+		allReleases = append(allReleases, release)
 	}
 
 	return allReleases, nil
@@ -70,25 +60,15 @@ func GetReleaseByTag(ctx context.Context, gh *github.Client, owner, repo, tag st
 }
 
 // ListReleaseAssets lists assets for a release.
+// Uses go-github's built-in iterator for automatic pagination handling.
 func ListReleaseAssets(ctx context.Context, gh *github.Client, owner, repo string, releaseID int64) ([]*github.ReleaseAsset, error) {
 	var allAssets []*github.ReleaseAsset
 
-	opts := &github.ListOptions{
-		PerPage: 100,
-	}
-
-	for {
-		assets, resp, err := gh.Repositories.ListReleaseAssets(ctx, owner, repo, releaseID, opts)
+	for asset, err := range gh.Repositories.ListReleaseAssetsIter(ctx, owner, repo, releaseID, nil) {
 		if err != nil {
 			return nil, fmt.Errorf("list release assets: %w", err)
 		}
-
-		allAssets = append(allAssets, assets...)
-
-		if resp.NextPage == 0 {
-			break
-		}
-		opts.Page = resp.NextPage
+		allAssets = append(allAssets, asset)
 	}
 
 	return allAssets, nil
