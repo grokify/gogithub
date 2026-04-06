@@ -10,27 +10,15 @@ import (
 )
 
 // ListCheckRuns lists check runs for a commit SHA or branch.
+// Uses go-github's built-in iterator for automatic pagination handling.
 func ListCheckRuns(ctx context.Context, gh *github.Client, owner, repo, ref string) ([]*github.CheckRun, error) {
 	var allChecks []*github.CheckRun
 
-	opts := &github.ListCheckRunsOptions{
-		ListOptions: github.ListOptions{
-			PerPage: 100,
-		},
-	}
-
-	for {
-		result, resp, err := gh.Checks.ListCheckRunsForRef(ctx, owner, repo, ref, opts)
+	for check, err := range gh.Checks.ListCheckRunsForRefIter(ctx, owner, repo, ref, nil) {
 		if err != nil {
 			return nil, fmt.Errorf("list check runs: %w", err)
 		}
-
-		allChecks = append(allChecks, result.CheckRuns...)
-
-		if resp.NextPage == 0 {
-			break
-		}
-		opts.Page = resp.NextPage
+		allChecks = append(allChecks, check)
 	}
 
 	return allChecks, nil
@@ -146,27 +134,15 @@ func GetCheckRun(ctx context.Context, gh *github.Client, owner, repo string, che
 }
 
 // ListCheckSuites lists check suites for a commit.
+// Uses go-github's built-in iterator for automatic pagination handling.
 func ListCheckSuites(ctx context.Context, gh *github.Client, owner, repo, ref string) ([]*github.CheckSuite, error) {
 	var allSuites []*github.CheckSuite
 
-	opts := &github.ListCheckSuiteOptions{
-		ListOptions: github.ListOptions{
-			PerPage: 100,
-		},
-	}
-
-	for {
-		result, resp, err := gh.Checks.ListCheckSuitesForRef(ctx, owner, repo, ref, opts)
+	for suite, err := range gh.Checks.ListCheckSuitesForRefIter(ctx, owner, repo, ref, nil) {
 		if err != nil {
 			return nil, fmt.Errorf("list check suites: %w", err)
 		}
-
-		allSuites = append(allSuites, result.CheckSuites...)
-
-		if resp.NextPage == 0 {
-			break
-		}
-		opts.Page = resp.NextPage
+		allSuites = append(allSuites, suite)
 	}
 
 	return allSuites, nil

@@ -26,12 +26,13 @@ Identified refactoring opportunities for gogithub, organized by priority.
 
 ## Phase 2: High Value (Medium Effort)
 
-### 2.1 Create Generic Pagination Helper
-- [ ] Create `internal/pagination/pagination.go` with generic paginator
-- [ ] Update `release/release.go` to use paginator
-- [ ] Update `checks/checks.go` to use paginator
-- [ ] Update `tag/tag.go` to use paginator
-- [ ] Add unit tests for pagination helper
+### 2.1 Use go-github Built-in Iterators
+- [x] Update `release/release.go` to use `ListReleasesIter` and `ListReleaseAssetsIter`
+- [x] Update `checks/checks.go` to use `ListCheckRunsForRefIter` and `ListCheckSuitesForRefIter`
+- [x] Update `tag/tag.go` to use `ListTagsIter`
+
+**Note:** Instead of creating a custom pagination helper, we leverage go-github v84's
+built-in Go 1.23+ range-over-func iterators which handle pagination automatically.
 
 **Files:** `release/release.go`, `checks/checks.go`, `tag/tag.go`
 
