@@ -20,9 +20,9 @@ Identified refactoring opportunities for gogithub, organized by priority.
 **Files:** `repo/batch.go`, `repo/branch.go`, `tag/tag.go`, `auth/app.go`
 
 ### 1.3 Improve Documentation
-- [ ] Add field-level docs to `profile.Options` struct
-- [ ] Add usage examples to `repo/batch.go` doc comments
-- [ ] Document `search.Must*` methods' silent failure behavior
+- [x] Add field-level docs to `profile.Options` struct (already complete)
+- [x] Add usage examples to `repo/batch.go` doc comments
+- [x] Document `search.Must*` methods' non-panic behavior
 
 ## Phase 2: High Value (Medium Effort)
 

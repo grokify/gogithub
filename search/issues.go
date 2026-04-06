@@ -178,6 +178,9 @@ func (is *Issue) CreatedAge() (time.Duration, error) {
 }
 
 // MustAuthorUsername returns the author username or empty string on error.
+// Unlike typical Go "Must" functions, this does not panic. Instead, it returns
+// an empty string when the author is nil or the username cannot be retrieved.
+// Use AuthorUsername() if you need to distinguish between errors and empty values.
 func (is *Issue) MustAuthorUsername() string {
 	username, err := is.AuthorUsername()
 	if err != nil {
@@ -187,6 +190,9 @@ func (is *Issue) MustAuthorUsername() string {
 }
 
 // MustAuthorUserID returns the author user ID or -1 on error.
+// Unlike typical Go "Must" functions, this does not panic. Instead, it returns
+// -1 when the author is nil or the user ID cannot be retrieved.
+// Use AuthorUserID() if you need to distinguish between errors and missing values.
 func (is *Issue) MustAuthorUserID() int64 {
 	userID, err := is.AuthorUserID()
 	if err != nil {
