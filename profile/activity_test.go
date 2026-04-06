@@ -424,3 +424,191 @@ func TestActivityTimelineSortByDateDesc(t *testing.T) {
 		}
 	}
 }
+
+func TestMonthlyActivityNetAdditions(t *testing.T) {
+	tests := []struct {
+		name      string
+		additions int
+		deletions int
+		expected  int
+	}{
+		{"positive net", 100, 30, 70},
+		{"negative net", 30, 100, -70},
+		{"zero net", 50, 50, 0},
+		{"no changes", 0, 0, 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := MonthlyActivity{Additions: tt.additions, Deletions: tt.deletions}
+			got := m.NetAdditions()
+			if got != tt.expected {
+				t.Errorf("NetAdditions() = %d, want %d", got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestMonthlyActivityRepoCountCreated(t *testing.T) {
+	tests := []struct {
+		name         string
+		reposCreated []string
+		expected     int
+	}{
+		{"no repos", nil, 0},
+		{"empty slice", []string{}, 0},
+		{"one repo", []string{"user/repo1"}, 1},
+		{"multiple repos", []string{"user/repo1", "user/repo2", "org/repo3"}, 3},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := MonthlyActivity{ReposCreated: tt.reposCreated}
+			got := m.RepoCountCreated()
+			if got != tt.expected {
+				t.Errorf("RepoCountCreated() = %d, want %d", got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestMonthlyActivityToMonthlyStats(t *testing.T) {
+	m := MonthlyActivity{
+		Year:      2024,
+		Month:     time.March,
+		Commits:   50,
+		Issues:    10,
+		PRs:       5,
+		Reviews:   15,
+		Releases:  3,
+		Additions: 1000,
+		Deletions: 300,
+		CommitsByRepo: map[string]int{
+			"user/repo1": 30,
+			"user/repo2": 20,
+		},
+		ReposCreated: []string{"user/newrepo"},
+	}
+
+	stats := m.ToMonthlyStats()
+
+	if stats.Year != 2024 {
+		t.Errorf("Year = %d, want 2024", stats.Year)
+	}
+	if stats.Month != 3 {
+		t.Errorf("Month = %d, want 3", stats.Month)
+	}
+	if stats.MonthName != "March" {
+		t.Errorf("MonthName = %q, want %q", stats.MonthName, "March")
+	}
+	if stats.Commits != 50 {
+		t.Errorf("Commits = %d, want 50", stats.Commits)
+	}
+	if stats.Issues != 10 {
+		t.Errorf("Issues = %d, want 10", stats.Issues)
+	}
+	if stats.PRs != 5 {
+		t.Errorf("PRs = %d, want 5", stats.PRs)
+	}
+	if stats.Reviews != 15 {
+		t.Errorf("Reviews = %d, want 15", stats.Reviews)
+	}
+	if stats.Releases != 3 {
+		t.Errorf("Releases = %d, want 3", stats.Releases)
+	}
+	if stats.Additions != 1000 {
+		t.Errorf("Additions = %d, want 1000", stats.Additions)
+	}
+	if stats.Deletions != 300 {
+		t.Errorf("Deletions = %d, want 300", stats.Deletions)
+	}
+	if stats.NetAdditions != 700 {
+		t.Errorf("NetAdditions = %d, want 700", stats.NetAdditions)
+	}
+	if stats.RepoCountContributed != 2 {
+		t.Errorf("RepoCountContributed = %d, want 2", stats.RepoCountContributed)
+	}
+	if stats.RepoCountCreated != 1 {
+		t.Errorf("RepoCountCreated = %d, want 1", stats.RepoCountCreated)
+	}
+}
+
+func TestActivityTimelineToMonthlyStats(t *testing.T) {
+	timeline := &ActivityTimeline{
+		Months: []MonthlyActivity{
+			{
+				Year:          2024,
+				Month:         time.January,
+				Commits:       100,
+				Additions:     500,
+				Deletions:     200,
+				CommitsByRepo: map[string]int{"repo1": 100},
+			},
+			{
+				Year:          2024,
+				Month:         time.February,
+				Commits:       50,
+				Additions:     200,
+				Deletions:     100,
+				CommitsByRepo: map[string]int{"repo1": 30, "repo2": 20},
+			},
+		},
+	}
+
+	stats := timeline.ToMonthlyStats()
+
+	if len(stats) != 2 {
+		t.Fatalf("ToMonthlyStats() returned %d items, want 2", len(stats))
+	}
+
+	if stats[0].Year != 2024 || stats[0].Month != 1 {
+		t.Errorf("stats[0] = %d-%d, want 2024-1", stats[0].Year, stats[0].Month)
+	}
+	if stats[0].NetAdditions != 300 {
+		t.Errorf("stats[0].NetAdditions = %d, want 300", stats[0].NetAdditions)
+	}
+	if stats[0].RepoCountContributed != 1 {
+		t.Errorf("stats[0].RepoCountContributed = %d, want 1", stats[0].RepoCountContributed)
+	}
+
+	if stats[1].Year != 2024 || stats[1].Month != 2 {
+		t.Errorf("stats[1] = %d-%d, want 2024-2", stats[1].Year, stats[1].Month)
+	}
+	if stats[1].RepoCountContributed != 2 {
+		t.Errorf("stats[1].RepoCountContributed = %d, want 2", stats[1].RepoCountContributed)
+	}
+}
+
+func TestActivityTimelineGetMonthStats(t *testing.T) {
+	timeline := &ActivityTimeline{
+		Months: []MonthlyActivity{
+			{
+				Year:          2024,
+				Month:         time.January,
+				Commits:       100,
+				Additions:     500,
+				Deletions:     200,
+				CommitsByRepo: map[string]int{"repo1": 100},
+			},
+		},
+	}
+
+	stats := timeline.GetMonthStats(2024, time.January)
+	if stats == nil {
+		t.Fatal("GetMonthStats(2024, January) returned nil")
+	}
+	if stats.Commits != 100 {
+		t.Errorf("Commits = %d, want 100", stats.Commits)
+	}
+	if stats.NetAdditions != 300 {
+		t.Errorf("NetAdditions = %d, want 300", stats.NetAdditions)
+	}
+	if stats.RepoCountContributed != 1 {
+		t.Errorf("RepoCountContributed = %d, want 1", stats.RepoCountContributed)
+	}
+
+	stats = timeline.GetMonthStats(2024, time.March)
+	if stats != nil {
+		t.Error("GetMonthStats(2024, March) should return nil")
+	}
+}
