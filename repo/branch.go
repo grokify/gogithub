@@ -23,7 +23,7 @@ func (e *BranchError) Unwrap() error {
 
 // GetBranchSHA returns the SHA of the given branch.
 func GetBranchSHA(ctx context.Context, gh *github.Client, owner, repo, branch string) (string, error) {
-	ref, _, err := gh.Git.GetRef(ctx, owner, repo, "refs/heads/"+branch)
+	ref, _, err := gh.Git.GetRef(ctx, owner, repo, RefHeadsPrefix+branch)
 	if err != nil {
 		return "", err
 	}
@@ -33,14 +33,14 @@ func GetBranchSHA(ctx context.Context, gh *github.Client, owner, repo, branch st
 // CreateBranch creates a new branch from the given base SHA.
 func CreateBranch(ctx context.Context, gh *github.Client, owner, repo, branch, baseSHA string) error {
 	createRef := github.CreateRef{
-		Ref: "refs/heads/" + branch,
+		Ref: RefHeadsPrefix + branch,
 		SHA: baseSHA,
 	}
 
 	_, _, err := gh.Git.CreateRef(ctx, owner, repo, createRef)
 	if err != nil {
 		// Check if branch already exists
-		if strings.Contains(err.Error(), "already exists") {
+		if strings.Contains(err.Error(), ErrAlreadyExists) {
 			return nil
 		}
 		return &BranchError{Branch: branch, Err: err}
@@ -51,13 +51,13 @@ func CreateBranch(ctx context.Context, gh *github.Client, owner, repo, branch, b
 
 // DeleteBranch deletes a branch.
 func DeleteBranch(ctx context.Context, gh *github.Client, owner, repo, branch string) error {
-	_, err := gh.Git.DeleteRef(ctx, owner, repo, "refs/heads/"+branch)
+	_, err := gh.Git.DeleteRef(ctx, owner, repo, RefHeadsPrefix+branch)
 	return err
 }
 
 // BranchExists checks if a branch exists.
 func BranchExists(ctx context.Context, gh *github.Client, owner, repo, branch string) (bool, error) {
-	_, resp, err := gh.Git.GetRef(ctx, owner, repo, "refs/heads/"+branch)
+	_, resp, err := gh.Git.GetRef(ctx, owner, repo, RefHeadsPrefix+branch)
 	if err != nil {
 		if resp != nil && resp.StatusCode == 404 {
 			return false, nil

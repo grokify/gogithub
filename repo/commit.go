@@ -32,7 +32,7 @@ type FileContent struct {
 // CreateCommit creates a commit with the given files using the Git tree API.
 func CreateCommit(ctx context.Context, gh *github.Client, owner, repo, branch, message string, files []FileContent) (string, error) {
 	// Get the current commit SHA
-	ref, _, err := gh.Git.GetRef(ctx, owner, repo, "refs/heads/"+branch)
+	ref, _, err := gh.Git.GetRef(ctx, owner, repo, RefHeadsPrefix+branch)
 	if err != nil {
 		return "", &CommitError{Message: message, Err: err}
 	}
@@ -50,7 +50,7 @@ func CreateCommit(ctx context.Context, gh *github.Client, owner, repo, branch, m
 	for _, f := range files {
 		entries = append(entries, &github.TreeEntry{
 			Path:    github.Ptr(f.Path),
-			Mode:    github.Ptr("100644"),
+			Mode:    github.Ptr(FileModeRegular),
 			Type:    github.Ptr("blob"),
 			Content: github.Ptr(string(f.Content)),
 		})
