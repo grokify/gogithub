@@ -37,11 +37,15 @@ built-in Go 1.23+ range-over-func iterators which handle pagination automaticall
 **Files:** `release/release.go`, `checks/checks.go`, `tag/tag.go`
 
 ### 2.2 Standardize Error Types
-- [ ] Create base `OperationError` type in `errors/errors.go`
-- [ ] Update `AuthError` to use standard pattern
-- [ ] Update `PRError` to use standard pattern
-- [ ] Update `CommitError`, `BatchError`, `BranchError`, `ForkError`
-- [ ] Ensure all errors implement `Unwrap()` for Go 1.13+ chains
+- [x] Review error types for consistency
+- [x] Verify all errors implement `Unwrap()` for Go 1.13+ chains
+
+**Status:** After review, the existing error types (`AuthError`, `PRError`, `CommitError`,
+`BatchError`, `BranchError`, `ForkError`) already follow a consistent Go-idiomatic pattern:
+- Each has context-specific fields appropriate for its domain
+- All implement `Error()` and `Unwrap()` methods
+- Creating a base `OperationError` type would add complexity without benefit since Go
+  favors composition over inheritance
 
 **Files:** `errors/errors.go`, `auth/auth.go`, `pr/pullrequest.go`, `repo/*.go`
 
@@ -51,6 +55,10 @@ built-in Go 1.23+ range-over-func iterators which handle pagination automaticall
 - [ ] Create `profile/output/writer.go` for file writing operations
 - [ ] Simplify `cmd/gogithub/cmd_profile.go` to orchestrate components
 - [ ] Add unit tests for extracted functions
+
+**Status:** Deferred. The CLI file is ~1100 lines with working logic. Extracting would
+provide better testability and reuse but requires significant effort. Consider for a
+future version when additional consumers of these conversions are needed.
 
 **Files:** `cmd/gogithub/cmd_profile.go`, `profile/`
 
