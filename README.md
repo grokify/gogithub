@@ -55,7 +55,10 @@ gogithub/
 ├── profile/              # User profile aggregation
 │   ├── profile.go        # UserProfile, GetUserProfile
 │   ├── calendar.go       # ContributionCalendar, streaks
-│   ├── activity.go       # MonthlyActivity, ActivityTimeline
+│   ├── activity.go       # MonthlyActivity, ActivityTimeline, MonthlyStats
+│   ├── monthly_output.go # WriteMonthlyFile, WriteMonthlyFiles
+│   ├── stats_report.go   # StatsReport, BuildStatsReport, LoadMonthlyFiles
+│   ├── stats_render.go   # RenderToMarkdown, RenderToHTML, RenderToText
 │   ├── readme/           # README.md generation
 │   │   ├── readme.go     # Generate, DefaultConfig
 │   │   ├── heatmap.go    # RenderHeatmap (Unicode contribution calendar)
@@ -94,7 +97,7 @@ gogithub/
 ├── cliutil/              # CLI utilities
 │   └── status.go         # Git status helpers
 ├── cmd/                  # CLI tools
-│   ├── gogithub/         # Main CLI (profile, search-prs commands)
+│   ├── gogithub/         # Main CLI (profile, search-prs, stats-report commands)
 │   └── searchuserpr/     # Search user PRs example
 └── web/                  # Profile Viewer web application
     └── src/              # TypeScript source (Vite, Chart.js)

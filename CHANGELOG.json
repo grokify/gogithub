@@ -8,6 +8,56 @@
   "maintainers": ["grokify"],
   "releases": [
     {
+      "version": "v0.12.0",
+      "date": "2026-04-06",
+      "highlights": [
+        {"description": "New `stats-report` CLI command for generating aggregated statistics reports from monthly JSON files"},
+        {"description": "Multi-format report rendering: Markdown, HTML, and plain text output"},
+        {"description": "Hierarchical statistics aggregation: monthly → quarterly → annual rollups"},
+        {"description": "Enhanced profile command with `--visibility` and `--release-orgs` filtering flags"}
+      ],
+      "added": [
+        {"description": "New `stats-report` CLI command for generating aggregated statistics reports", "commit": "a129344"},
+        {"description": "`StatsReport` type with hierarchical structure (years → quarters → months)", "commit": "a2aa857"},
+        {"description": "`LoadMonthlyFiles()` for loading monthly JSON files from a directory", "commit": "a2aa857"},
+        {"description": "`BuildStatsReport()` for aggregating monthly data into hierarchical structure", "commit": "a2aa857"},
+        {"description": "`WriteStatsReport()` and `LoadStatsReport()` for JSON persistence", "commit": "a2aa857"},
+        {"description": "`RenderToMarkdown()` for generating Markdown reports with tables", "commit": "944b321"},
+        {"description": "`RenderToHTML()` for generating styled HTML reports", "commit": "944b321"},
+        {"description": "`RenderToText()` for generating plain text reports", "commit": "944b321"},
+        {"description": "`RenderToFile()` for writing reports in any supported format", "commit": "944b321"},
+        {"description": "`MonthlyStats` type for JSON-serializable monthly activity data", "commit": "d7d953e"},
+        {"description": "`NetAdditions()` method for calculating additions minus deletions", "commit": "d7d953e"},
+        {"description": "`RepoCountCreated()` method for counting repos created in a month", "commit": "d7d953e"},
+        {"description": "`ToMonthlyStats()` methods for converting activity data to serializable format", "commit": "d7d953e"},
+        {"description": "`WriteMonthlyFile()` for writing single month stats to file", "commit": "2d53d00"},
+        {"description": "`WriteMonthlyFiles()` for writing individual files per month", "commit": "2d53d00"},
+        {"description": "`WriteMonthlyMultiFile()` for writing all months to single file with merge", "commit": "2d53d00"},
+        {"description": "`QueryMetadata` struct for capturing query parameters in output", "commit": "2d53d00"},
+        {"description": "`--visibility` CLI flag for filtering public/private repositories", "commit": "1320ac6"},
+        {"description": "`--release-orgs` CLI flag for filtering release counts by organization", "commit": "1320ac6"},
+        {"description": "`--output-monthly-dir` CLI flag for generating individual monthly JSON files", "commit": "1320ac6"},
+        {"description": "`ReleaseOrgs` field in `Options` for org-based release filtering", "commit": "9cba9ca"}
+      ],
+      "changed": [
+        {"description": "Profile command now includes query metadata in output JSON for reproducibility", "commit": "1320ac6"},
+        {"description": "Monthly JSON output includes computed fields (netAdditions, repoCountContributed, repoCountCreated)", "commit": "1320ac6"}
+      ],
+      "fixed": [
+        {"description": "Resolved golangci-lint gosec G115 warnings in test code", "commit": "5b481df"},
+        {"description": "Removed unused functions flagged by golangci-lint", "commit": "5b481df"}
+      ],
+      "dependencies": [
+        {"description": "Updated `github.com/mattn/go-runewidth` from v0.0.21 to v0.0.22", "commit": "0418c5d"}
+      ],
+      "tests": [
+        {"description": "Added unit tests for `StatsReport` aggregation logic", "commit": "a2aa857"},
+        {"description": "Added unit tests for `MonthlyStats` type and conversion methods", "commit": "d7d953e"},
+        {"description": "Added unit tests for report rendering (Markdown, HTML, text)", "commit": "944b321"},
+        {"description": "Added unit tests for monthly output file functions", "commit": "2d53d00"}
+      ]
+    },
+    {
       "version": "v0.11.0",
       "date": "2026-04-04",
       "highlights": [
