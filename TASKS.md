@@ -98,4 +98,19 @@ for constants, error types, and pure functions that don't need mocking.
 
 ## Completed
 
+- [x] v0.12.1 release (2026-04-06) - Code quality improvements
+  - Phase 1: Quick Wins (all complete)
+  - Phase 2.1: go-github iterators (complete)
+  - Phase 2.2: Error types review (complete)
+  - Phase 3.3: Constants/error tests (partial)
 - [x] v0.12.0 release (2026-04-06)
+
+## Future Ideas
+
+Potential improvements identified during refactoring (not prioritized):
+
+- [ ] Add `context.Context` timeout helpers for long-running operations
+- [ ] Consider exposing go-github iterators directly for streaming use cases
+- [ ] Add retry logic with exponential backoff for rate-limited requests
+- [ ] Create `examples/` directory with runnable code samples
+- [ ] Add benchmarks for pagination-heavy operations
