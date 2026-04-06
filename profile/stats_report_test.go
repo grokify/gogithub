@@ -2,6 +2,7 @@ package profile
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -459,10 +460,7 @@ func TestLoadMonthlyFiles(t *testing.T) {
 }
 
 func padMonth(m int) string {
-	if m < 10 {
-		return "0" + string(rune('0'+m))
-	}
-	return string(rune('0'+m/10)) + string(rune('0'+m%10))
+	return fmt.Sprintf("%02d", m)
 }
 
 func TestStatsFromMonthlyStats(t *testing.T) {

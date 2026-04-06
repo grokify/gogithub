@@ -3,12 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
-	"path/filepath"
-	"strings"
-
-	"github.com/spf13/cobra"
 
 	"github.com/grokify/gogithub/profile"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -189,33 +186,4 @@ func runStatsReport(cmd *cobra.Command, args []string) error {
 	fmt.Fprintf(os.Stderr, "  Net additions: %+d\n", total.NetAdditions)
 
 	return nil
-}
-
-// listRawDataFiles returns the filenames of monthly JSON files in a directory.
-func listRawDataFiles(dir string) ([]string, error) {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		return nil, err
-	}
-
-	var files []string
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
-		name := entry.Name()
-		if strings.HasSuffix(name, ".json") && strings.Contains(name, "_github_") {
-			files = append(files, name)
-		}
-	}
-
-	return files, nil
-}
-
-// resolveOutputPath resolves an output path relative to input directory if not absolute.
-func resolveOutputPath(outputPath, inputDir string) string {
-	if filepath.IsAbs(outputPath) {
-		return outputPath
-	}
-	return filepath.Join(inputDir, outputPath)
 }
