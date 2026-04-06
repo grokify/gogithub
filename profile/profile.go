@@ -87,6 +87,11 @@ type Options struct {
 	// 0 means no limit. Only used if IncludeReleases is true.
 	MaxReleaseFetchRepos int
 
+	// ReleaseOrgs filters which organizations/owners to count releases for.
+	// If empty, counts releases from all repos. If set, only repos owned by
+	// these orgs/users are counted (e.g., ["grokify", "plexusone"]).
+	ReleaseOrgs []string
+
 	// Progress is called to report progress during fetching.
 	// If nil, no progress is reported.
 	Progress ProgressFunc
@@ -201,7 +206,7 @@ func GetUserProfile(ctx context.Context, restClient *github.Client, gqlClient *g
 
 	// Stage 5 (optional): Fetch release counts
 	if opts.IncludeReleases && restClient != nil {
-		fetchReleaseCounts(ctx, restClient, profile, opts.MaxReleaseFetchRepos, progress, totalStages)
+		fetchReleaseCounts(ctx, restClient, profile, opts, progress, totalStages)
 	}
 
 	return profile, nil
@@ -305,8 +310,27 @@ func buildActivityTimeline(username string, from, to time.Time, contribStats *gr
 
 // fetchReleaseCounts fetches release counts for repositories and aggregates by month.
 // Errors fetching individual repos are silently ignored (e.g., lost access, deleted repo).
-func fetchReleaseCounts(ctx context.Context, restClient *github.Client, profile *UserProfile, maxRepos int, progress ProgressFunc, totalStages int) {
-	total := len(profile.RepoStats)
+func fetchReleaseCounts(ctx context.Context, restClient *github.Client, profile *UserProfile, opts *Options, progress ProgressFunc, totalStages int) {
+	maxRepos := opts.MaxReleaseFetchRepos
+
+	// Build org filter set for efficient lookup
+	orgFilter := make(map[string]bool)
+	for _, org := range opts.ReleaseOrgs {
+		orgFilter[org] = true
+	}
+	filterByOrg := len(orgFilter) > 0
+
+	// Count eligible repos for progress reporting
+	eligibleRepos := make([]*RepoContribution, 0, len(profile.RepoStats))
+	for i := range profile.RepoStats {
+		repo := &profile.RepoStats[i]
+		if filterByOrg && !orgFilter[repo.Owner] {
+			continue
+		}
+		eligibleRepos = append(eligibleRepos, repo)
+	}
+
+	total := len(eligibleRepos)
 	if maxRepos > 0 && maxRepos < total {
 		total = maxRepos
 	}
@@ -328,12 +352,11 @@ func fetchReleaseCounts(ctx context.Context, restClient *github.Client, profile 
 	releasesByMonth := make(map[string]int) // "2024-01" -> count
 
 	count := 0
-	for i := range profile.RepoStats {
+	for _, repo := range eligibleRepos {
 		if maxRepos > 0 && count >= maxRepos {
 			break
 		}
 
-		repo := &profile.RepoStats[i]
 		releases, err := release.ListReleases(ctx, restClient, repo.Owner, repo.Name)
 		if err != nil {
 			// Skip repos we can't access (might have lost access or repo deleted)
