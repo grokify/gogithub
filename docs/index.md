@@ -1,10 +1,5 @@
 # GoGitHub
 
-[![Build Status](https://github.com/grokify/gogithub/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/grokify/gogithub/actions/workflows/ci.yaml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/grokify/gogithub)](https://goreportcard.com/report/github.com/grokify/gogithub)
-[![Docs](https://pkg.go.dev/badge/github.com/grokify/gogithub)](https://pkg.go.dev/github.com/grokify/gogithub)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/grokify/gogithub/blob/master/LICENSE)
-
 **GoGitHub** is a high-level Go module for interacting with the GitHub API. It wraps [google/go-github](https://github.com/google/go-github) with convenience functions organized by operation type.
 
 ## Features
