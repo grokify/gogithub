@@ -50,6 +50,26 @@ var ErrEmptyPath = errors.New("empty path not allowed")
 // Batch accumulates multiple file operations to be committed atomically.
 // Use NewBatch to create a batch, then call Write/Delete to queue operations,
 // and finally Commit to apply all changes in a single commit.
+//
+// Example usage:
+//
+//	batch, err := repo.NewBatch(ctx, client, "owner", "repo", "main", "Update config files",
+//	    repo.WithCommitAuthor("Bot", "bot@example.com"))
+//	if err != nil {
+//	    return err
+//	}
+//
+//	// Queue multiple file operations
+//	batch.Write("config/app.json", []byte(`{"version": "2.0"}`))
+//	batch.Write("README.md", []byte("# Updated README"))
+//	batch.Delete("deprecated/old-config.yaml")
+//
+//	// Commit all changes atomically
+//	sha, err := batch.Commit(ctx)
+//	if err != nil {
+//	    return err
+//	}
+//	fmt.Printf("Created commit: %s\n", sha)
 type Batch struct {
 	client     *github.Client
 	owner      string
