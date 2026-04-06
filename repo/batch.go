@@ -210,7 +210,7 @@ func (b *Batch) Commit(ctx context.Context) (string, error) {
 	}
 
 	// Step 1: Get the current branch reference
-	ref, _, err := b.client.Git.GetRef(ctx, b.owner, b.repo, "refs/heads/"+b.branch)
+	ref, _, err := b.client.Git.GetRef(ctx, b.owner, b.repo, RefHeadsPrefix+b.branch)
 	if err != nil {
 		return "", &BatchError{Op: "get ref", Err: err}
 	}
@@ -297,7 +297,7 @@ func (b *Batch) buildTreeEntries(ctx context.Context) ([]*github.TreeEntry, erro
 
 			entries = append(entries, &github.TreeEntry{
 				Path: github.Ptr(op.Path),
-				Mode: github.Ptr("100644"), // Regular file
+				Mode: github.Ptr(FileModeRegular),
 				Type: github.Ptr("blob"),
 				SHA:  blob.SHA,
 			})
@@ -312,7 +312,7 @@ func (b *Batch) buildTreeEntries(ctx context.Context) ([]*github.TreeEntry, erro
 				// Use a nil SHA to indicate deletion
 				entries = append(entries, &github.TreeEntry{
 					Path: github.Ptr(op.Path),
-					Mode: github.Ptr("100644"),
+					Mode: github.Ptr(FileModeRegular),
 					Type: github.Ptr("blob"),
 					SHA:  nil, // nil SHA means delete
 				})
