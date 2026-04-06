@@ -14,6 +14,13 @@ import (
 	"github.com/google/go-github/v84/github"
 )
 
+// JWT constants for GitHub App authentication.
+const (
+	// JWTExpiry is the validity duration for GitHub App JWTs.
+	// GitHub requires JWTs to be valid for no more than 10 minutes.
+	JWTExpiry = 10 * time.Minute
+)
+
 // AppConfig holds GitHub App configuration.
 type AppConfig struct {
 	AppID          int64  `json:"app_id"`
@@ -181,7 +188,7 @@ func createAppJWT(appID int64, privateKey []byte) (string, error) {
 	now := time.Now()
 	claims := jwt.MapClaims{
 		"iat": now.Unix(),
-		"exp": now.Add(10 * time.Minute).Unix(),
+		"exp": now.Add(JWTExpiry).Unix(),
 		"iss": appID,
 	}
 
