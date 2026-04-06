@@ -70,6 +70,9 @@ future version when additional consumers of these conversions are needed.
 - [ ] Create mock implementations for testing
 - [ ] Update existing tests to use mocks where appropriate
 
+**Status:** Deferred. Requires significant refactoring for modest benefit. Consider when
+adding complex features that need thorough testing.
+
 ### 3.2 Split Repo Package
 - [ ] Create `repo/batch/` subpackage for batch operations
 - [ ] Create `repo/content/` subpackage for file content
@@ -77,15 +80,21 @@ future version when additional consumers of these conversions are needed.
 - [ ] Maintain backward compatibility with re-exports
 - [ ] Update documentation
 
+**Status:** Deferred. Would break import paths for consumers. Current package size is
+manageable. Consider if repo package grows significantly.
+
 **Files:** `repo/*.go`
 
 ### 3.3 Add Missing Test Coverage
-- [ ] Add tests for `release/release.go`
-- [ ] Add tests for `tag/tag.go`
-- [ ] Add tests for `graphql/*.go`
-- [ ] Add tests for `repo/fork.go`
-- [ ] Add tests for `repo/branch.go`
-- [ ] Add tests for `repo/list.go`
+- [x] Add tests for constants (`repo/constants_test.go`, `tag/constants_test.go`)
+- [x] Add tests for error types (`repo/errors_test.go`)
+- [x] Add test for `JWTExpiry` constant (`auth/app_test.go`)
+- [ ] Add tests for `release/release.go` (requires HTTP mocking)
+- [ ] Add tests for `graphql/*.go` (requires HTTP mocking)
+- [ ] Add tests for `repo/fork.go`, `repo/branch.go`, `repo/list.go` (requires HTTP mocking)
+
+**Note:** API-calling functions require HTTP client mocking infrastructure. Tests added
+for constants, error types, and pure functions that don't need mocking.
 
 ## Completed
 

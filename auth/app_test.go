@@ -252,3 +252,13 @@ func TestAppInstallationStruct(t *testing.T) {
 		t.Errorf("Type = %q, want %q", inst.Type, "Organization")
 	}
 }
+
+func TestJWTExpiryConstant(t *testing.T) {
+	// JWTExpiry should be 10 minutes per GitHub's requirements
+	expectedMinutes := 10
+	actualMinutes := int(JWTExpiry.Minutes())
+
+	if actualMinutes != expectedMinutes {
+		t.Errorf("JWTExpiry = %v (%d minutes), want %d minutes", JWTExpiry, actualMinutes, expectedMinutes)
+	}
+}
