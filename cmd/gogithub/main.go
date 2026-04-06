@@ -34,4 +34,5 @@ Environment Variables:
 func init() {
 	rootCmd.AddCommand(searchPRsCmd)
 	rootCmd.AddCommand(profileCmd)
+	rootCmd.AddCommand(statsReportCmd)
 }
