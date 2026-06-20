@@ -7,9 +7,9 @@ import (
 
 func TestMonthlyContributionYearMonth(t *testing.T) {
 	tests := []struct {
-		name  string
-		mc    MonthlyContribution
-		want  string
+		name string
+		mc   MonthlyContribution
+		want string
 	}{
 		{
 			name: "January 2024",
