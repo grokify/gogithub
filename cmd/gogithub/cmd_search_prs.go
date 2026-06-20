@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/google/go-github/v84/github"
+	"github.com/google/go-github/v88/github"
 	"github.com/grokify/gogithub/search"
 	"github.com/spf13/cobra"
 )
@@ -47,7 +47,11 @@ func runSearchPRs(cmd *cobra.Command, args []string) error {
 	}
 
 	// Create unauthenticated client for public data
-	c := search.NewClient(github.NewClient(nil))
+	ghClient, err := github.NewClient()
+	if err != nil {
+		return fmt.Errorf("creating github client: %w", err)
+	}
+	c := search.NewClient(ghClient)
 
 	ii := search.Issues{}
 

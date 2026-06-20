@@ -5,7 +5,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/google/go-github/v84/github"
+	"github.com/google/go-github/v88/github"
 	"golang.org/x/oauth2"
 )
 
@@ -41,8 +41,8 @@ func NewTokenClient(ctx context.Context, token string) *http.Client {
 }
 
 // NewGitHubClient creates a GitHub client authenticated with the given token.
-func NewGitHubClient(ctx context.Context, token string) *github.Client {
-	return github.NewClient(NewTokenClient(ctx, token))
+func NewGitHubClient(ctx context.Context, token string) (*github.Client, error) {
+	return github.NewClient(github.WithHTTPClient(NewTokenClient(ctx, token)))
 }
 
 // GetAuthenticatedUser returns the authenticated user's login.

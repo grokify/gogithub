@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/go-github/v84/github"
+	"github.com/google/go-github/v88/github"
 )
 
 // JWT constants for GitHub App authentication.
@@ -163,7 +163,10 @@ func NewAppClient(ctx context.Context, cfg *AppConfig) (*github.Client, error) {
 	}
 
 	// Create client with JWT auth to get installation token
-	jwtClient := github.NewClient(nil).WithAuthToken(token)
+	jwtClient, err := github.NewClient(github.WithAuthToken(token))
+	if err != nil {
+		return nil, fmt.Errorf("creating github client: %w", err)
+	}
 
 	// Get installation access token
 	installToken, _, err := jwtClient.Apps.CreateInstallationToken(ctx, cfg.InstallationID, nil)
@@ -172,7 +175,10 @@ func NewAppClient(ctx context.Context, cfg *AppConfig) (*github.Client, error) {
 	}
 
 	// Create client with installation token
-	client := github.NewClient(nil).WithAuthToken(installToken.GetToken())
+	client, err := github.NewClient(github.WithAuthToken(installToken.GetToken()))
+	if err != nil {
+		return nil, fmt.Errorf("creating github client: %w", err)
+	}
 
 	return client, nil
 }
@@ -220,7 +226,10 @@ func ListAppInstallations(ctx context.Context, cfg *AppConfig) ([]AppInstallatio
 		return nil, fmt.Errorf("creating JWT: %w", err)
 	}
 
-	client := github.NewClient(nil).WithAuthToken(token)
+	client, err := github.NewClient(github.WithAuthToken(token))
+	if err != nil {
+		return nil, fmt.Errorf("creating github client: %w", err)
+	}
 
 	installations, _, err := client.Apps.ListInstallations(ctx, nil)
 	if err != nil {

@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/google/go-github/v84/github"
+	"github.com/google/go-github/v88/github"
 )
 
 func getTestToken(t *testing.T) string {
@@ -16,11 +16,19 @@ func getTestToken(t *testing.T) string {
 	return token
 }
 
+func newTestClient(t *testing.T, token string) *github.Client {
+	client, err := github.NewClient(github.WithAuthToken(token))
+	if err != nil {
+		t.Fatalf("failed to create github client: %v", err)
+	}
+	return client
+}
+
 func TestListContributorStatsIntegration(t *testing.T) {
 	token := getTestToken(t)
 	ctx := context.Background()
 
-	client := github.NewClient(nil).WithAuthToken(token)
+	client := newTestClient(t, token)
 
 	// Use a well-known public repo
 	stats, err := ListContributorStats(ctx, client, "grokify", "gogithub")
@@ -50,7 +58,7 @@ func TestGetContributorStatsIntegration(t *testing.T) {
 	token := getTestToken(t)
 	ctx := context.Background()
 
-	client := github.NewClient(nil).WithAuthToken(token)
+	client := newTestClient(t, token)
 
 	stats, err := GetContributorStats(ctx, client, "grokify", "gogithub", "grokify")
 	if err != nil {
@@ -80,7 +88,7 @@ func TestGetContributorSummaryIntegration(t *testing.T) {
 	token := getTestToken(t)
 	ctx := context.Background()
 
-	client := github.NewClient(nil).WithAuthToken(token)
+	client := newTestClient(t, token)
 
 	summary, err := GetContributorSummary(ctx, client, "grokify", "gogithub", "grokify")
 	if err != nil {
@@ -109,7 +117,7 @@ func TestGetContributorStatsNotFoundIntegration(t *testing.T) {
 	token := getTestToken(t)
 	ctx := context.Background()
 
-	client := github.NewClient(nil).WithAuthToken(token)
+	client := newTestClient(t, token)
 
 	// Look for a user who is definitely not a contributor
 	stats, err := GetContributorStats(ctx, client, "grokify", "gogithub", "torvalds")
@@ -126,7 +134,7 @@ func TestListContributorStatsNonExistentRepoIntegration(t *testing.T) {
 	token := getTestToken(t)
 	ctx := context.Background()
 
-	client := github.NewClient(nil).WithAuthToken(token)
+	client := newTestClient(t, token)
 
 	_, err := ListContributorStats(ctx, client, "grokify", "this-repo-does-not-exist-12345")
 	if err == nil {
@@ -140,7 +148,7 @@ func TestListContributorStatsLargeRepoIntegration(t *testing.T) {
 	token := getTestToken(t)
 	ctx := context.Background()
 
-	client := github.NewClient(nil).WithAuthToken(token)
+	client := newTestClient(t, token)
 
 	// Test with a larger public repo (go-github itself)
 	stats, err := ListContributorStats(ctx, client, "google", "go-github")
