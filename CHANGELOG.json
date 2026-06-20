@@ -8,6 +8,47 @@
   "maintainers": ["grokify"],
   "releases": [
     {
+      "version": "v0.13.0",
+      "date": "2026-06-20",
+      "highlights": [
+        {"description": "Upgraded go-github from v84 to v88 with new client creation API"},
+        {"description": "Added cross-period aggregation for MonthlyStats (quarterly/yearly statistics)"},
+        {"description": "Expanded test coverage for graphql and sarif packages"}
+      ],
+      "added": [
+        {"description": "`AggregateMonthlyStats()` function for computing aggregated statistics across multiple months", "commit": "d5b8772"},
+        {"description": "`AggregatedStats` type with Commits, PRs, Reviews, Issues, Releases, Additions, Deletions, NetAdditions, and unique Repositories", "commit": "d5b8772"},
+        {"description": "`Repositories` field on `MonthlyStats` for tracking repos with commits per month", "commit": "d5b8772"}
+      ],
+      "changed": [
+        {"description": "Upgraded `github.com/google/go-github` from v84 to v88", "commit": "b6058f9"},
+        {"description": "`github.NewClient()` now returns `(*Client, error)` - all internal usages updated", "commit": "b6058f9"},
+        {"description": "`WithAuthToken` and `WithEnterpriseURLs` are now `ClientOptionsFunc` passed to `NewClient`", "commit": "b6058f9"},
+        {"description": "`auth.NewGitHubClient()` now returns `(*github.Client, error)` instead of `*github.Client`", "commit": "b6058f9"}
+      ],
+      "tests": [
+        {"description": "Added tests for graphql `Visibility` constants and `MonthlyCommitStats.YearMonth()` method", "commit": "dc0b868"},
+        {"description": "Added tests for graphql `CommitStats`, `RepoCommitStats`, and `monthlyMapToSlice` function", "commit": "dc0b868"},
+        {"description": "Added tests for graphql `MonthlyContribution.YearMonth()` and `ContributionStats` struct", "commit": "b1ea423"},
+        {"description": "Added tests for graphql `mapToMonthlyContributions` with invalid date handling", "commit": "b1ea423"},
+        {"description": "Added tests for sarif `gzipCompress`/`gzipDecompress` with empty, large, and binary data", "commit": "a411084"},
+        {"description": "Added tests for sarif `UploadOptions`, `UploadResult`, `UploadStatus` structs", "commit": "a411084"},
+        {"description": "Added tests for sarif `ProcessingStatus` comparison", "commit": "a411084"}
+      ],
+      "dependencies": [
+        {"description": "Upgraded `github.com/google/go-github` from v84.0.0 to v88.0.0", "commit": "b6058f9"},
+        {"description": "Updated `github.com/grokify/mogo` from v0.74.1 to v0.74.6", "commit": "e7fa28d"},
+        {"description": "Updated `actions/checkout` from 6 to 7", "commit": "0100169"}
+      ],
+      "documentation": [
+        {"description": "Added CLAUDE.md for project-specific AI assistant guidelines", "commit": "e27d4a3"},
+        {"description": "Updated README.md examples to use go-github v88 API patterns", "commit": "b6058f9"}
+      ],
+      "chores": [
+        {"description": "Fixed `gofmt` formatting issues via golangci-lint", "commit": "1c6f12d"}
+      ]
+    },
+    {
       "version": "v0.12.1",
       "date": "2026-04-05",
       "highlights": [
