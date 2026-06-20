@@ -177,10 +177,21 @@ type MonthlyStats struct {
 	// Repository counts
 	RepoCountContributed int `json:"repoCountContributed"`
 	RepoCountCreated     int `json:"repoCountCreated"`
+
+	// Repository lists for cross-period aggregation
+	// Repositories contains all repos with commits this month (owner/repo format)
+	Repositories []string `json:"repositories,omitempty"`
 }
 
 // ToMonthlyStats converts MonthlyActivity to a JSON-serializable MonthlyStats.
 func (m *MonthlyActivity) ToMonthlyStats() MonthlyStats {
+	// Extract repository names from CommitsByRepo map
+	repos := make([]string, 0, len(m.CommitsByRepo))
+	for repo := range m.CommitsByRepo {
+		repos = append(repos, repo)
+	}
+	sort.Strings(repos) // Deterministic output
+
 	return MonthlyStats{
 		Year:                 m.Year,
 		Month:                int(m.Month),
@@ -195,6 +206,7 @@ func (m *MonthlyActivity) ToMonthlyStats() MonthlyStats {
 		NetAdditions:         m.NetAdditions(),
 		RepoCountContributed: m.CommitRepoCount(),
 		RepoCountCreated:     m.RepoCountCreated(),
+		Repositories:         repos,
 	}
 }
 
@@ -311,4 +323,63 @@ func (t *ActivityTimeline) GetMonthStats(year int, month time.Month) *MonthlySta
 	}
 	stats := m.ToMonthlyStats()
 	return &stats
+}
+
+// AggregateMonthlyStats combines multiple MonthlyStats into an aggregate summary.
+// This is useful for computing quarterly or yearly statistics from monthly data.
+// The returned stats contain unique repositories across all input months.
+func AggregateMonthlyStats(months []MonthlyStats) AggregatedStats {
+	agg := AggregatedStats{
+		repoSet: make(map[string]struct{}),
+	}
+
+	for _, m := range months {
+		agg.Commits += m.Commits
+		agg.Issues += m.Issues
+		agg.PRs += m.PRs
+		agg.Reviews += m.Reviews
+		agg.Releases += m.Releases
+		agg.Additions += m.Additions
+		agg.Deletions += m.Deletions
+
+		for _, repo := range m.Repositories {
+			agg.repoSet[repo] = struct{}{}
+		}
+	}
+
+	agg.NetAdditions = agg.Additions - agg.Deletions
+	agg.UniqueRepoCount = len(agg.repoSet)
+
+	// Build sorted list of unique repos
+	agg.UniqueRepositories = make([]string, 0, len(agg.repoSet))
+	for repo := range agg.repoSet {
+		agg.UniqueRepositories = append(agg.UniqueRepositories, repo)
+	}
+	sort.Strings(agg.UniqueRepositories)
+
+	return agg
+}
+
+// AggregatedStats represents statistics aggregated across multiple months.
+type AggregatedStats struct {
+	// Contribution counts (summed)
+	Commits  int `json:"commits"`
+	Issues   int `json:"issues"`
+	PRs      int `json:"prs"`
+	Reviews  int `json:"reviews"`
+	Releases int `json:"releases"`
+
+	// Code changes (summed)
+	Additions    int `json:"additions"`
+	Deletions    int `json:"deletions"`
+	NetAdditions int `json:"netAdditions"`
+
+	// Unique repository count across all months
+	UniqueRepoCount int `json:"uniqueRepoCount"`
+
+	// List of unique repositories (owner/repo format, sorted)
+	UniqueRepositories []string `json:"uniqueRepositories,omitempty"`
+
+	// Internal: used during aggregation
+	repoSet map[string]struct{} `json:"-"`
 }
