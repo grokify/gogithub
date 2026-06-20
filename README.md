@@ -278,7 +278,7 @@ import (
     "fmt"
     "time"
 
-    "github.com/google/go-github/v84/github"
+    "github.com/google/go-github/v88/github"
     "github.com/grokify/gogithub/graphql"
     "github.com/grokify/gogithub/profile"
 )
@@ -287,7 +287,10 @@ func main() {
     ctx := context.Background()
     token := "your-github-token"
 
-    restClient := github.NewClient(nil).WithAuthToken(token)
+    restClient, err := github.NewClient(github.WithAuthToken(token))
+    if err != nil {
+        panic(err)
+    }
     gqlClient := graphql.NewClient(ctx, token)
 
     // Fetch profile for last year
@@ -428,7 +431,7 @@ package gist
 
 import (
     "context"
-    "github.com/google/go-github/v84/github"
+    "github.com/google/go-github/v88/github"
 )
 
 func Create(ctx context.Context, gh *github.Client, description string, public bool, files map[string]string) (*github.Gist, error) {
@@ -464,7 +467,7 @@ issues, _ := c.SearchIssuesAll(ctx, search.Query{...}, nil)
 
 ## Dependencies
 
-- [google/go-github](https://github.com/google/go-github) v84 - GitHub API client
+- [google/go-github](https://github.com/google/go-github) v88 - GitHub API client
 - [golang.org/x/oauth2](https://golang.org/x/oauth2) - OAuth2 authentication
 
 ## License
