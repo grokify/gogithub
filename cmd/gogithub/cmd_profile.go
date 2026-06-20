@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-github/v84/github"
+	"github.com/google/go-github/v88/github"
 	"github.com/grokify/mogo/fmt/progress"
 	"github.com/spf13/cobra"
 
@@ -257,7 +257,10 @@ func runProfileFromAPI() error {
 	ctx := context.Background()
 
 	// Create clients
-	restClient := github.NewClient(nil).WithAuthToken(token)
+	restClient, err := github.NewClient(github.WithAuthToken(token))
+	if err != nil {
+		return fmt.Errorf("creating github client: %w", err)
+	}
 	gqlClient := graphql.NewClient(ctx, token)
 
 	fmt.Fprintf(os.Stderr, "Fetching profile for '%s' from %s to %s\n\n",

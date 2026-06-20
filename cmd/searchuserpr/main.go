@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/google/go-github/v84/github"
+	"github.com/google/go-github/v88/github"
 	"github.com/grokify/gogithub/search"
 	"github.com/grokify/mogo/log/logutil"
 	flags "github.com/jessevdk/go-flags"
@@ -35,7 +35,11 @@ func main() {
 		os.Exit(0)
 	}
 
-	c := search.NewClient(github.NewClient(nil))
+	ghClient, err := github.NewClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	c := search.NewClient(ghClient)
 
 	ii := search.Issues{}
 

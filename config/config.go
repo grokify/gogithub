@@ -6,7 +6,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/google/go-github/v84/github"
+	"github.com/google/go-github/v88/github"
 	"golang.org/x/oauth2"
 )
 
@@ -244,11 +244,12 @@ func (c *Config) NewClient(ctx context.Context) (*github.Client, error) {
 	)
 	tc := oauth2.NewClient(ctx, ts)
 
+	opts := []github.ClientOptionsFunc{github.WithHTTPClient(tc)}
 	if c.IsEnterprise() {
-		return github.NewClient(tc).WithEnterpriseURLs(c.BaseURL, c.UploadURL)
+		opts = append(opts, github.WithEnterpriseURLs(c.BaseURL, c.UploadURL))
 	}
 
-	return github.NewClient(tc), nil
+	return github.NewClient(opts...)
 }
 
 // MustNewClient creates a GitHub client from the configuration.
