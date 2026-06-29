@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/google/go-github/v88/github"
@@ -20,16 +21,25 @@ var searchPRsCmd = &cobra.Command{
 	Use:   "search-prs",
 	Short: "Search for open pull requests by user",
 	Long: `Search for open pull requests across GitHub for specified users.
-Results are exported to an Excel file.
 
-Example:
-  gogithub search-prs --accounts grokify,octocat --outfile prs.xlsx`,
+By default, results are displayed as an ASCII table to stdout.
+Use -o/--outfile to write to a file (format auto-detected from extension).
+
+Supported formats:
+  .xlsx  Excel spreadsheet
+  .md    Markdown table
+  .csv   CSV file
+
+Examples:
+  gogithub search-prs -a grokify                    # ASCII table to stdout
+  gogithub search-prs -a grokify -o prs.xlsx        # Excel file
+  gogithub search-prs -a grokify,octocat -o prs.md  # Markdown file`,
 	RunE: runSearchPRs,
 }
 
 func init() {
 	searchPRsCmd.Flags().StringSliceVarP(&searchAccounts, "accounts", "a", nil, "GitHub accounts to search (required)")
-	searchPRsCmd.Flags().StringVarP(&searchOutfile, "outfile", "o", "githubissues.xlsx", "Output Excel file")
+	searchPRsCmd.Flags().StringVarP(&searchOutfile, "outfile", "o", "", "Output file (format from extension: .xlsx, .md, .csv)")
 	_ = searchPRsCmd.MarkFlagRequired("accounts")
 }
 
@@ -39,11 +49,11 @@ func runSearchPRs(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	fmt.Printf("Loading public pull requests for (%s)\n", strings.Join(searchAccounts, ", "))
-
 	searchOutfile = strings.TrimSpace(searchOutfile)
-	if searchOutfile == "" {
-		searchOutfile = "githubissues.xlsx"
+
+	// Only print status messages when writing to file (not stdout)
+	if searchOutfile != "" {
+		fmt.Fprintf(os.Stderr, "Loading public pull requests for (%s)\n", strings.Join(searchAccounts, ", "))
 	}
 
 	// Create unauthenticated client for public data
@@ -64,18 +74,47 @@ func runSearchPRs(cmd *cobra.Command, args []string) error {
 		ii = append(ii, iss...)
 	}
 
-	ts, err := ii.TableSet()
-	if err != nil {
-		return fmt.Errorf("create table: %w", err)
+	// Output to stdout if no outfile specified
+	if searchOutfile == "" {
+		tbl, err := ii.Table("Pull Requests")
+		if err != nil {
+			return fmt.Errorf("create table: %w", err)
+		}
+		return tbl.Text(os.Stdout)
 	}
 
-	if err := ts.WriteXLSX(searchOutfile); err != nil {
-		return fmt.Errorf("write xlsx: %w", err)
+	// Write to file based on extension
+	ext := strings.ToLower(filepath.Ext(searchOutfile))
+	switch ext {
+	case ".xlsx":
+		ts, err := ii.TableSet()
+		if err != nil {
+			return fmt.Errorf("create table: %w", err)
+		}
+		if err := ts.WriteXLSX(searchOutfile); err != nil {
+			return fmt.Errorf("write xlsx: %w", err)
+		}
+	case ".md":
+		tbl, err := ii.Table("Pull Requests")
+		if err != nil {
+			return fmt.Errorf("create table: %w", err)
+		}
+		if err := tbl.WriteMarkdown(searchOutfile, 0644, "\n", true); err != nil {
+			return fmt.Errorf("write markdown: %w", err)
+		}
+	case ".csv":
+		tbl, err := ii.Table("Pull Requests")
+		if err != nil {
+			return fmt.Errorf("create table: %w", err)
+		}
+		if err := tbl.WriteCSV(searchOutfile); err != nil {
+			return fmt.Errorf("write csv: %w", err)
+		}
+	default:
+		return fmt.Errorf("unsupported file extension %q (use .xlsx, .md, or .csv)", ext)
 	}
 
-	fmt.Printf("Wrote %s\n", searchOutfile)
-	fmt.Println("Done")
-
+	fmt.Fprintf(os.Stderr, "Wrote %s\n", searchOutfile)
 	return nil
 }
 
