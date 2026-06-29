@@ -276,21 +276,40 @@ Search for open pull requests by user.
 gogithub search-prs --accounts <users> [flags]
 ```
 
+By default, results are displayed as an ASCII table to stdout. Use `-o/--outfile` to write to a file, with format auto-detected from the extension.
+
 #### Flags
 
 | Flag | Short | Description | Default |
 |------|-------|-------------|---------|
 | `--accounts` | `-a` | GitHub accounts to search (comma-separated) | (required) |
-| `--outfile` | `-o` | Output Excel file | `githubissues.xlsx` |
+| `--outfile` | `-o` | Output file (format from extension) | stdout |
+
+#### Supported Formats
+
+| Extension | Format |
+|-----------|--------|
+| `.xlsx` | Excel spreadsheet |
+| `.md` | Markdown table |
+| `.csv` | CSV file |
 
 #### Examples
 
 ```bash
-# Search for PRs by multiple users
-gogithub search-prs --accounts grokify,octocat --outfile prs.xlsx
-
-# Single user
+# ASCII table to stdout (default)
 gogithub search-prs -a grokify
+
+# Pipe to other tools
+gogithub search-prs -a grokify | grep someterm
+
+# Search multiple users, save to Excel
+gogithub search-prs --accounts grokify,octocat -o prs.xlsx
+
+# Save as Markdown
+gogithub search-prs -a grokify -o prs.md
+
+# Save as CSV
+gogithub search-prs -a grokify -o prs.csv
 ```
 
 ## Progress Display
