@@ -10,3 +10,5 @@ gogithub_profile_*_raw_*.json
 # Web app
 /web/node_modules/
 /web/dist/
+.envrc
+*.xlsx
