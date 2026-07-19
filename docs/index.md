@@ -60,4 +60,4 @@ func main() {
 
 - [Getting Started](getting-started.md) - Installation and first steps
 - [API Reference](api-reference.md) - Links to pkg.go.dev documentation
-- [Changelog](changelog.md) - Version history and release notes
+- [Changelog](https://github.com/grokify/gogithub/blob/main/CHANGELOG.md) - Version history and release notes
