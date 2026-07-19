@@ -8,6 +8,28 @@
   "maintainers": ["grokify"],
   "releases": [
     {
+      "version": "v0.14.0",
+      "date": "2026-07-19",
+      "highlights": [
+        { "description": "**search-prs stdout default and multi-format output**: results print to stdout by default with selectable output formats", "commit": "4693787" }
+      ],
+      "added": [
+        { "description": "[cli] `search-prs` stdout default and multi-format output", "commit": "4693787" }
+      ],
+      "documentation": [
+        { "description": "[cli] search-prs documentation updated for the stdout default", "commit": "61d6ff8" },
+        { "description": "README shields standardized; dev-guide badge added", "commit": "5e400a2" }
+      ],
+      "dependencies": [
+        { "description": "go-isatty v0.0.23, excelize v2.11.0", "commit": "754f289" },
+        { "description": "GitHub Actions setup-go bumped from 5 to 7", "commit": "81e539b" }
+      ],
+      "chores": [
+        { "description": "Ignore .envrc and local xlsx exports", "commit": "5eb28f3" },
+        { "description": "Automated profile stats SVG refreshes", "commit": "f437c9a" }
+      ]
+    },
+    {
       "version": "v0.13.0",
       "date": "2026-06-20",
       "highlights": [
