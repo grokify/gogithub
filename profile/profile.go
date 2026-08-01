@@ -6,7 +6,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/google/go-github/v89/github"
+	"github.com/grokify/gogithub/clientv1"
 	"github.com/grokify/gogithub/graphql"
 	"github.com/grokify/gogithub/release"
 	"github.com/shurcooL/githubv4"
@@ -111,7 +111,7 @@ func DefaultOptions() *Options {
 //   - GraphQL: contributionsCollection for summary stats and calendar
 //   - GraphQL: commit history for additions/deletions per repo
 //   - REST: release counts (optional)
-func GetUserProfile(ctx context.Context, restClient *github.Client, gqlClient *githubv4.Client, username string, from, to time.Time, opts *Options) (*UserProfile, error) {
+func GetUserProfile(ctx context.Context, restClient clientv1.Client, gqlClient *githubv4.Client, username string, from, to time.Time, opts *Options) (*UserProfile, error) {
 	if opts == nil {
 		opts = DefaultOptions()
 	}
@@ -310,7 +310,7 @@ func buildActivityTimeline(username string, from, to time.Time, contribStats *gr
 
 // fetchReleaseCounts fetches release counts for repositories and aggregates by month.
 // Errors fetching individual repos are silently ignored (e.g., lost access, deleted repo).
-func fetchReleaseCounts(ctx context.Context, restClient *github.Client, profile *UserProfile, opts *Options, progress ProgressFunc, totalStages int) {
+func fetchReleaseCounts(ctx context.Context, restClient clientv1.Client, profile *UserProfile, opts *Options, progress ProgressFunc, totalStages int) {
 	maxRepos := opts.MaxReleaseFetchRepos
 
 	// Build org filter set for efficient lookup
@@ -366,18 +366,18 @@ func fetchReleaseCounts(ctx context.Context, restClient *github.Client, profile 
 		// Count releases and aggregate by month
 		repoReleaseCount := 0
 		for _, rel := range releases {
-			pubAt := rel.GetPublishedAt()
-			if pubAt.IsZero() {
-				// Fall back to created_at if not published
-				pubAt = rel.GetCreatedAt()
+			var relTime time.Time
+			if rel.PublishedAt != nil && !rel.PublishedAt.IsZero() {
+				relTime = *rel.PublishedAt
+			} else if !rel.CreatedAt.IsZero() {
+				relTime = rel.CreatedAt
 			}
-			if pubAt.IsZero() {
+			if relTime.IsZero() {
 				repoReleaseCount++
 				continue
 			}
 
 			// Check if release is within profile date range
-			relTime := pubAt.Time
 			if relTime.Before(profile.From) || relTime.After(profile.To) {
 				continue
 			}

@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-github/v89/github"
 	"github.com/grokify/mogo/fmt/progress"
 	"github.com/spf13/cobra"
 
+	"github.com/grokify/gogithub/clientv1"
 	"github.com/grokify/gogithub/graphql"
 	"github.com/grokify/gogithub/profile"
 	"github.com/grokify/gogithub/profile/readme"
@@ -257,7 +257,7 @@ func runProfileFromAPI() error {
 	ctx := context.Background()
 
 	// Create clients
-	restClient, err := github.NewClient(github.WithAuthToken(token))
+	restClient, err := clientv1.NewClient(ctx, token)
 	if err != nil {
 		return fmt.Errorf("creating github client: %w", err)
 	}
