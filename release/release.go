@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/go-github/v88/github"
+	"github.com/google/go-github/v89/github"
 )
 
 // ListReleases lists all releases for a repository with pagination.
@@ -75,8 +75,8 @@ func ListReleaseAssets(ctx context.Context, gh *github.Client, owner, repo strin
 }
 
 // CreateRelease creates a new release for a repository.
-func CreateRelease(ctx context.Context, gh *github.Client, owner, repo string, release *github.RepositoryRelease) (*github.RepositoryRelease, error) {
-	created, _, err := gh.Repositories.CreateRelease(ctx, owner, repo, release)
+func CreateRelease(ctx context.Context, gh *github.Client, owner, repo string, req github.CreateReleaseRequest) (*github.RepositoryRelease, error) {
+	created, _, err := gh.Repositories.CreateRelease(ctx, owner, repo, req)
 	if err != nil {
 		return nil, fmt.Errorf("create release: %w", err)
 	}
@@ -85,15 +85,15 @@ func CreateRelease(ctx context.Context, gh *github.Client, owner, repo string, r
 
 // CreateReleaseSimple creates a release with common options.
 func CreateReleaseSimple(ctx context.Context, gh *github.Client, owner, repo, tagName, name, body string, draft, prerelease, generateNotes bool) (*github.RepositoryRelease, error) {
-	release := &github.RepositoryRelease{
-		TagName:              github.Ptr(tagName),
+	req := github.CreateReleaseRequest{
+		TagName:              tagName,
 		Name:                 github.Ptr(name),
 		Body:                 github.Ptr(body),
 		Draft:                github.Ptr(draft),
 		Prerelease:           github.Ptr(prerelease),
 		GenerateReleaseNotes: github.Ptr(generateNotes),
 	}
-	return CreateRelease(ctx, gh, owner, repo, release)
+	return CreateRelease(ctx, gh, owner, repo, req)
 }
 
 // DeleteRelease deletes a release by ID.
@@ -102,8 +102,15 @@ func DeleteRelease(ctx context.Context, gh *github.Client, owner, repo string, r
 	return err
 }
 
-// EditRelease updates a release.
-func EditRelease(ctx context.Context, gh *github.Client, owner, repo string, releaseID int64, release *github.RepositoryRelease) (*github.RepositoryRelease, error) {
-	updated, _, err := gh.Repositories.EditRelease(ctx, owner, repo, releaseID, release)
+// UpdateRelease updates a release.
+func UpdateRelease(ctx context.Context, gh *github.Client, owner, repo string, releaseID int64, req github.UpdateReleaseRequest) (*github.RepositoryRelease, error) {
+	updated, _, err := gh.Repositories.UpdateRelease(ctx, owner, repo, releaseID, req)
 	return updated, err
+}
+
+// EditRelease is deprecated. Use UpdateRelease instead.
+//
+// Deprecated: Use UpdateRelease.
+func EditRelease(ctx context.Context, gh *github.Client, owner, repo string, releaseID int64, req github.UpdateReleaseRequest) (*github.RepositoryRelease, error) {
+	return UpdateRelease(ctx, gh, owner, repo, releaseID, req)
 }
