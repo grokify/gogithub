@@ -233,6 +233,110 @@ func (c *client) FileExists(ctx context.Context, owner, repo, path string, opts 
 	return content != nil && content.GetType() == "file", nil
 }
 
+// GetFileContentWithSHA fetches a file's content and returns its SHA.
+func (c *client) GetFileContentWithSHA(ctx context.Context, owner, repo, path string, opts *gogithub.ContentOptions) ([]byte, string, error) {
+	getOpts := &github.RepositoryContentGetOptions{}
+	if opts != nil && opts.Ref != "" {
+		getOpts.Ref = opts.Ref
+	}
+	content, _, resp, err := c.gh.Repositories.GetContents(ctx, owner, repo, path, getOpts)
+	if err != nil {
+		if resp != nil && resp.StatusCode == 404 {
+			return nil, "", fmt.Errorf("file not found: %s", path)
+		}
+		return nil, "", fmt.Errorf("get file content %s: %w", path, err)
+	}
+	if content == nil {
+		return nil, "", fmt.Errorf("path is a directory, not a file: %s", path)
+	}
+	if content.GetType() != "file" {
+		return nil, "", fmt.Errorf("path is not a file: %s (type: %s)", path, content.GetType())
+	}
+	decoded, err := content.GetContent()
+	if err != nil {
+		return nil, "", fmt.Errorf("decode file content %s: %w", path, err)
+	}
+	return []byte(decoded), content.GetSHA(), nil
+}
+
+// CreateFile creates a new file in a repository.
+func (c *client) CreateFile(ctx context.Context, owner, repo, path string, opts *CreateFileOptions) (*gogithub.CreateFileResult, error) {
+	fileOpts := &github.RepositoryContentFileOptions{
+		Message: github.Ptr(opts.Message),
+		Content: opts.Content,
+	}
+	if opts.Branch != "" {
+		fileOpts.Branch = github.Ptr(opts.Branch)
+	}
+	if opts.Author != nil {
+		fileOpts.Author = &github.CommitAuthor{
+			Name:  github.Ptr(opts.Author.Name),
+			Email: github.Ptr(opts.Author.Email),
+		}
+		if opts.Author.Date != nil {
+			fileOpts.Author.Date = &github.Timestamp{Time: *opts.Author.Date}
+		}
+	}
+	content, _, err := c.gh.Repositories.CreateFile(ctx, owner, repo, path, fileOpts)
+	if err != nil {
+		return nil, fmt.Errorf("create file %s: %w", path, err)
+	}
+	return createFileResultFromGitHub(content), nil
+}
+
+// UpdateFile updates an existing file in a repository.
+func (c *client) UpdateFile(ctx context.Context, owner, repo, path string, opts *UpdateFileOptions) (*gogithub.CreateFileResult, error) {
+	fileOpts := &github.RepositoryContentFileOptions{
+		Message: github.Ptr(opts.Message),
+		Content: opts.Content,
+		SHA:     github.Ptr(opts.SHA),
+	}
+	if opts.Branch != "" {
+		fileOpts.Branch = github.Ptr(opts.Branch)
+	}
+	if opts.Author != nil {
+		fileOpts.Author = &github.CommitAuthor{
+			Name:  github.Ptr(opts.Author.Name),
+			Email: github.Ptr(opts.Author.Email),
+		}
+		if opts.Author.Date != nil {
+			fileOpts.Author.Date = &github.Timestamp{Time: *opts.Author.Date}
+		}
+	}
+	content, _, err := c.gh.Repositories.UpdateFile(ctx, owner, repo, path, fileOpts)
+	if err != nil {
+		return nil, fmt.Errorf("update file %s: %w", path, err)
+	}
+	return createFileResultFromGitHub(content), nil
+}
+
+// DeleteFile deletes a file from a repository.
+func (c *client) DeleteFile(ctx context.Context, owner, repo, path, sha, message string, opts *DeleteFileOptions) (*gogithub.DeleteFileResult, error) {
+	fileOpts := &github.RepositoryContentFileOptions{
+		Message: github.Ptr(message),
+		SHA:     github.Ptr(sha),
+	}
+	if opts != nil {
+		if opts.Branch != "" {
+			fileOpts.Branch = github.Ptr(opts.Branch)
+		}
+		if opts.Author != nil {
+			fileOpts.Author = &github.CommitAuthor{
+				Name:  github.Ptr(opts.Author.Name),
+				Email: github.Ptr(opts.Author.Email),
+			}
+			if opts.Author.Date != nil {
+				fileOpts.Author.Date = &github.Timestamp{Time: *opts.Author.Date}
+			}
+		}
+	}
+	resp, _, err := c.gh.Repositories.DeleteFile(ctx, owner, repo, path, fileOpts)
+	if err != nil {
+		return nil, fmt.Errorf("delete file %s: %w", path, err)
+	}
+	return deleteFileResultFromGitHub(resp), nil
+}
+
 // GetRef retrieves a git reference by its full name.
 func (c *client) GetRef(ctx context.Context, owner, repo, ref string) (*gogithub.Reference, error) {
 	r, _, err := c.gh.Git.GetRef(ctx, owner, repo, ref)
@@ -592,6 +696,31 @@ func (c *client) CreateTree(ctx context.Context, owner, repo, baseTree string, e
 		return "", fmt.Errorf("create tree: %w", err)
 	}
 	return tree.GetSHA(), nil
+}
+
+// CreateBlob creates a git blob with the given content.
+func (c *client) CreateBlob(ctx context.Context, owner, repo string, content []byte, encoding string) (string, error) {
+	if encoding == "" {
+		encoding = "utf-8"
+	}
+	blob := github.Blob{
+		Content:  github.Ptr(string(content)),
+		Encoding: github.Ptr(encoding),
+	}
+	created, _, err := c.gh.Git.CreateBlob(ctx, owner, repo, blob)
+	if err != nil {
+		return "", fmt.Errorf("create blob: %w", err)
+	}
+	return created.GetSHA(), nil
+}
+
+// GetTree retrieves a git tree by SHA.
+func (c *client) GetTree(ctx context.Context, owner, repo, sha string, recursive bool) ([]*gogithub.TreeNode, error) {
+	tree, _, err := c.gh.Git.GetTree(ctx, owner, repo, sha, recursive)
+	if err != nil {
+		return nil, fmt.Errorf("get tree: %w", err)
+	}
+	return treeNodesFromGitHub(tree.Entries), nil
 }
 
 // UpdatePullRequest updates a pull request.
