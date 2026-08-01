@@ -279,9 +279,9 @@ type CreatePRCommentInput struct {
 
 // CreateForkOptions specifies options for creating a fork.
 type CreateForkOptions struct {
-	Organization    string // Fork to this org instead of user's account
-	Name            string // Custom name for the fork
-	DefaultBranch   bool   // Only fork the default branch
+	Organization  string // Fork to this org instead of user's account
+	Name          string // Custom name for the fork
+	DefaultBranch bool   // Only fork the default branch
 }
 
 // CreateCommitOptions specifies options for creating a commit.
@@ -331,8 +331,8 @@ type UpdateReleaseInput struct {
 
 // SearchOptions specifies options for search queries.
 type SearchOptions struct {
-	Sort      string // "comments", "reactions", "created", "updated", etc.
-	Order     string // "asc" or "desc"
-	PerPage   int
-	Page      int
+	Sort    string // "comments", "reactions", "created", "updated", etc.
+	Order   string // "asc" or "desc"
+	PerPage int
+	Page    int
 }

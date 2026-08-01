@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-github/v89/github"
+	"github.com/grokify/gogithub/clientv1"
 	"github.com/grokify/gogithub/graphql"
 )
 
@@ -20,8 +20,8 @@ func getTestToken(t *testing.T) string {
 	return token
 }
 
-func newTestClient(t *testing.T, token string) *github.Client {
-	client, err := github.NewClient(github.WithAuthToken(token))
+func newTestClient(t *testing.T, ctx context.Context, token string) clientv1.Client {
+	client, err := clientv1.NewClient(ctx, token)
 	if err != nil {
 		t.Fatalf("failed to create github client: %v", err)
 	}
@@ -32,7 +32,7 @@ func TestGetUserProfileIntegration(t *testing.T) {
 	token := getTestToken(t)
 	ctx := context.Background()
 
-	restClient := newTestClient(t, token)
+	restClient := newTestClient(t, ctx, token)
 	gqlClient := graphql.NewClient(ctx, token)
 
 	// Use a 1-month window to minimize API calls
@@ -71,7 +71,7 @@ func TestGetUserProfileWithOptionsIntegration(t *testing.T) {
 	token := getTestToken(t)
 	ctx := context.Background()
 
-	restClient := newTestClient(t, token)
+	restClient := newTestClient(t, ctx, token)
 	gqlClient := graphql.NewClient(ctx, token)
 
 	to := time.Now()
@@ -105,7 +105,7 @@ func TestGetUserProfileCalendarIntegration(t *testing.T) {
 	token := getTestToken(t)
 	ctx := context.Background()
 
-	restClient := newTestClient(t, token)
+	restClient := newTestClient(t, ctx, token)
 	gqlClient := graphql.NewClient(ctx, token)
 
 	// Use a 3-month window to get meaningful calendar data
@@ -140,7 +140,7 @@ func TestGetUserProfileActivityIntegration(t *testing.T) {
 	token := getTestToken(t)
 	ctx := context.Background()
 
-	restClient := newTestClient(t, token)
+	restClient := newTestClient(t, ctx, token)
 	gqlClient := graphql.NewClient(ctx, token)
 
 	// Use a 3-month window
@@ -185,7 +185,7 @@ func TestGetUserProfileWithReleasesIntegration(t *testing.T) {
 	token := getTestToken(t)
 	ctx := context.Background()
 
-	restClient := newTestClient(t, token)
+	restClient := newTestClient(t, ctx, token)
 	gqlClient := graphql.NewClient(ctx, token)
 
 	// Use a longer window to find repos with releases
@@ -221,7 +221,7 @@ func TestGetUserProfileTopReposIntegration(t *testing.T) {
 	token := getTestToken(t)
 	ctx := context.Background()
 
-	restClient := newTestClient(t, token)
+	restClient := newTestClient(t, ctx, token)
 	gqlClient := graphql.NewClient(ctx, token)
 
 	to := time.Now()
@@ -249,7 +249,7 @@ func TestGetUserProfileSummaryIntegration(t *testing.T) {
 	token := getTestToken(t)
 	ctx := context.Background()
 
-	restClient := newTestClient(t, token)
+	restClient := newTestClient(t, ctx, token)
 	gqlClient := graphql.NewClient(ctx, token)
 
 	to := time.Now()
@@ -272,7 +272,7 @@ func TestGetUserProfileInvalidUserIntegration(t *testing.T) {
 	token := getTestToken(t)
 	ctx := context.Background()
 
-	restClient := newTestClient(t, token)
+	restClient := newTestClient(t, ctx, token)
 	gqlClient := graphql.NewClient(ctx, token)
 
 	to := time.Now()
