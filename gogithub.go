@@ -1,6 +1,22 @@
 // Package gogithub provides a Go client for the GitHub API.
 //
-// This package is organized into subpackages by operation type:
+// # Recommended: Version-Isolated Client
+//
+// For new code, use the clientv1 package which provides stable types that won't
+// change when go-github updates its major version:
+//
+//	import "github.com/grokify/gogithub/clientv1"
+//
+//	client, err := clientv1.NewClient(ctx, "your-token")
+//	user, err := client.GetAuthenticatedUser(ctx)      // Returns *clientv1.User
+//	repos, err := client.ListUserRepos(ctx, "user")    // Returns []*clientv1.Repository
+//	sha, err := client.GetBranchSHA(ctx, "owner", "repo", "main")
+//
+// # Legacy Packages
+//
+// The following packages expose go-github types directly and will require
+// consumer updates when go-github changes major versions:
+//
 //   - auth: Authentication utilities and bot user constants
 //   - config: Configuration and environment variable loading
 //   - errors: Error types and translation utilities
@@ -10,7 +26,7 @@
 //   - pr: Pull request operations
 //   - release: Release and asset operations
 //
-// Example usage:
+// Example using legacy packages:
 //
 //	package main
 //
