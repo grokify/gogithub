@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/grokify/gogithub/clientv1"
 	"github.com/grokify/gogithub/pathutil"
 )
 
@@ -211,8 +212,14 @@ func TestWithCommitAuthor(t *testing.T) {
 func TestNewBatch(t *testing.T) {
 	ctx := context.Background()
 
+	// Create a real client for testing
+	client, err := clientv1.NewClientWithHTTP(nil)
+	if err != nil {
+		t.Fatalf("NewClientWithHTTP() error = %v", err)
+	}
+
 	// Test with default message
-	batch, err := NewBatch(ctx, nil, "owner", "repo", "main", "")
+	batch, err := NewBatch(ctx, client, "owner", "repo", "main", "")
 	if err != nil {
 		t.Fatalf("NewBatch() error = %v", err)
 	}
@@ -221,7 +228,7 @@ func TestNewBatch(t *testing.T) {
 	}
 
 	// Test with custom message
-	batch, err = NewBatch(ctx, nil, "owner", "repo", "main", "Custom message")
+	batch, err = NewBatch(ctx, client, "owner", "repo", "main", "Custom message")
 	if err != nil {
 		t.Fatalf("NewBatch() error = %v", err)
 	}
@@ -230,7 +237,7 @@ func TestNewBatch(t *testing.T) {
 	}
 
 	// Test with author option
-	batch, err = NewBatch(ctx, nil, "owner", "repo", "main", "Test", WithCommitAuthor("Test", "test@example.com"))
+	batch, err = NewBatch(ctx, client, "owner", "repo", "main", "Test", WithCommitAuthor("Test", "test@example.com"))
 	if err != nil {
 		t.Fatalf("NewBatch() error = %v", err)
 	}
@@ -243,7 +250,12 @@ func TestNewBatchCanceledContext(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	_, err := NewBatch(ctx, nil, "owner", "repo", "main", "Test")
+	client, err := clientv1.NewClientWithHTTP(nil)
+	if err != nil {
+		t.Fatalf("NewClientWithHTTP() error = %v", err)
+	}
+
+	_, err = NewBatch(ctx, client, "owner", "repo", "main", "Test")
 	if !errors.Is(err, context.Canceled) {
 		t.Errorf("NewBatch() error = %v, want context.Canceled", err)
 	}

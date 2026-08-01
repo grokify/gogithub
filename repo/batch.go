@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/google/go-github/v89/github"
+	"github.com/grokify/gogithub/clientv1"
 	"github.com/grokify/gogithub/pathutil"
 )
 
@@ -71,7 +72,8 @@ var ErrEmptyPath = errors.New("empty path not allowed")
 //	}
 //	fmt.Printf("Created commit: %s\n", sha)
 type Batch struct {
-	client     *github.Client
+	client     clientv1.Client
+	gh         *github.Client // extracted from client for git data API
 	owner      string
 	repo       string
 	branch     string
@@ -97,7 +99,7 @@ func WithCommitAuthor(name, email string) BatchOption {
 
 // NewBatch creates a new batch for accumulating file operations.
 // The message is used as the commit message when Commit is called.
-func NewBatch(ctx context.Context, gh *github.Client, owner, repo, branch, message string, opts ...BatchOption) (*Batch, error) {
+func NewBatch(ctx context.Context, client clientv1.Client, owner, repo, branch, message string, opts ...BatchOption) (*Batch, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -106,8 +108,15 @@ func NewBatch(ctx context.Context, gh *github.Client, owner, repo, branch, messa
 		message = "Batch update"
 	}
 
+	// Extract raw github.Client for git data API operations
+	gh, ok := client.Raw().(*github.Client)
+	if !ok {
+		return nil, errors.New("batch requires a clientv1.Client backed by go-github")
+	}
+
 	b := &Batch{
-		client:     gh,
+		client:     client,
+		gh:         gh,
 		owner:      owner,
 		repo:       repo,
 		branch:     branch,
@@ -230,7 +239,7 @@ func (b *Batch) Commit(ctx context.Context) (string, error) {
 	}
 
 	// Step 1: Get the current branch reference
-	ref, _, err := b.client.Git.GetRef(ctx, b.owner, b.repo, RefHeadsPrefix+b.branch)
+	ref, _, err := b.gh.Git.GetRef(ctx, b.owner, b.repo, RefHeadsPrefix+b.branch)
 	if err != nil {
 		return "", &BatchError{Op: "get ref", Err: err}
 	}
@@ -238,7 +247,7 @@ func (b *Batch) Commit(ctx context.Context) (string, error) {
 	currentCommitSHA := ref.Object.GetSHA()
 
 	// Step 2: Get the current commit to find the tree SHA
-	currentCommit, _, err := b.client.Git.GetCommit(ctx, b.owner, b.repo, currentCommitSHA)
+	currentCommit, _, err := b.gh.Git.GetCommit(ctx, b.owner, b.repo, currentCommitSHA)
 	if err != nil {
 		return "", &BatchError{Op: "get commit", Err: err}
 	}
@@ -258,7 +267,7 @@ func (b *Batch) Commit(ctx context.Context) (string, error) {
 	}
 
 	// Step 4: Create the new tree
-	newTree, _, err := b.client.Git.CreateTree(ctx, b.owner, b.repo, baseTreeSHA, treeEntries)
+	newTree, _, err := b.gh.Git.CreateTree(ctx, b.owner, b.repo, baseTreeSHA, treeEntries)
 	if err != nil {
 		return "", &BatchError{Op: "create tree", Err: err}
 	}
@@ -274,7 +283,7 @@ func (b *Batch) Commit(ctx context.Context) (string, error) {
 		commitOpts.Author = b.author
 	}
 
-	newCommit, _, err := b.client.Git.CreateCommit(ctx, b.owner, b.repo, commitOpts, nil)
+	newCommit, _, err := b.gh.Git.CreateCommit(ctx, b.owner, b.repo, commitOpts, nil)
 	if err != nil {
 		return "", &BatchError{Op: "create commit", Err: err}
 	}
@@ -286,7 +295,7 @@ func (b *Batch) Commit(ctx context.Context) (string, error) {
 		Force: github.Ptr(false),
 	}
 
-	_, _, err = b.client.Git.UpdateRef(ctx, b.owner, b.repo, ref.GetRef(), updateRef)
+	_, _, err = b.gh.Git.UpdateRef(ctx, b.owner, b.repo, ref.GetRef(), updateRef)
 	if err != nil {
 		return "", &BatchError{Op: "update ref", Err: err}
 	}
@@ -307,7 +316,7 @@ func (b *Batch) buildTreeEntries(ctx context.Context) ([]*github.TreeEntry, erro
 		switch op.Type {
 		case BatchOpWrite:
 			// Create a blob for the content
-			blob, _, err := b.client.Git.CreateBlob(ctx, b.owner, b.repo, github.Blob{
+			blob, _, err := b.gh.Git.CreateBlob(ctx, b.owner, b.repo, github.Blob{
 				Content:  github.Ptr(string(op.Content)),
 				Encoding: github.Ptr("utf-8"),
 			})
@@ -346,7 +355,7 @@ func (b *Batch) buildTreeEntries(ctx context.Context) ([]*github.TreeEntry, erro
 
 // fileExists checks if a file exists in the repository.
 func (b *Batch) fileExists(ctx context.Context, path string) (bool, error) {
-	_, _, resp, err := b.client.Repositories.GetContents(ctx, b.owner, b.repo, path, &github.RepositoryContentGetOptions{
+	_, _, resp, err := b.gh.Repositories.GetContents(ctx, b.owner, b.repo, path, &github.RepositoryContentGetOptions{
 		Ref: b.branch,
 	})
 	if err != nil {
