@@ -5,69 +5,23 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/go-github/v89/github"
+	"github.com/grokify/gogithub"
+	"github.com/grokify/gogithub/clientv1"
 )
 
-// ListOrgRepos lists all repositories for an organization with pagination.
-func ListOrgRepos(ctx context.Context, gh *github.Client, org string) ([]*github.Repository, error) {
-	var allRepos []*github.Repository
-
-	opts := &github.RepositoryListByOrgOptions{
-		Type: "all",
-		ListOptions: github.ListOptions{
-			PerPage: 100,
-		},
-	}
-
-	for {
-		repos, resp, err := gh.Repositories.ListByOrg(ctx, org, opts)
-		if err != nil {
-			return nil, fmt.Errorf("list org repos: %w", err)
-		}
-
-		allRepos = append(allRepos, repos...)
-
-		if resp.NextPage == 0 {
-			break
-		}
-		opts.Page = resp.NextPage
-	}
-
-	return allRepos, nil
+// ListOrgRepos lists all repositories for an organization.
+func ListOrgRepos(ctx context.Context, client clientv1.Client, org string) ([]*gogithub.Repository, error) {
+	return client.ListOrgRepos(ctx, org)
 }
 
-// ListUserRepos lists all repositories for a user with pagination.
-func ListUserRepos(ctx context.Context, gh *github.Client, user string) ([]*github.Repository, error) {
-	var allRepos []*github.Repository
-
-	opts := &github.RepositoryListByUserOptions{
-		Type: "all",
-		ListOptions: github.ListOptions{
-			PerPage: 100,
-		},
-	}
-
-	for {
-		repos, resp, err := gh.Repositories.ListByUser(ctx, user, opts)
-		if err != nil {
-			return nil, fmt.Errorf("list user repos: %w", err)
-		}
-
-		allRepos = append(allRepos, repos...)
-
-		if resp.NextPage == 0 {
-			break
-		}
-		opts.Page = resp.NextPage
-	}
-
-	return allRepos, nil
+// ListUserRepos lists all repositories for a user.
+func ListUserRepos(ctx context.Context, client clientv1.Client, user string) ([]*gogithub.Repository, error) {
+	return client.ListUserRepos(ctx, user)
 }
 
 // GetRepo retrieves a repository by owner and name.
-func GetRepo(ctx context.Context, gh *github.Client, owner, repo string) (*github.Repository, error) {
-	repository, _, err := gh.Repositories.Get(ctx, owner, repo)
-	return repository, err
+func GetRepo(ctx context.Context, client clientv1.Client, owner, repo string) (*gogithub.Repository, error) {
+	return client.GetRepository(ctx, owner, repo)
 }
 
 // ParseRepoName splits a full repo name (owner/repo) into owner and repo.

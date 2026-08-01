@@ -3,17 +3,13 @@ package checks
 import (
 	"testing"
 
-	"github.com/google/go-github/v89/github"
+	"github.com/grokify/gogithub"
 )
-
-func ptr[T any](v T) *T {
-	return &v
-}
 
 func TestGetChecksStatus(t *testing.T) {
 	tests := []struct {
 		name       string
-		checks     []*github.CheckRun
+		checks     []*gogithub.CheckRun
 		wantTotal  int
 		wantPassed int
 		wantFailed int
@@ -24,7 +20,7 @@ func TestGetChecksStatus(t *testing.T) {
 	}{
 		{
 			name:       "empty checks",
-			checks:     []*github.CheckRun{},
+			checks:     []*gogithub.CheckRun{},
 			wantTotal:  0,
 			wantPassed: 0,
 			wantFailed: 0,
@@ -35,9 +31,9 @@ func TestGetChecksStatus(t *testing.T) {
 		},
 		{
 			name: "all passed",
-			checks: []*github.CheckRun{
-				{Status: ptr("completed"), Conclusion: ptr("success")},
-				{Status: ptr("completed"), Conclusion: ptr("success")},
+			checks: []*gogithub.CheckRun{
+				{Status: "completed", Conclusion: "success"},
+				{Status: "completed", Conclusion: "success"},
 			},
 			wantTotal:  2,
 			wantPassed: 2,
@@ -49,9 +45,9 @@ func TestGetChecksStatus(t *testing.T) {
 		},
 		{
 			name: "some failed",
-			checks: []*github.CheckRun{
-				{Status: ptr("completed"), Conclusion: ptr("success")},
-				{Status: ptr("completed"), Conclusion: ptr("failure")},
+			checks: []*gogithub.CheckRun{
+				{Status: "completed", Conclusion: "success"},
+				{Status: "completed", Conclusion: "failure"},
 			},
 			wantTotal:  2,
 			wantPassed: 1,
@@ -63,9 +59,9 @@ func TestGetChecksStatus(t *testing.T) {
 		},
 		{
 			name: "some pending",
-			checks: []*github.CheckRun{
-				{Status: ptr("completed"), Conclusion: ptr("success")},
-				{Status: ptr("in_progress"), Conclusion: nil},
+			checks: []*gogithub.CheckRun{
+				{Status: "completed", Conclusion: "success"},
+				{Status: "in_progress", Conclusion: ""},
 			},
 			wantTotal:  2,
 			wantPassed: 1,
@@ -77,9 +73,9 @@ func TestGetChecksStatus(t *testing.T) {
 		},
 		{
 			name: "all pending",
-			checks: []*github.CheckRun{
-				{Status: ptr("queued"), Conclusion: nil},
-				{Status: ptr("in_progress"), Conclusion: nil},
+			checks: []*gogithub.CheckRun{
+				{Status: "queued", Conclusion: ""},
+				{Status: "in_progress", Conclusion: ""},
 			},
 			wantTotal:  2,
 			wantPassed: 0,
@@ -91,10 +87,10 @@ func TestGetChecksStatus(t *testing.T) {
 		},
 		{
 			name: "mixed status",
-			checks: []*github.CheckRun{
-				{Status: ptr("completed"), Conclusion: ptr("success")},
-				{Status: ptr("completed"), Conclusion: ptr("failure")},
-				{Status: ptr("in_progress"), Conclusion: nil},
+			checks: []*gogithub.CheckRun{
+				{Status: "completed", Conclusion: "success"},
+				{Status: "completed", Conclusion: "failure"},
+				{Status: "in_progress", Conclusion: ""},
 			},
 			wantTotal:  3,
 			wantPassed: 1,
@@ -106,8 +102,8 @@ func TestGetChecksStatus(t *testing.T) {
 		},
 		{
 			name: "cancelled counts as failed",
-			checks: []*github.CheckRun{
-				{Status: ptr("completed"), Conclusion: ptr("cancelled")},
+			checks: []*gogithub.CheckRun{
+				{Status: "completed", Conclusion: "cancelled"},
 			},
 			wantTotal:  1,
 			wantPassed: 0,
@@ -119,8 +115,8 @@ func TestGetChecksStatus(t *testing.T) {
 		},
 		{
 			name: "skipped counts as failed",
-			checks: []*github.CheckRun{
-				{Status: ptr("completed"), Conclusion: ptr("skipped")},
+			checks: []*gogithub.CheckRun{
+				{Status: "completed", Conclusion: "skipped"},
 			},
 			wantTotal:  1,
 			wantPassed: 0,
@@ -164,56 +160,56 @@ func TestGetChecksStatus(t *testing.T) {
 func TestAllChecksPassed(t *testing.T) {
 	tests := []struct {
 		name     string
-		checks   []*github.CheckRun
+		checks   []*gogithub.CheckRun
 		expected bool
 	}{
 		{
 			name:     "empty checks",
-			checks:   []*github.CheckRun{},
+			checks:   []*gogithub.CheckRun{},
 			expected: false,
 		},
 		{
 			name: "all passed",
-			checks: []*github.CheckRun{
-				{Status: ptr("completed"), Conclusion: ptr("success")},
-				{Status: ptr("completed"), Conclusion: ptr("success")},
+			checks: []*gogithub.CheckRun{
+				{Status: "completed", Conclusion: "success"},
+				{Status: "completed", Conclusion: "success"},
 			},
 			expected: true,
 		},
 		{
 			name: "one passed",
-			checks: []*github.CheckRun{
-				{Status: ptr("completed"), Conclusion: ptr("success")},
+			checks: []*gogithub.CheckRun{
+				{Status: "completed", Conclusion: "success"},
 			},
 			expected: true,
 		},
 		{
 			name: "one failed",
-			checks: []*github.CheckRun{
-				{Status: ptr("completed"), Conclusion: ptr("failure")},
+			checks: []*gogithub.CheckRun{
+				{Status: "completed", Conclusion: "failure"},
 			},
 			expected: false,
 		},
 		{
 			name: "one pending",
-			checks: []*github.CheckRun{
-				{Status: ptr("in_progress"), Conclusion: nil},
+			checks: []*gogithub.CheckRun{
+				{Status: "in_progress", Conclusion: ""},
 			},
 			expected: false,
 		},
 		{
 			name: "mixed passed and failed",
-			checks: []*github.CheckRun{
-				{Status: ptr("completed"), Conclusion: ptr("success")},
-				{Status: ptr("completed"), Conclusion: ptr("failure")},
+			checks: []*gogithub.CheckRun{
+				{Status: "completed", Conclusion: "success"},
+				{Status: "completed", Conclusion: "failure"},
 			},
 			expected: false,
 		},
 		{
 			name: "passed with pending",
-			checks: []*github.CheckRun{
-				{Status: ptr("completed"), Conclusion: ptr("success")},
-				{Status: ptr("queued"), Conclusion: nil},
+			checks: []*gogithub.CheckRun{
+				{Status: "completed", Conclusion: "success"},
+				{Status: "queued", Conclusion: ""},
 			},
 			expected: false,
 		},

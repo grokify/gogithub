@@ -2,70 +2,31 @@ package repo
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"time"
 
-	"github.com/google/go-github/v89/github"
+	"github.com/grokify/gogithub"
+	"github.com/grokify/gogithub/clientv1"
 )
 
 // ListContributorStats returns contributor statistics for a repository.
 // This wraps the GitHub REST API endpoint: GET /repos/{owner}/{repo}/stats/contributors
 //
-// Note: GitHub may return 202 Accepted while computing statistics. This function
-// automatically retries with exponential backoff until stats are available or
-// the context is cancelled.
-func ListContributorStats(ctx context.Context, gh *github.Client, owner, repo string) ([]*github.ContributorStats, error) {
-	return listContributorStatsWithRetry(ctx, gh, owner, repo, 5, 2*time.Second)
-}
-
-// listContributorStatsWithRetry handles 202 Accepted responses by retrying.
-func listContributorStatsWithRetry(ctx context.Context, gh *github.Client, owner, repo string, maxRetries int, initialBackoff time.Duration) ([]*github.ContributorStats, error) {
-	backoff := initialBackoff
-
-	for attempt := range maxRetries {
-		stats, resp, err := gh.Repositories.ListContributorsStats(ctx, owner, repo)
-
-		// Check for 202 Accepted (stats being computed)
-		var acceptedErr *github.AcceptedError
-		if errors.As(err, &acceptedErr) {
-			if attempt < maxRetries-1 {
-				select {
-				case <-ctx.Done():
-					return nil, ctx.Err()
-				case <-time.After(backoff):
-					backoff *= 2 // exponential backoff
-					continue
-				}
-			}
-			return nil, fmt.Errorf("contributor stats still computing after %d retries", maxRetries)
-		}
-
-		if err != nil {
-			return nil, fmt.Errorf("list contributor stats: %w", err)
-		}
-
-		// Check for empty response (can happen if repo has no commits)
-		if resp.StatusCode == 204 || len(stats) == 0 {
-			return []*github.ContributorStats{}, nil
-		}
-
-		return stats, nil
-	}
-
-	return nil, fmt.Errorf("failed to get contributor stats after %d attempts", maxRetries)
+// Note: GitHub may return 202 Accepted while computing statistics. The clientv1
+// implementation handles retries internally.
+func ListContributorStats(ctx context.Context, client clientv1.Client, owner, repo string) ([]*gogithub.ContributorStats, error) {
+	return client.GetContributorStats(ctx, owner, repo)
 }
 
 // GetContributorStats returns statistics for a specific contributor in a repository.
 // Returns nil if the user has not contributed to the repository.
-func GetContributorStats(ctx context.Context, gh *github.Client, owner, repo, username string) (*github.ContributorStats, error) {
-	allStats, err := ListContributorStats(ctx, gh, owner, repo)
+func GetContributorStats(ctx context.Context, client clientv1.Client, owner, repo, username string) (*gogithub.ContributorStats, error) {
+	allStats, err := client.GetContributorStats(ctx, owner, repo)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, stats := range allStats {
-		if stats.Author != nil && stats.Author.GetLogin() == username {
+		if stats.Author != nil && stats.Author.Login == username {
 			return stats, nil
 		}
 	}
@@ -84,8 +45,8 @@ type ContributorSummary struct {
 }
 
 // GetContributorSummary returns a summarized view of a contributor's statistics.
-func GetContributorSummary(ctx context.Context, gh *github.Client, owner, repo, username string) (*ContributorSummary, error) {
-	stats, err := GetContributorStats(ctx, gh, owner, repo, username)
+func GetContributorSummary(ctx context.Context, client clientv1.Client, owner, repo, username string) (*ContributorSummary, error) {
+	stats, err := GetContributorStats(ctx, client, owner, repo, username)
 	if err != nil {
 		return nil, err
 	}
@@ -95,21 +56,21 @@ func GetContributorSummary(ctx context.Context, gh *github.Client, owner, repo, 
 
 	summary := &ContributorSummary{
 		Username:     username,
-		TotalCommits: stats.GetTotal(),
+		TotalCommits: stats.Total,
 	}
 
 	for _, week := range stats.Weeks {
-		summary.TotalAdditions += week.GetAdditions()
-		summary.TotalDeletions += week.GetDeletions()
+		summary.TotalAdditions += week.Additions
+		summary.TotalDeletions += week.Deletions
 
-		if week.GetCommits() > 0 {
-			weekTime := week.Week.GetTime()
-			if weekTime != nil {
+		if week.Commits > 0 {
+			weekTime := week.Week
+			if !weekTime.IsZero() {
 				if summary.FirstCommit.IsZero() || weekTime.Before(summary.FirstCommit) {
-					summary.FirstCommit = *weekTime
+					summary.FirstCommit = weekTime
 				}
 				if weekTime.After(summary.LastCommit) {
-					summary.LastCommit = *weekTime
+					summary.LastCommit = weekTime
 				}
 			}
 		}
