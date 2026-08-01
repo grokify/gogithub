@@ -1,7 +1,7 @@
 package clientv1
 
 import (
-	"github.com/google/go-github/v88/github"
+	"github.com/google/go-github/v89/github"
 	"github.com/grokify/gogithub"
 )
 

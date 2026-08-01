@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/google/go-github/v88/github"
+	"github.com/google/go-github/v89/github"
 	"github.com/grokify/gogithub/search"
 	flags "github.com/jessevdk/go-flags"
 )
