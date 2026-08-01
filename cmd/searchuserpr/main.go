@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/google/go-github/v89/github"
 	"github.com/grokify/gogithub/clientv1"
 	"github.com/grokify/gogithub/search"
 	flags "github.com/jessevdk/go-flags"
@@ -38,13 +37,12 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Loading public pull requests for (%s)\n", strings.Join(opts.Accounts, ", "))
 	}
 
-	// Use clientv1 for version isolation, then extract raw client for search package
+	// Create unauthenticated client for public data
 	client, err := clientv1.NewClientWithHTTP(nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	ghClient := client.Raw().(*github.Client)
-	c := search.NewClient(ghClient)
+	c := search.NewClient(client)
 
 	ii := search.Issues{}
 
