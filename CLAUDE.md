@@ -6,22 +6,78 @@ Project-specific guidelines for gogithub.
 
 gogithub is a high-level Go module for interacting with the GitHub API. It wraps `google/go-github` with convenience functions for common operations.
 
+## IMPORTANT: Version-Isolated Client (clientv1)
+
+**Always use `clientv1` for new code.** The `clientv1` package provides a stable, version-isolated wrapper around go-github that protects consumers from breaking changes.
+
+### Why This Matters
+
+The `google/go-github` library increments major versions frequently (v88 → v89 → v90...), requiring import path changes in all consuming code.
+
+### What Does "v1" Mean?
+
+The "1" in `clientv1` is the **API version of the wrapper interface**, not the go-github version it wraps. Consumers stay on `clientv1` indefinitely while gogithub internally updates go-github. If we ever need breaking changes to the wrapper's interface, we'd create `clientv2`.
+
+### Benefits
+
+The `clientv1` package:
+
+- Defines **stable types** (`gogithub.User`, `gogithub.Repository`, etc.) that don't change
+- Provides a **Client interface** that isolates consumers from go-github version churn
+- Is the **single upgrade point**: update gogithub once, all consumers benefit
+
+### Usage Pattern
+
+```go
+// RECOMMENDED: Use clientv1 for version isolation
+import (
+    "github.com/grokify/gogithub"
+    "github.com/grokify/gogithub/clientv1"
+)
+
+client, err := clientv1.NewClient(ctx, token)
+user, err := client.GetAuthenticatedUser(ctx)      // Returns *gogithub.User
+repos, err := client.ListUserRepos(ctx, "user")    // Returns []*gogithub.Repository
+sha, err := client.GetBranchSHA(ctx, "owner", "repo", "main")
+
+// AVOID: Direct go-github imports couple you to a specific version
+// import "github.com/google/go-github/v89/github"  // DON'T DO THIS
+```
+
+### Type Organization
+
+Stable types are defined in the root `gogithub` package:
+- `gogithub.User`, `gogithub.Repository`, `gogithub.Reference`, etc.
+
+The `clientv1` package provides the `Client` interface that returns these types.
+
+### When Updating go-github
+
+1. Update import paths in gogithub internal files only
+2. Update converters in `clientv1/convert.go` if types changed
+3. Run tests to ensure `clientv1` API still works
+4. Consumers of `clientv1` require NO CHANGES
+
 ## Key Packages
 
-| Package | Purpose |
-|---------|---------|
-| `auth` | Authentication (OAuth2 tokens, GitHub App) |
-| `checks` | CI/CD check runs and suites |
-| `config` | Configuration loading from env/files |
-| `errors` | Error types and translation utilities |
-| `graphql` | GraphQL API client wrapper |
-| `profile` | User contribution statistics |
-| `pr` | Pull request operations |
-| `release` | Release management |
-| `repo` | Repository operations (commits, branches, batch) |
-| `search` | Search API with query builder |
-| `tag` | Git tag operations |
-| `sarif` | SARIF upload for code scanning |
+| Package | Purpose | Stability |
+|---------|---------|-----------|
+| `clientv1` | **Version-isolated client wrapper** | **STABLE - use this** |
+| `auth` | Authentication (OAuth2 tokens, GitHub App) | Exposes go-github types |
+| `checks` | CI/CD check runs and suites | Exposes go-github types |
+| `config` | Configuration loading from env/files | Exposes go-github types |
+| `errors` | Error types and translation utilities | Stable |
+| `graphql` | GraphQL API client wrapper | Exposes githubv4 types |
+| `pathutil` | Path validation and normalization | Stable |
+| `profile` | User contribution statistics | Exposes go-github types |
+| `pr` | Pull request operations | Exposes go-github types |
+| `release` | Release management | Exposes go-github types |
+| `repo` | Repository operations (commits, branches, batch) | Exposes go-github types |
+| `search` | Search API with query builder | Exposes go-github types |
+| `tag` | Git tag operations | Exposes go-github types |
+| `sarif` | SARIF upload for code scanning | Exposes go-github types |
+
+**Note:** Packages marked "Exposes go-github types" will require consumer updates when go-github changes. Prefer `clientv1` when possible.
 
 ## Development Commands
 
@@ -79,7 +135,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ## Dependencies
 
-- `github.com/google/go-github/v84` - GitHub REST API client
+- `github.com/google/go-github/v88` - GitHub REST API client (internal use)
 - `github.com/shurcooL/githubv4` - GitHub GraphQL client
 - `golang.org/x/oauth2` - OAuth2 authentication
 - `github.com/golang-jwt/jwt/v5` - JWT for GitHub App auth
@@ -87,10 +143,13 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ### Updating go-github
 
-When updating go-github (e.g., v84 to v85):
-1. Update import paths in all files
-2. Check for API changes in go-github release notes
-3. Update `go.mod` and run `go mod tidy`
+When updating go-github (e.g., v88 to v89):
+
+1. Update `go.mod`: `go get github.com/google/go-github/v89`
+2. Update import paths in all internal gogithub files
+3. Update `clientv1/convert.go` if any type structures changed
+4. Run `go test ./...` to verify
+5. **Consumers using `clientv1` require NO changes**
 
 ## Code Patterns
 
