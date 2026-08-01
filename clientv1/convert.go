@@ -593,15 +593,16 @@ func issueFromGitHub(i *github.Issue) *gogithub.Issue {
 		return nil
 	}
 	issue := &gogithub.Issue{
-		ID:        i.GetID(),
-		Number:    i.GetNumber(),
-		State:     i.GetState(),
-		Title:     i.GetTitle(),
-		Body:      i.GetBody(),
-		HTMLURL:   i.GetHTMLURL(),
-		User:      userFromGitHub(i.GetUser()),
-		CreatedAt: i.GetCreatedAt().Time,
-		UpdatedAt: i.GetUpdatedAt().Time,
+		ID:            i.GetID(),
+		Number:        i.GetNumber(),
+		State:         i.GetState(),
+		Title:         i.GetTitle(),
+		Body:          i.GetBody(),
+		HTMLURL:       i.GetHTMLURL(),
+		RepositoryURL: i.GetRepositoryURL(),
+		User:          userFromGitHub(i.GetUser()),
+		CreatedAt:     i.GetCreatedAt().Time,
+		UpdatedAt:     i.GetUpdatedAt().Time,
 	}
 	if i.ClosedAt != nil {
 		t := i.GetClosedAt().Time

@@ -168,18 +168,19 @@ type Branch struct {
 
 // Issue represents a GitHub issue.
 type Issue struct {
-	ID        int64
-	Number    int
-	State     string
-	Title     string
-	Body      string
-	HTMLURL   string
-	User      *User
-	Labels    []Label
-	Assignees []*User
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	ClosedAt  *time.Time
+	ID            int64
+	Number        int
+	State         string
+	Title         string
+	Body          string
+	HTMLURL       string
+	RepositoryURL string // API URL of the repository
+	User          *User
+	Labels        []Label
+	Assignees     []*User
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	ClosedAt      *time.Time
 }
 
 // Label represents a GitHub label.
