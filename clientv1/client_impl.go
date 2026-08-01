@@ -38,6 +38,38 @@ func NewClientWithHTTP(httpClient *http.Client) (Client, error) {
 	return &client{gh: gh}, nil
 }
 
+// ClientOptions configures the GitHub client.
+type ClientOptions struct {
+	// Token is the GitHub personal access token.
+	Token string
+	// BaseURL is the GitHub API base URL (for GitHub Enterprise).
+	// Leave empty for github.com.
+	BaseURL string
+	// UploadURL is the GitHub upload URL (for GitHub Enterprise).
+	// Leave empty for github.com.
+	UploadURL string
+}
+
+// NewClientWithOptions creates a new GitHub client with the given options.
+// This supports GitHub Enterprise by specifying custom BaseURL and UploadURL.
+func NewClientWithOptions(ctx context.Context, opts ClientOptions) (Client, error) {
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: opts.Token},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+
+	ghOpts := []github.ClientOptionsFunc{github.WithHTTPClient(tc)}
+	if opts.BaseURL != "" {
+		ghOpts = append(ghOpts, github.WithEnterpriseURLs(opts.BaseURL, opts.UploadURL))
+	}
+
+	gh, err := github.NewClient(ghOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return &client{gh: gh}, nil
+}
+
 // MustNewClient creates a new GitHub client, panicking on error.
 func MustNewClient(ctx context.Context, token string) Client {
 	c, err := NewClient(ctx, token)
