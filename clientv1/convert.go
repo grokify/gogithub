@@ -185,8 +185,19 @@ func pullRequestFromGitHub(pr *github.PullRequest) *gogithub.PullRequest {
 		Merged:    pr.GetMerged(),
 		Mergeable: pr.Mergeable,
 		Draft:     pr.GetDraft(),
+		Additions: pr.GetAdditions(),
+		Deletions: pr.GetDeletions(),
+		Commits:   pr.GetCommits(),
 		CreatedAt: pr.GetCreatedAt().Time,
 		UpdatedAt: pr.GetUpdatedAt().Time,
+	}
+	for _, l := range pr.Labels {
+		result.Labels = append(result.Labels, gogithub.Label{
+			ID:          l.GetID(),
+			Name:        l.GetName(),
+			Description: l.GetDescription(),
+			Color:       l.GetColor(),
+		})
 	}
 	if pr.ClosedAt != nil {
 		t := pr.GetClosedAt().Time
@@ -607,6 +618,8 @@ func issueFromGitHub(i *github.Issue) *gogithub.Issue {
 		HTMLURL:       i.GetHTMLURL(),
 		RepositoryURL: i.GetRepositoryURL(),
 		User:          userFromGitHub(i.GetUser()),
+		Comments:      i.GetComments(),
+		IsPullRequest: i.IsPullRequest(),
 		CreatedAt:     i.GetCreatedAt().Time,
 		UpdatedAt:     i.GetUpdatedAt().Time,
 	}
@@ -754,4 +767,45 @@ func repositoryCommitToCommit(c *github.Commit) *gogithub.Commit {
 		}
 	}
 	return commit
+}
+
+// issuesFromGitHub converts a slice of go-github Issues.
+func issuesFromGitHub(issues []*github.Issue) []*gogithub.Issue {
+	if issues == nil {
+		return nil
+	}
+	result := make([]*gogithub.Issue, len(issues))
+	for i, issue := range issues {
+		result[i] = issueFromGitHub(issue)
+	}
+	return result
+}
+
+// codeSearchResultFromGitHub converts a go-github CodeSearchResult to our stable type.
+func codeSearchResultFromGitHub(r *github.CodeSearchResult) *gogithub.CodeSearchResult {
+	if r == nil {
+		return nil
+	}
+	result := &gogithub.CodeSearchResult{
+		Total:             r.GetTotal(),
+		IncompleteResults: r.GetIncompleteResults(),
+	}
+	for _, item := range r.CodeResults {
+		result.Items = append(result.Items, codeResultFromGitHub(item))
+	}
+	return result
+}
+
+// codeResultFromGitHub converts a go-github CodeResult to our stable type.
+func codeResultFromGitHub(c *github.CodeResult) *gogithub.CodeResult {
+	if c == nil {
+		return nil
+	}
+	return &gogithub.CodeResult{
+		Name:       c.GetName(),
+		Path:       c.GetPath(),
+		SHA:        c.GetSHA(),
+		HTMLURL:    c.GetHTMLURL(),
+		Repository: repositoryFromGitHub(c.GetRepository()),
+	}
 }

@@ -168,6 +168,18 @@ type Client interface {
 
 	// Issues
 
+	// GetIssue retrieves an issue by number.
+	GetIssue(ctx context.Context, owner, repo string, number int) (*gogithub.Issue, error)
+
+	// ListIssues lists issues in a repository.
+	ListIssues(ctx context.Context, owner, repo string, opts *ListIssuesOptions) ([]*gogithub.Issue, error)
+
+	// CreateIssue creates a new issue.
+	CreateIssue(ctx context.Context, owner, repo string, input *CreateIssueInput) (*gogithub.Issue, error)
+
+	// UpdateIssue updates an existing issue.
+	UpdateIssue(ctx context.Context, owner, repo string, number int, input *UpdateIssueInput) (*gogithub.Issue, error)
+
 	// CreateIssueComment creates a comment on an issue or pull request.
 	CreateIssueComment(ctx context.Context, owner, repo string, number int, body string) (*gogithub.IssueComment, error)
 
@@ -212,6 +224,9 @@ type Client interface {
 
 	// SearchIssues searches for issues and pull requests.
 	SearchIssues(ctx context.Context, query string, opts *SearchOptions) (*gogithub.IssueSearchResult, error)
+
+	// SearchCode searches for code in repositories.
+	SearchCode(ctx context.Context, query string, opts *SearchOptions) (*gogithub.CodeSearchResult, error)
 
 	// Contributors
 
@@ -381,4 +396,34 @@ type UpdateFileOptions struct {
 type DeleteFileOptions struct {
 	Branch string
 	Author *CommitAuthor
+}
+
+// ListIssuesOptions specifies options for listing issues.
+type ListIssuesOptions struct {
+	State     string   // "open", "closed", or "all". Default: "open"
+	Labels    []string // Filter by labels
+	Sort      string   // "created", "updated", "comments". Default: "created"
+	Direction string   // "asc" or "desc". Default: "desc"
+	Since     *time.Time
+	PerPage   int
+	Page      int
+}
+
+// CreateIssueInput specifies input for creating an issue.
+type CreateIssueInput struct {
+	Title     string
+	Body      string
+	Labels    []string
+	Assignees []string
+	Milestone *int
+}
+
+// UpdateIssueInput specifies input for updating an issue.
+type UpdateIssueInput struct {
+	Title     *string
+	Body      *string
+	State     *string // "open" or "closed"
+	Labels    []string
+	Assignees []string
+	Milestone *int
 }

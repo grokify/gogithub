@@ -98,9 +98,13 @@ type PullRequest struct {
 	User      *User
 	Head      *PullRequestBranch
 	Base      *PullRequestBranch
+	Labels    []Label
 	Merged    bool
 	Mergeable *bool
 	Draft     bool
+	Additions int
+	Deletions int
+	Commits   int
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	ClosedAt  *time.Time
@@ -179,6 +183,8 @@ type Issue struct {
 	User          *User
 	Labels        []Label
 	Assignees     []*User
+	Comments      int
+	IsPullRequest bool // true if this issue is actually a pull request
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	ClosedAt      *time.Time
@@ -346,4 +352,20 @@ type CreateFileResult struct {
 // DeleteFileResult represents the result of deleting a file.
 type DeleteFileResult struct {
 	Commit *Commit
+}
+
+// CodeSearchResult represents search results for code.
+type CodeSearchResult struct {
+	Total             int
+	IncompleteResults bool
+	Items             []*CodeResult
+}
+
+// CodeResult represents a single code search result.
+type CodeResult struct {
+	Name       string
+	Path       string
+	SHA        string
+	HTMLURL    string
+	Repository *Repository
 }
