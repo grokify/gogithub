@@ -45,11 +45,26 @@ type Client interface {
 	// GetFileContentString fetches a file's content as a string.
 	GetFileContentString(ctx context.Context, owner, repo, path string, opts *gogithub.ContentOptions) (string, error)
 
+	// GetFileContentWithSHA fetches a file's content and returns its SHA.
+	// Returns the content bytes, the file's SHA, and any error.
+	GetFileContentWithSHA(ctx context.Context, owner, repo, path string, opts *gogithub.ContentOptions) ([]byte, string, error)
+
 	// ListDirectory lists files in a directory.
 	ListDirectory(ctx context.Context, owner, repo, path string, opts *gogithub.ContentOptions) ([]*gogithub.FileContent, error)
 
 	// FileExists checks if a file exists in a repository.
 	FileExists(ctx context.Context, owner, repo, path string, opts *gogithub.ContentOptions) (bool, error)
+
+	// CreateFile creates a new file in a repository.
+	CreateFile(ctx context.Context, owner, repo, path string, opts *CreateFileOptions) (*gogithub.CreateFileResult, error)
+
+	// UpdateFile updates an existing file in a repository.
+	// Requires the current SHA of the file for optimistic locking.
+	UpdateFile(ctx context.Context, owner, repo, path string, opts *UpdateFileOptions) (*gogithub.CreateFileResult, error)
+
+	// DeleteFile deletes a file from a repository.
+	// Requires the current SHA of the file.
+	DeleteFile(ctx context.Context, owner, repo, path, sha, message string, opts *DeleteFileOptions) (*gogithub.DeleteFileResult, error)
 
 	// Git References
 
@@ -335,4 +350,27 @@ type SearchOptions struct {
 	Order   string // "asc" or "desc"
 	PerPage int
 	Page    int
+}
+
+// CreateFileOptions specifies options for creating a file.
+type CreateFileOptions struct {
+	Content []byte
+	Message string
+	Branch  string // Optional: defaults to repository's default branch
+	Author  *CommitAuthor
+}
+
+// UpdateFileOptions specifies options for updating a file.
+type UpdateFileOptions struct {
+	Content []byte
+	SHA     string // Current file SHA (required for optimistic locking)
+	Message string
+	Branch  string
+	Author  *CommitAuthor
+}
+
+// DeleteFileOptions specifies options for deleting a file.
+type DeleteFileOptions struct {
+	Branch string
+	Author *CommitAuthor
 }

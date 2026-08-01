@@ -117,6 +117,9 @@ func commitFromGitHub(c *github.RepositoryCommit) *gogithub.Commit {
 				Date:  committer.GetDate().Time,
 			}
 		}
+		if tree := gc.GetTree(); tree != nil {
+			commit.Tree = &gogithub.GitObject{SHA: tree.GetSHA()}
+		}
 	}
 	for _, p := range c.Parents {
 		commit.Parents = append(commit.Parents, gogithub.CommitParent{
@@ -398,6 +401,9 @@ func gitCommitToCommit(c *github.Commit) *gogithub.Commit {
 			Date:  committer.GetDate().Time,
 		}
 	}
+	if tree := c.GetTree(); tree != nil {
+		commit.Tree = &gogithub.GitObject{SHA: tree.GetSHA()}
+	}
 	for _, p := range c.Parents {
 		commit.Parents = append(commit.Parents, gogithub.CommitParent{
 			SHA: p.GetSHA(),
@@ -673,4 +679,79 @@ func contributorStatsFromGitHub(stats []*github.ContributorStats) []*gogithub.Co
 		result[i] = cs
 	}
 	return result
+}
+
+// treeNodeFromGitHub converts a go-github TreeEntry to our stable TreeNode type.
+func treeNodeFromGitHub(e *github.TreeEntry) *gogithub.TreeNode {
+	if e == nil {
+		return nil
+	}
+	return &gogithub.TreeNode{
+		Path: e.GetPath(),
+		Mode: e.GetMode(),
+		Type: e.GetType(),
+		SHA:  e.GetSHA(),
+		Size: e.GetSize(),
+		URL:  e.GetURL(),
+	}
+}
+
+// treeNodesFromGitHub converts a slice of go-github TreeEntries.
+func treeNodesFromGitHub(entries []*github.TreeEntry) []*gogithub.TreeNode {
+	if entries == nil {
+		return nil
+	}
+	result := make([]*gogithub.TreeNode, len(entries))
+	for i, e := range entries {
+		result[i] = treeNodeFromGitHub(e)
+	}
+	return result
+}
+
+// createFileResultFromGitHub converts a go-github RepositoryContentResponse to our stable type.
+func createFileResultFromGitHub(r *github.RepositoryContentResponse) *gogithub.CreateFileResult {
+	if r == nil {
+		return nil
+	}
+	return &gogithub.CreateFileResult{
+		Content: fileContentFromGitHub(r.Content),
+		Commit:  repositoryCommitToCommit(&r.Commit),
+	}
+}
+
+// deleteFileResultFromGitHub converts a go-github RepositoryContentResponse to our stable type.
+func deleteFileResultFromGitHub(r *github.RepositoryContentResponse) *gogithub.DeleteFileResult {
+	if r == nil {
+		return nil
+	}
+	return &gogithub.DeleteFileResult{
+		Commit: repositoryCommitToCommit(&r.Commit),
+	}
+}
+
+// repositoryCommitToCommit converts a go-github Commit (from content response) to our stable Commit type.
+func repositoryCommitToCommit(c *github.Commit) *gogithub.Commit {
+	if c == nil {
+		return nil
+	}
+	commit := &gogithub.Commit{
+		SHA:     c.GetSHA(),
+		Message: c.GetMessage(),
+		HTMLURL: c.GetHTMLURL(),
+	}
+	if author := c.GetAuthor(); author != nil {
+		commit.Author = &gogithub.CommitAuthor{
+			Name:  author.GetName(),
+			Email: author.GetEmail(),
+			Date:  author.GetDate().Time,
+		}
+	}
+	if committer := c.GetCommitter(); committer != nil {
+		commit.Committer = &gogithub.CommitAuthor{
+			Name:  committer.GetName(),
+			Email: committer.GetEmail(),
+			Date:  committer.GetDate().Time,
+		}
+	}
+	return commit
 }

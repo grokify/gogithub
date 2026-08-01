@@ -70,6 +70,7 @@ type Commit struct {
 	Author    *CommitAuthor
 	Committer *CommitAuthor
 	HTMLURL   string
+	Tree      *GitObject // Root tree of this commit
 	Parents   []CommitParent
 }
 
@@ -324,4 +325,25 @@ type ReleaseAssetUpload struct {
 	Label       string
 	ContentType string
 	Content     []byte
+}
+
+// TreeNode represents a node in a git tree.
+type TreeNode struct {
+	Path string
+	Mode string // "100644" (file), "100755" (executable), "040000" (dir), "160000" (submodule), "120000" (symlink)
+	Type string // "blob", "tree", "commit"
+	SHA  string
+	Size int
+	URL  string
+}
+
+// CreateFileResult represents the result of creating or updating a file.
+type CreateFileResult struct {
+	Content *FileContent
+	Commit  *Commit
+}
+
+// DeleteFileResult represents the result of deleting a file.
+type DeleteFileResult struct {
+	Commit *Commit
 }
