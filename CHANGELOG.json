@@ -8,6 +8,58 @@
   "maintainers": ["grokify"],
   "releases": [
     {
+      "version": "v0.15.0",
+      "date": "2026-08-01",
+      "highlights": [
+        { "description": "**Version-isolation architecture completed**: `clientv1.Client` and stable `gogithub.*` types now cover the full GitHub API surface used by this module's own packages (`search`, `repo`, `sarif`)", "commit": "78777b2" },
+        { "description": "**clientv1 expanded to full API coverage**: file content writes, Git tree/blob operations for atomic multi-file commits, issue CRUD, and code search were added on top of the initial repositories/PRs/releases/checks coverage", "commit": "0a1f093" },
+        { "description": "**Breaking**: `search`, `repo`, and `sarif` packages now accept `clientv1.Client` instead of `*github.Client`; legacy `auth`/`config` helpers exposing go-github types are deprecated in favor of `clientv1`" }
+      ],
+      "breaking": [
+        { "description": "`search.NewClient()` now accepts `clientv1.Client`; `SearchIssues()`/`SearchOpenPullRequests()` accept `*clientv1.SearchOptions`; `Issues` is `[]*gogithub.Issue`", "commit": "f038072" },
+        { "description": "`repo.NewBatch()` now accepts `clientv1.Client` instead of `*github.Client`", "commit": "093b170" },
+        { "description": "`sarif` package functions (`Upload`, `UploadFile`, `GetUploadStatus`, `WaitForProcessing`, `UploadAndWait`) now accept `clientv1.Client` instead of `*github.Client`", "commit": "6fdafb3" }
+      ],
+      "added": [
+        { "description": "[clientv1] Version-isolated `Client` interface and stable types wrapping go-github (users, repos, content, refs, commits, PRs, checks, releases)", "commit": "78777b2" },
+        { "description": "[types] Stable types for version isolation (`User`, `Repository`, `Reference`, `Commit`, `PullRequest`, `CheckRun`, `Release`, etc.)", "commit": "9a85494" },
+        { "description": "[clientv1] Expanded API coverage: forks, git refs/tags, `CreateCommit`/`CreateTree`, PR reviews/comments/merge, issue comments, check suites, release CRUD, `SearchIssues`, contributor stats", "commit": "02d05f4" },
+        { "description": "[clientv1] `NewClientWithOptions()` for GitHub Enterprise support (custom BaseURL/UploadURL)", "commit": "2434938" },
+        { "description": "[clientv1] File content writes (`CreateFile`, `UpdateFile`, `DeleteFile`, `GetFileContentWithSHA`) and Git Data API tree/blob operations (`GetTree`, `CreateBlob`) plus a `Tree` field on `Commit`, enabling atomic multi-file commits entirely through clientv1", "commit": "0a1f093" },
+        { "description": "[clientv1] Issue CRUD (`GetIssue`, `ListIssues`, `CreateIssue`, `UpdateIssue`) and `SearchCode`; `PullRequest` gained `Labels`/`Additions`/`Deletions`/`Commits`, `Issue` gained `Comments`/`IsPullRequest`", "commit": "c118448" }
+      ],
+      "changed": [
+        { "description": "[search] Migrated to `clientv1.Client` and stable types", "commit": "f038072" },
+        { "description": "[repo] Migrated batch operations to `clientv1.Client`", "commit": "093b170" },
+        { "description": "[sarif] Migrated to `clientv1.Client`", "commit": "6fdafb3" },
+        { "description": "[cmd] Updated `search-prs` commands to use `clientv1.Client` directly", "commit": "692496f" },
+        { "description": "Migrated `checks`, `pr`, `release`, `repo`, `tag` packages to use `clientv1.Client` internally", "commit": "66ed142" },
+        { "description": "[release] Adapted to go-github v89 API changes (`CreateReleaseRequest`, `UpdateRelease` replacing `EditRelease`)", "commit": "9813628" }
+      ],
+      "fixed": [
+        { "description": "[clientv1] `GetTree` and `CreateBlob` were implemented but missing from the `Client` interface declaration, so callers using the interface type couldn't reach them", "commit": "a95809a" }
+      ],
+      "deprecated": [
+        { "description": "`auth.NewGitHubClient()`, `auth.GetAuthenticatedUser()`, `auth.GetUser()` - use `clientv1.NewClient()` and `Client` methods instead" },
+        { "description": "`config.Config.NewClient()`/`MustNewClient()` - use `NewClientV1()`/`MustNewClientV1()` instead" }
+      ],
+      "documentation": [
+        { "description": "Added v0.15.0 release notes with breaking-change migration guide", "commit": "51e20cf" },
+        { "description": "Added version-isolated client guide (`docs/guides/clientv1.md`)", "commit": "7b24458" },
+        { "description": "Updated README and docs site to recommend `clientv1` as the primary usage pattern", "commit": "530a90c" },
+        { "description": "Updated package-level docs (`gogithub.go`) to recommend clientv1 for new code", "commit": "6a7da9a" },
+        { "description": "Added CLAUDE.md guidance covering clientv1 usage and update workflow", "commit": "c6e5470" },
+        { "description": "Added v0.15.0 to the MkDocs release notes navigation", "commit": "568e82b" }
+      ],
+      "dependencies": [
+        { "description": "Upgraded `github.com/google/go-github` from v88.0.0 to v89.0.0", "commit": "cfde76d" },
+        { "description": "Updated indirect dependencies (go-isatty, go-runewidth, golang.org/x/exp)", "commit": "f660572" }
+      ],
+      "chores": [
+        { "description": "Bumped `actions/setup-python` from 6 to 7", "commit": "ea17f11" }
+      ]
+    },
+    {
       "version": "v0.14.0",
       "date": "2026-07-19",
       "highlights": [
