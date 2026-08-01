@@ -110,8 +110,16 @@ type Client interface {
 
 	// Git Trees
 
+	// GetTree retrieves a git tree by SHA.
+	GetTree(ctx context.Context, owner, repo, sha string, recursive bool) ([]*gogithub.TreeNode, error)
+
 	// CreateTree creates a git tree from file entries.
 	CreateTree(ctx context.Context, owner, repo, baseTree string, entries []TreeEntry) (string, error)
+
+	// Git Blobs
+
+	// CreateBlob creates a git blob with the given content.
+	CreateBlob(ctx context.Context, owner, repo string, content []byte, encoding string) (string, error)
 
 	// Pull Requests
 
