@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/google/go-github/v89/github"
+	"github.com/grokify/gogithub/clientv1"
 	"golang.org/x/oauth2"
 )
 
@@ -238,6 +239,7 @@ func FromEnvWithFallback(primary, fallback EnvConfig) Config {
 
 // NewClient creates a GitHub client from the configuration.
 // The config must be validated before calling this function.
+// Deprecated: Use NewClientV1 for version-isolated clients.
 func (c *Config) NewClient(ctx context.Context) (*github.Client, error) {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: c.Token},
@@ -254,12 +256,39 @@ func (c *Config) NewClient(ctx context.Context) (*github.Client, error) {
 
 // MustNewClient creates a GitHub client from the configuration.
 // It panics if the config is invalid or client creation fails.
+// Deprecated: Use MustNewClientV1 for version-isolated clients.
 func (c *Config) MustNewClient(ctx context.Context) *github.Client {
 	if err := c.Validate(); err != nil {
 		panic(err)
 	}
 
 	client, err := c.NewClient(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	return client
+}
+
+// NewClientV1 creates a version-isolated GitHub client from the configuration.
+// The config must be validated before calling this function.
+func (c *Config) NewClientV1(ctx context.Context) (clientv1.Client, error) {
+	opts := clientv1.ClientOptions{
+		Token:     c.Token,
+		BaseURL:   c.BaseURL,
+		UploadURL: c.UploadURL,
+	}
+	return clientv1.NewClientWithOptions(ctx, opts)
+}
+
+// MustNewClientV1 creates a version-isolated GitHub client from the configuration.
+// It panics if the config is invalid or client creation fails.
+func (c *Config) MustNewClientV1(ctx context.Context) clientv1.Client {
+	if err := c.Validate(); err != nil {
+		panic(err)
+	}
+
+	client, err := c.NewClientV1(ctx)
 	if err != nil {
 		panic(err)
 	}
