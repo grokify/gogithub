@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/google/go-github/v89/github"
+	"github.com/grokify/gogithub/clientv1"
 )
 
 func getTestToken(t *testing.T) string {
@@ -16,8 +16,9 @@ func getTestToken(t *testing.T) string {
 	return token
 }
 
-func newTestClient(t *testing.T, token string) *github.Client {
-	client, err := github.NewClient(github.WithAuthToken(token))
+func newTestClient(t *testing.T, token string) clientv1.Client {
+	ctx := context.Background()
+	client, err := clientv1.NewClient(ctx, token)
 	if err != nil {
 		t.Fatalf("failed to create github client: %v", err)
 	}
@@ -48,8 +49,8 @@ func TestListContributorStatsIntegration(t *testing.T) {
 		if i >= 5 {
 			break
 		}
-		if stat.Author != nil && stat.Total != nil {
-			t.Logf("  %s: %d commits", stat.Author.GetLogin(), *stat.Total)
+		if stat.Author != nil {
+			t.Logf("  %s: %d commits", stat.Author.Login, stat.Total)
 		}
 	}
 }
@@ -71,14 +72,14 @@ func TestGetContributorStatsIntegration(t *testing.T) {
 	}
 
 	t.Logf("Stats for grokify in gogithub:")
-	t.Logf("  Total commits: %d", stats.GetTotal())
+	t.Logf("  Total commits: %d", stats.Total)
 	t.Logf("  Weeks of data: %d", len(stats.Weeks))
 
 	// Sum up additions/deletions from weeks
 	var additions, deletions int
 	for _, week := range stats.Weeks {
-		additions += week.GetAdditions()
-		deletions += week.GetDeletions()
+		additions += week.Additions
+		deletions += week.Deletions
 	}
 	t.Logf("  Total additions: %d", additions)
 	t.Logf("  Total deletions: %d", deletions)
@@ -168,8 +169,8 @@ func TestListContributorStatsLargeRepoIntegration(t *testing.T) {
 			t.Error("Contributor has nil author")
 			continue
 		}
-		if stat.Total == nil || *stat.Total <= 0 {
-			t.Errorf("Contributor %s has invalid total commits", stat.Author.GetLogin())
+		if stat.Total <= 0 {
+			t.Errorf("Contributor %s has invalid total commits", stat.Author.Login)
 		}
 	}
 }

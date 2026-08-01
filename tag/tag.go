@@ -3,98 +3,43 @@ package tag
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
-	"github.com/google/go-github/v89/github"
+	"github.com/grokify/gogithub"
+	"github.com/grokify/gogithub/clientv1"
 )
 
 // ListTags lists all tags for a repository.
-// Uses go-github's built-in iterator for automatic pagination handling.
-func ListTags(ctx context.Context, gh *github.Client, owner, repo string) ([]*github.RepositoryTag, error) {
-	var allTags []*github.RepositoryTag
-
-	for tag, err := range gh.Repositories.ListTagsIter(ctx, owner, repo, nil) {
-		if err != nil {
-			return nil, fmt.Errorf("list tags: %w", err)
-		}
-		allTags = append(allTags, tag)
-	}
-
-	return allTags, nil
+func ListTags(ctx context.Context, client clientv1.Client, owner, repo string) ([]*gogithub.Tag, error) {
+	return client.ListTags(ctx, owner, repo)
 }
 
 // GetTagSHA returns the commit SHA for a tag.
-func GetTagSHA(ctx context.Context, gh *github.Client, owner, repo, tagName string) (string, error) {
-	ref, _, err := gh.Git.GetRef(ctx, owner, repo, tagsPrefix+tagName)
-	if err != nil {
-		return "", fmt.Errorf("get tag ref: %w", err)
-	}
-	return ref.GetObject().GetSHA(), nil
+func GetTagSHA(ctx context.Context, client clientv1.Client, owner, repo, tagName string) (string, error) {
+	return client.GetTagSHA(ctx, owner, repo, tagName)
 }
 
 // CreateTag creates an annotated tag.
-func CreateTag(ctx context.Context, gh *github.Client, owner, repo, tagName, sha, message string) error {
-	// Create annotated tag object
-	tag := github.CreateTag{
-		Tag:     tagName,
-		Message: message,
-		Object:  sha,
-		Type:    "commit",
-	}
-
-	createdTag, _, err := gh.Git.CreateTag(ctx, owner, repo, tag)
-	if err != nil {
-		return fmt.Errorf("create tag object: %w", err)
-	}
-
-	// Create reference to tag
-	ref := github.CreateRef{
-		Ref: refTagsPrefix + tagName,
-		SHA: createdTag.GetSHA(),
-	}
-
-	_, _, err = gh.Git.CreateRef(ctx, owner, repo, ref)
-	if err != nil {
-		// Tag ref might already exist if tag was created differently
-		if strings.Contains(err.Error(), errAlreadyExists) {
-			return nil
-		}
-		return fmt.Errorf("create tag reference: %w", err)
-	}
-
-	return nil
+func CreateTag(ctx context.Context, client clientv1.Client, owner, repo, tagName, sha, message string) error {
+	return client.CreateTag(ctx, owner, repo, tagName, sha, message)
 }
 
 // CreateLightweightTag creates a lightweight tag (just a reference).
-func CreateLightweightTag(ctx context.Context, gh *github.Client, owner, repo, tagName, sha string) error {
-	ref := github.CreateRef{
-		Ref: refTagsPrefix + tagName,
-		SHA: sha,
-	}
-
-	_, _, err := gh.Git.CreateRef(ctx, owner, repo, ref)
-	if err != nil {
-		if strings.Contains(err.Error(), errAlreadyExists) {
-			return nil
-		}
-		return fmt.Errorf("create tag reference: %w", err)
-	}
-
-	return nil
-}
-
-// DeleteTag deletes a tag.
-func DeleteTag(ctx context.Context, gh *github.Client, owner, repo, tagName string) error {
-	_, err := gh.Git.DeleteRef(ctx, owner, repo, tagsPrefix+tagName)
+func CreateLightweightTag(ctx context.Context, client clientv1.Client, owner, repo, tagName, sha string) error {
+	_, err := client.CreateRef(ctx, owner, repo, refTagsPrefix+tagName, sha)
 	return err
 }
 
+// DeleteTag deletes a tag.
+func DeleteTag(ctx context.Context, client clientv1.Client, owner, repo, tagName string) error {
+	return client.DeleteRef(ctx, owner, repo, tagsPrefix+tagName)
+}
+
 // TagExists checks if a tag exists.
-func TagExists(ctx context.Context, gh *github.Client, owner, repo, tagName string) (bool, error) {
-	_, resp, err := gh.Git.GetRef(ctx, owner, repo, tagsPrefix+tagName)
+func TagExists(ctx context.Context, client clientv1.Client, owner, repo, tagName string) (bool, error) {
+	_, err := client.GetRef(ctx, owner, repo, tagsPrefix+tagName)
 	if err != nil {
-		if resp != nil && resp.StatusCode == 404 {
+		// Check if it's a 404 error
+		if isNotFoundError(err) {
 			return false, nil
 		}
 		return false, err
@@ -103,15 +48,39 @@ func TagExists(ctx context.Context, gh *github.Client, owner, repo, tagName stri
 }
 
 // GetTagNames returns just the tag names from a repository.
-func GetTagNames(ctx context.Context, gh *github.Client, owner, repo string) ([]string, error) {
-	tags, err := ListTags(ctx, gh, owner, repo)
+func GetTagNames(ctx context.Context, client clientv1.Client, owner, repo string) ([]string, error) {
+	tags, err := client.ListTags(ctx, owner, repo)
 	if err != nil {
 		return nil, err
 	}
 
 	names := make([]string, len(tags))
 	for i, t := range tags {
-		names[i] = t.GetName()
+		names[i] = t.Name
 	}
 	return names, nil
+}
+
+// isNotFoundError checks if an error is a 404 not found error.
+func isNotFoundError(err error) bool {
+	if err == nil {
+		return false
+	}
+	// Check for common 404 error patterns
+	errStr := err.Error()
+	return contains(errStr, "404") || contains(errStr, "not found")
+}
+
+// contains is a simple substring check.
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(s) > 0 && containsAt(s, substr))
+}
+
+func containsAt(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
 }

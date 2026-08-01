@@ -3,40 +3,29 @@ package checks
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	"github.com/google/go-github/v89/github"
+	"github.com/grokify/gogithub"
+	"github.com/grokify/gogithub/clientv1"
 )
 
 // ListCheckRuns lists check runs for a commit SHA or branch.
-// Uses go-github's built-in iterator for automatic pagination handling.
-func ListCheckRuns(ctx context.Context, gh *github.Client, owner, repo, ref string) ([]*github.CheckRun, error) {
-	var allChecks []*github.CheckRun
-
-	for check, err := range gh.Checks.ListCheckRunsForRefIter(ctx, owner, repo, ref, nil) {
-		if err != nil {
-			return nil, fmt.Errorf("list check runs: %w", err)
-		}
-		allChecks = append(allChecks, check)
-	}
-
-	return allChecks, nil
+func ListCheckRuns(ctx context.Context, client clientv1.Client, owner, repo, ref string) ([]*gogithub.CheckRun, error) {
+	return client.ListCheckRuns(ctx, owner, repo, ref)
 }
 
 // ListCheckRunsForPR lists check runs for a pull request.
-func ListCheckRunsForPR(ctx context.Context, gh *github.Client, owner, repo string, prNumber int) ([]*github.CheckRun, error) {
-	pr, _, err := gh.PullRequests.Get(ctx, owner, repo, prNumber)
+func ListCheckRunsForPR(ctx context.Context, client clientv1.Client, owner, repo string, prNumber int) ([]*gogithub.CheckRun, error) {
+	pr, err := client.GetPullRequest(ctx, owner, repo, prNumber)
 	if err != nil {
-		return nil, fmt.Errorf("get PR: %w", err)
+		return nil, err
 	}
 
-	sha := pr.GetHead().GetSHA()
-	if sha == "" {
+	if pr.Head == nil || pr.Head.SHA == "" {
 		return nil, nil
 	}
 
-	return ListCheckRuns(ctx, gh, owner, repo, sha)
+	return client.ListCheckRuns(ctx, owner, repo, pr.Head.SHA)
 }
 
 // ChecksStatus represents the aggregate status of check runs.
@@ -51,17 +40,17 @@ type ChecksStatus struct {
 }
 
 // GetChecksStatus returns aggregate status of check runs.
-func GetChecksStatus(checks []*github.CheckRun) *ChecksStatus {
+func GetChecksStatus(checks []*gogithub.CheckRun) *ChecksStatus {
 	status := &ChecksStatus{
 		Total: len(checks),
 	}
 
 	for _, c := range checks {
 		switch {
-		case c.GetStatus() != "completed":
+		case c.Status != "completed":
 			status.Pending++
 			status.AnyPending = true
-		case c.GetConclusion() == "success":
+		case c.Conclusion == "success":
 			status.Passed++
 		default:
 			status.Failed++
@@ -75,13 +64,13 @@ func GetChecksStatus(checks []*github.CheckRun) *ChecksStatus {
 }
 
 // AllChecksPassed returns true if all check runs completed successfully.
-func AllChecksPassed(checks []*github.CheckRun) bool {
+func AllChecksPassed(checks []*gogithub.CheckRun) bool {
 	if len(checks) == 0 {
 		return false
 	}
 
 	for _, c := range checks {
-		if c.GetStatus() != "completed" || c.GetConclusion() != "success" {
+		if c.Status != "completed" || c.Conclusion != "success" {
 			return false
 		}
 	}
@@ -90,18 +79,18 @@ func AllChecksPassed(checks []*github.CheckRun) bool {
 
 // WaitForChecks polls until all checks complete or timeout.
 // Returns the final check runs and whether all passed.
-func WaitForChecks(ctx context.Context, gh *github.Client, owner, repo, ref string, timeout, pollInterval time.Duration) ([]*github.CheckRun, bool, error) {
+func WaitForChecks(ctx context.Context, client clientv1.Client, owner, repo, ref string, timeout, pollInterval time.Duration) ([]*gogithub.CheckRun, bool, error) {
 	deadline := time.Now().Add(timeout)
 
 	for time.Now().Before(deadline) {
-		checks, err := ListCheckRuns(ctx, gh, owner, repo, ref)
+		checks, err := client.ListCheckRuns(ctx, owner, repo, ref)
 		if err != nil {
 			return nil, false, err
 		}
 
 		allComplete := true
 		for _, c := range checks {
-			if c.GetStatus() != "completed" {
+			if c.Status != "completed" {
 				allComplete = false
 				break
 			}
@@ -120,7 +109,7 @@ func WaitForChecks(ctx context.Context, gh *github.Client, owner, repo, ref stri
 	}
 
 	// Return current state after timeout
-	checks, err := ListCheckRuns(ctx, gh, owner, repo, ref)
+	checks, err := client.ListCheckRuns(ctx, owner, repo, ref)
 	if err != nil {
 		return nil, false, err
 	}
@@ -128,22 +117,11 @@ func WaitForChecks(ctx context.Context, gh *github.Client, owner, repo, ref stri
 }
 
 // GetCheckRun retrieves a specific check run by ID.
-func GetCheckRun(ctx context.Context, gh *github.Client, owner, repo string, checkRunID int64) (*github.CheckRun, error) {
-	check, _, err := gh.Checks.GetCheckRun(ctx, owner, repo, checkRunID)
-	return check, err
+func GetCheckRun(ctx context.Context, client clientv1.Client, owner, repo string, checkRunID int64) (*gogithub.CheckRun, error) {
+	return client.GetCheckRun(ctx, owner, repo, checkRunID)
 }
 
 // ListCheckSuites lists check suites for a commit.
-// Uses go-github's built-in iterator for automatic pagination handling.
-func ListCheckSuites(ctx context.Context, gh *github.Client, owner, repo, ref string) ([]*github.CheckSuite, error) {
-	var allSuites []*github.CheckSuite
-
-	for suite, err := range gh.Checks.ListCheckSuitesForRefIter(ctx, owner, repo, ref, nil) {
-		if err != nil {
-			return nil, fmt.Errorf("list check suites: %w", err)
-		}
-		allSuites = append(allSuites, suite)
-	}
-
-	return allSuites, nil
+func ListCheckSuites(ctx context.Context, client clientv1.Client, owner, repo, ref string) ([]*gogithub.CheckSuite, error) {
+	return client.ListCheckSuites(ctx, owner, repo, ref)
 }

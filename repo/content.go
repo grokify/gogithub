@@ -6,14 +6,13 @@ import (
 	"path"
 	"strings"
 
-	"github.com/google/go-github/v89/github"
+	"github.com/grokify/gogithub"
+	"github.com/grokify/gogithub/clientv1"
 )
 
 // ContentOptions specifies options for fetching repository content.
-type ContentOptions struct {
-	// Ref is the git reference (branch, tag, or commit SHA). Default: default branch.
-	Ref string
-}
+// Deprecated: Use gogithub.ContentOptions instead.
+type ContentOptions = gogithub.ContentOptions
 
 // FileInfo represents information about a file or directory in a repository.
 type FileInfo struct {
@@ -27,74 +26,31 @@ type FileInfo struct {
 
 // GetFileContent fetches the content of a single file from a repository.
 // Returns the decoded file content as bytes.
-func GetFileContent(ctx context.Context, gh *github.Client, owner, repo, filePath string, opts *ContentOptions) ([]byte, error) {
-	getOpts := &github.RepositoryContentGetOptions{}
-	if opts != nil && opts.Ref != "" {
-		getOpts.Ref = opts.Ref
-	}
-
-	content, _, resp, err := gh.Repositories.GetContents(ctx, owner, repo, filePath, getOpts)
-	if err != nil {
-		if resp != nil && resp.StatusCode == 404 {
-			return nil, fmt.Errorf("file not found: %s", filePath)
-		}
-		return nil, fmt.Errorf("get file content %s: %w", filePath, err)
-	}
-
-	if content == nil {
-		return nil, fmt.Errorf("path is a directory, not a file: %s", filePath)
-	}
-
-	if content.GetType() != "file" {
-		return nil, fmt.Errorf("path is not a file: %s (type: %s)", filePath, content.GetType())
-	}
-
-	// GetContent returns base64-encoded content, decode it
-	decodedContent, err := content.GetContent()
-	if err != nil {
-		return nil, fmt.Errorf("decode file content %s: %w", filePath, err)
-	}
-
-	return []byte(decodedContent), nil
+func GetFileContent(ctx context.Context, client clientv1.Client, owner, repo, filePath string, opts *ContentOptions) ([]byte, error) {
+	return client.GetFileContent(ctx, owner, repo, filePath, opts)
 }
 
 // GetFileContentString fetches the content of a single file as a string.
-func GetFileContentString(ctx context.Context, gh *github.Client, owner, repo, filePath string, opts *ContentOptions) (string, error) {
-	content, err := GetFileContent(ctx, gh, owner, repo, filePath, opts)
-	if err != nil {
-		return "", err
-	}
-	return string(content), nil
+func GetFileContentString(ctx context.Context, client clientv1.Client, owner, repo, filePath string, opts *ContentOptions) (string, error) {
+	return client.GetFileContentString(ctx, owner, repo, filePath, opts)
 }
 
 // ListDirectory lists the contents of a directory in a repository.
-func ListDirectory(ctx context.Context, gh *github.Client, owner, repo, dirPath string, opts *ContentOptions) ([]FileInfo, error) {
-	getOpts := &github.RepositoryContentGetOptions{}
-	if opts != nil && opts.Ref != "" {
-		getOpts.Ref = opts.Ref
-	}
-
-	_, dirContents, resp, err := gh.Repositories.GetContents(ctx, owner, repo, dirPath, getOpts)
+func ListDirectory(ctx context.Context, client clientv1.Client, owner, repo, dirPath string, opts *ContentOptions) ([]FileInfo, error) {
+	contents, err := client.ListDirectory(ctx, owner, repo, dirPath, opts)
 	if err != nil {
-		if resp != nil && resp.StatusCode == 404 {
-			return nil, fmt.Errorf("directory not found: %s", dirPath)
-		}
-		return nil, fmt.Errorf("list directory %s: %w", dirPath, err)
-	}
-
-	if dirContents == nil {
-		return nil, fmt.Errorf("path is a file, not a directory: %s", dirPath)
+		return nil, err
 	}
 
 	var files []FileInfo
-	for _, item := range dirContents {
+	for _, item := range contents {
 		files = append(files, FileInfo{
-			Path:        item.GetPath(),
-			Name:        item.GetName(),
-			Type:        item.GetType(),
-			Size:        item.GetSize(),
-			SHA:         item.GetSHA(),
-			DownloadURL: item.GetDownloadURL(),
+			Path:        item.Path,
+			Name:        item.Name,
+			Type:        item.Type,
+			Size:        item.Size,
+			SHA:         item.SHA,
+			DownloadURL: item.DownloadURL,
 		})
 	}
 
@@ -102,19 +58,20 @@ func ListDirectory(ctx context.Context, gh *github.Client, owner, repo, dirPath 
 }
 
 // ListDirectoryRecursive lists all files in a directory recursively.
-func ListDirectoryRecursive(ctx context.Context, gh *github.Client, owner, repo, dirPath string, opts *ContentOptions) ([]FileInfo, error) {
+func ListDirectoryRecursive(ctx context.Context, client clientv1.Client, owner, repo, dirPath string, opts *ContentOptions) ([]FileInfo, error) {
 	var allFiles []FileInfo
 
-	items, err := ListDirectory(ctx, gh, owner, repo, dirPath, opts)
+	items, err := ListDirectory(ctx, client, owner, repo, dirPath, opts)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, item := range items {
-		if item.Type == "file" {
+		switch item.Type {
+		case "file":
 			allFiles = append(allFiles, item)
-		} else if item.Type == "dir" {
-			subFiles, err := ListDirectoryRecursive(ctx, gh, owner, repo, item.Path, opts)
+		case "dir":
+			subFiles, err := ListDirectoryRecursive(ctx, client, owner, repo, item.Path, opts)
 			if err != nil {
 				return nil, err
 			}
@@ -127,11 +84,11 @@ func ListDirectoryRecursive(ctx context.Context, gh *github.Client, owner, repo,
 
 // GetMultipleFiles fetches multiple files from a repository.
 // Returns a map of file path to content.
-func GetMultipleFiles(ctx context.Context, gh *github.Client, owner, repo string, filePaths []string, opts *ContentOptions) (map[string][]byte, error) {
+func GetMultipleFiles(ctx context.Context, client clientv1.Client, owner, repo string, filePaths []string, opts *ContentOptions) (map[string][]byte, error) {
 	result := make(map[string][]byte)
 
 	for _, filePath := range filePaths {
-		content, err := GetFileContent(ctx, gh, owner, repo, filePath, opts)
+		content, err := client.GetFileContent(ctx, owner, repo, filePath, opts)
 		if err != nil {
 			return nil, err
 		}
@@ -143,15 +100,15 @@ func GetMultipleFiles(ctx context.Context, gh *github.Client, owner, repo string
 
 // DownloadDirectory downloads all files from a directory recursively.
 // Returns a map of relative file path to content.
-func DownloadDirectory(ctx context.Context, gh *github.Client, owner, repo, dirPath string, opts *ContentOptions) (map[string][]byte, error) {
-	files, err := ListDirectoryRecursive(ctx, gh, owner, repo, dirPath, opts)
+func DownloadDirectory(ctx context.Context, client clientv1.Client, owner, repo, dirPath string, opts *ContentOptions) (map[string][]byte, error) {
+	files, err := ListDirectoryRecursive(ctx, client, owner, repo, dirPath, opts)
 	if err != nil {
 		return nil, err
 	}
 
 	result := make(map[string][]byte)
 	for _, file := range files {
-		content, err := GetFileContent(ctx, gh, owner, repo, file.Path, opts)
+		content, err := client.GetFileContent(ctx, owner, repo, file.Path, opts)
 		if err != nil {
 			return nil, fmt.Errorf("download %s: %w", file.Path, err)
 		}
@@ -165,21 +122,8 @@ func DownloadDirectory(ctx context.Context, gh *github.Client, owner, repo, dirP
 }
 
 // FileExists checks if a file exists in a repository.
-func FileExists(ctx context.Context, gh *github.Client, owner, repo, filePath string, opts *ContentOptions) (bool, error) {
-	getOpts := &github.RepositoryContentGetOptions{}
-	if opts != nil && opts.Ref != "" {
-		getOpts.Ref = opts.Ref
-	}
-
-	content, _, resp, err := gh.Repositories.GetContents(ctx, owner, repo, filePath, getOpts)
-	if err != nil {
-		if resp != nil && resp.StatusCode == 404 {
-			return false, nil
-		}
-		return false, fmt.Errorf("check file exists %s: %w", filePath, err)
-	}
-
-	return content != nil && content.GetType() == "file", nil
+func FileExists(ctx context.Context, client clientv1.Client, owner, repo, filePath string, opts *ContentOptions) (bool, error) {
+	return client.FileExists(ctx, owner, repo, filePath, opts)
 }
 
 // GetRawFileURL returns the raw content URL for a file.
