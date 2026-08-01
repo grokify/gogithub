@@ -30,7 +30,11 @@ func NewClient(ctx context.Context, token string) (Client, error) {
 }
 
 // NewClientWithHTTP creates a new GitHub client with a custom HTTP client.
+// If httpClient is nil, http.DefaultClient is used.
 func NewClientWithHTTP(httpClient *http.Client) (Client, error) {
+	if httpClient == nil {
+		httpClient = http.DefaultClient
+	}
 	gh, err := github.NewClient(github.WithHTTPClient(httpClient))
 	if err != nil {
 		return nil, err

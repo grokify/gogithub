@@ -4,12 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-github/v89/github"
+	"github.com/grokify/gogithub"
 )
-
-func ptr[T any](v T) *T {
-	return &v
-}
 
 func TestIssueAuthorUsername(t *testing.T) {
 	tests := []struct {
@@ -26,19 +22,19 @@ func TestIssueAuthorUsername(t *testing.T) {
 		},
 		{
 			name:        "nil user",
-			issue:       &Issue{Issue: &github.Issue{User: nil}},
+			issue:       &Issue{Issue: &gogithub.Issue{User: nil}},
 			expected:    "",
 			expectError: ErrUserIsNotSet,
 		},
 		{
-			name:        "nil login",
-			issue:       &Issue{Issue: &github.Issue{User: &github.User{Login: nil}}},
+			name:        "empty login",
+			issue:       &Issue{Issue: &gogithub.Issue{User: &gogithub.User{Login: ""}}},
 			expected:    "",
 			expectError: ErrUserLoginIsNotSet,
 		},
 		{
 			name:        "valid username",
-			issue:       &Issue{Issue: &github.Issue{User: &github.User{Login: ptr("grokify")}}},
+			issue:       &Issue{Issue: &gogithub.Issue{User: &gogithub.User{Login: "grokify"}}},
 			expected:    "grokify",
 			expectError: nil,
 		},
@@ -78,19 +74,13 @@ func TestIssueAuthorUserID(t *testing.T) {
 		},
 		{
 			name:        "nil user",
-			issue:       &Issue{Issue: &github.Issue{User: nil}},
+			issue:       &Issue{Issue: &gogithub.Issue{User: nil}},
 			expected:    -1,
 			expectError: ErrUserIsNotSet,
 		},
 		{
-			name:        "nil ID",
-			issue:       &Issue{Issue: &github.Issue{User: &github.User{ID: nil}}},
-			expected:    -1,
-			expectError: ErrUserLoginIsNotSet, // Note: reuses login error for ID
-		},
-		{
 			name:        "valid user ID",
-			issue:       &Issue{Issue: &github.Issue{User: &github.User{ID: ptr(int64(12345))}}},
+			issue:       &Issue{Issue: &gogithub.Issue{User: &gogithub.User{ID: 12345}}},
 			expected:    12345,
 			expectError: nil,
 		},
@@ -117,7 +107,6 @@ func TestIssueAuthorUserID(t *testing.T) {
 
 func TestIssueCreatedTime(t *testing.T) {
 	now := time.Now()
-	timestamp := &github.Timestamp{Time: now}
 
 	tests := []struct {
 		name        string
@@ -130,18 +119,13 @@ func TestIssueCreatedTime(t *testing.T) {
 			expectError: ErrIssueIsNotSet,
 		},
 		{
-			name:        "nil CreatedAt",
-			issue:       &Issue{Issue: &github.Issue{CreatedAt: nil}},
+			name:        "zero CreatedAt",
+			issue:       &Issue{Issue: &gogithub.Issue{CreatedAt: time.Time{}}},
 			expectError: ErrIssueCreatedAtIsNotSet,
 		},
 		{
-			name:        "zero time",
-			issue:       &Issue{Issue: &github.Issue{CreatedAt: &github.Timestamp{Time: time.Time{}}}},
-			expectError: ErrIssueCreatedAtGetTimeIsNotSet,
-		},
-		{
 			name:        "valid time",
-			issue:       &Issue{Issue: &github.Issue{CreatedAt: timestamp}},
+			issue:       &Issue{Issue: &gogithub.Issue{CreatedAt: now}},
 			expectError: nil,
 		},
 	}
@@ -168,9 +152,8 @@ func TestIssueCreatedTime(t *testing.T) {
 func TestIssueCreatedAge(t *testing.T) {
 	// Test with a time in the past
 	pastTime := time.Now().Add(-24 * time.Hour)
-	timestamp := &github.Timestamp{Time: pastTime}
 
-	issue := &Issue{Issue: &github.Issue{CreatedAt: timestamp}}
+	issue := &Issue{Issue: &gogithub.Issue{CreatedAt: pastTime}}
 	age, err := issue.CreatedAge()
 	if err != nil {
 		t.Errorf("CreatedAge() unexpected error: %v", err)
@@ -203,7 +186,7 @@ func TestIssueMustAuthorUsername(t *testing.T) {
 		},
 		{
 			name:     "valid username",
-			issue:    &Issue{Issue: &github.Issue{User: &github.User{Login: ptr("grokify")}}},
+			issue:    &Issue{Issue: &gogithub.Issue{User: &gogithub.User{Login: "grokify"}}},
 			expected: "grokify",
 		},
 	}
@@ -231,7 +214,7 @@ func TestIssueMustAuthorUserID(t *testing.T) {
 		},
 		{
 			name:     "valid user ID",
-			issue:    &Issue{Issue: &github.Issue{User: &github.User{ID: ptr(int64(12345))}}},
+			issue:    &Issue{Issue: &gogithub.Issue{User: &gogithub.User{ID: 12345}}},
 			expected: 12345,
 		},
 	}
@@ -248,9 +231,9 @@ func TestIssueMustAuthorUserID(t *testing.T) {
 
 func TestIssuesRepositoryIssueCounts(t *testing.T) {
 	issues := Issues{
-		&github.Issue{RepositoryURL: ptr("https://api.github.com/repos/owner/repo1")},
-		&github.Issue{RepositoryURL: ptr("https://api.github.com/repos/owner/repo1")},
-		&github.Issue{RepositoryURL: ptr("https://api.github.com/repos/owner/repo2")},
+		&gogithub.Issue{RepositoryURL: "https://api.github.com/repos/owner/repo1"},
+		&gogithub.Issue{RepositoryURL: "https://api.github.com/repos/owner/repo1"},
+		&gogithub.Issue{RepositoryURL: "https://api.github.com/repos/owner/repo2"},
 	}
 
 	t.Run("API URLs", func(t *testing.T) {
@@ -287,9 +270,9 @@ func TestIssuesRepositoryIssueCountsEmpty(t *testing.T) {
 
 func TestIssuesTableRepos(t *testing.T) {
 	issues := Issues{
-		&github.Issue{RepositoryURL: ptr("https://api.github.com/repos/owner/repo1")},
-		&github.Issue{RepositoryURL: ptr("https://api.github.com/repos/owner/repo1")},
-		&github.Issue{RepositoryURL: ptr("https://api.github.com/repos/owner/repo2")},
+		&gogithub.Issue{RepositoryURL: "https://api.github.com/repos/owner/repo1"},
+		&gogithub.Issue{RepositoryURL: "https://api.github.com/repos/owner/repo1"},
+		&gogithub.Issue{RepositoryURL: "https://api.github.com/repos/owner/repo2"},
 	}
 
 	tbl := issues.TableRepos("Test Repos", true)
@@ -305,15 +288,14 @@ func TestIssuesTableRepos(t *testing.T) {
 
 func TestIssuesTable(t *testing.T) {
 	now := time.Now()
-	timestamp := &github.Timestamp{Time: now}
 
 	issues := Issues{
-		&github.Issue{
-			User:      &github.User{Login: ptr("grokify"), ID: ptr(int64(12345))},
-			Title:     ptr("Test Issue"),
-			HTMLURL:   ptr("https://github.com/owner/repo/issues/1"),
-			State:     ptr("open"),
-			CreatedAt: timestamp,
+		&gogithub.Issue{
+			User:      &gogithub.User{Login: "grokify", ID: 12345},
+			Title:     "Test Issue",
+			HTMLURL:   "https://github.com/owner/repo/issues/1",
+			State:     "open",
+			CreatedAt: now,
 		},
 	}
 
@@ -349,16 +331,16 @@ func TestIssuesTable(t *testing.T) {
 }
 
 func TestIssuesTableError(t *testing.T) {
-	// Issue with nil CreatedAt should cause error
+	// Issue with zero CreatedAt should cause error
 	issues := Issues{
-		&github.Issue{
-			User:      &github.User{Login: ptr("grokify"), ID: ptr(int64(12345))},
-			CreatedAt: nil,
+		&gogithub.Issue{
+			User:      &gogithub.User{Login: "grokify", ID: 12345},
+			CreatedAt: time.Time{},
 		},
 	}
 
 	_, err := issues.Table("Test")
 	if err == nil {
-		t.Error("Table() should return error for issue with nil CreatedAt")
+		t.Error("Table() should return error for issue with zero CreatedAt")
 	}
 }
