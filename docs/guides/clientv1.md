@@ -124,8 +124,12 @@ func main() {
 |--------|---------|-------------|
 | `GetFileContent(ctx, owner, repo, path, opts)` | `[]byte` | Get file content |
 | `GetFileContentString(ctx, owner, repo, path, opts)` | `string` | Get file content as string |
+| `GetFileContentWithSHA(ctx, owner, repo, path, opts)` | `[]byte, string` | Get file content and its SHA |
 | `ListDirectory(ctx, owner, repo, path, opts)` | `[]*gogithub.FileContent` | List directory contents |
 | `FileExists(ctx, owner, repo, path, opts)` | `bool` | Check if file exists |
+| `CreateFile(ctx, owner, repo, path, opts)` | `*gogithub.CreateFileResult` | Create a new file |
+| `UpdateFile(ctx, owner, repo, path, opts)` | `*gogithub.CreateFileResult` | Update an existing file (needs current SHA) |
+| `DeleteFile(ctx, owner, repo, path, sha, msg, opts)` | `*gogithub.DeleteFileResult` | Delete a file (needs current SHA) |
 
 ### Git References
 
@@ -153,7 +157,18 @@ func main() {
 | `GetCommit(ctx, owner, repo, sha)` | `*gogithub.Commit` | Get commit details |
 | `ListCommits(ctx, owner, repo, opts)` | `[]*gogithub.Commit` | List commits |
 | `CreateCommit(ctx, owner, repo, opts)` | `*gogithub.Commit` | Create a commit |
+
+### Git Trees and Blobs
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `GetTree(ctx, owner, repo, sha, recursive)` | `[]*gogithub.TreeNode` | Get a git tree by SHA |
 | `CreateTree(ctx, owner, repo, base, entries)` | `string` | Create a git tree |
+| `CreateBlob(ctx, owner, repo, content, encoding)` | `string` | Create a git blob |
+
+Together with `GetRef`, `CreateCommit`, and `UpdateRef`, these support building an atomic multi-file
+commit: create a blob per file, assemble a tree from those blobs, create a commit pointing at the
+new tree, then update the branch ref to the new commit.
 
 ### Pull Requests
 
@@ -182,7 +197,19 @@ func main() {
 |--------|---------|-------------|
 | `CreatePullRequestComment(ctx, owner, repo, num, input)` | `*gogithub.PullRequestComment` | Create a diff comment |
 | `ListPullRequestComments(ctx, owner, repo, num)` | `[]*gogithub.PullRequestComment` | List diff comments |
+
+### Issues
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `GetIssue(ctx, owner, repo, number)` | `*gogithub.Issue` | Get issue details |
+| `ListIssues(ctx, owner, repo, opts)` | `[]*gogithub.Issue` | List issues |
+| `CreateIssue(ctx, owner, repo, input)` | `*gogithub.Issue` | Create a new issue |
+| `UpdateIssue(ctx, owner, repo, number, input)` | `*gogithub.Issue` | Update an issue |
 | `CreateIssueComment(ctx, owner, repo, num, body)` | `*gogithub.IssueComment` | Create an issue/PR comment |
+
+`gogithub.Issue` includes an `IsPullRequest` field, since GitHub's issue-listing endpoints also
+return pull requests — check it to filter PRs out of issue results.
 
 ### Checks
 
@@ -210,6 +237,7 @@ func main() {
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `SearchIssues(ctx, query, opts)` | `*gogithub.IssueSearchResult` | Search issues/PRs |
+| `SearchCode(ctx, query, opts)` | `*gogithub.CodeSearchResult` | Search code |
 
 ### Contributors
 
@@ -251,10 +279,19 @@ var asset *gogithub.ReleaseAsset
 // Content
 var fileContent *gogithub.FileContent
 var contentOpts *gogithub.ContentOptions
+var createFileResult *gogithub.CreateFileResult
+var deleteFileResult *gogithub.DeleteFileResult
+
+// Git data
+var treeNode *gogithub.TreeNode
+
+// Issues
+var issue *gogithub.Issue
 
 // Search
 var searchResult *gogithub.IssueSearchResult
-var issue *gogithub.Issue
+var codeSearchResult *gogithub.CodeSearchResult
+var codeResult *gogithub.CodeResult
 
 // Stats
 var stats *gogithub.ContributorStats
