@@ -45,7 +45,7 @@ import (
     "fmt"
     "time"
 
-    "github.com/google/go-github/v84/github"
+    "github.com/grokify/gogithub/clientv1"
     "github.com/grokify/gogithub/graphql"
     "github.com/grokify/gogithub/profile"
 )
@@ -55,7 +55,10 @@ func main() {
     token := "your-github-token"
 
     // Create clients
-    restClient := github.NewClient(nil).WithAuthToken(token)
+    restClient, err := clientv1.NewClient(ctx, token)
+    if err != nil {
+        panic(err)
+    }
     gqlClient := graphql.NewClient(ctx, token)
 
     // Fetch profile for last year
@@ -315,7 +318,7 @@ import (
     "fmt"
     "time"
 
-    "github.com/google/go-github/v84/github"
+    "github.com/grokify/gogithub/clientv1"
     "github.com/grokify/gogithub/graphql"
     "github.com/grokify/gogithub/profile"
 )
@@ -324,7 +327,10 @@ func main() {
     ctx := context.Background()
     token := "your-github-token"
 
-    restClient := github.NewClient(nil).WithAuthToken(token)
+    restClient, err := clientv1.NewClient(ctx, token)
+    if err != nil {
+        panic(err)
+    }
     gqlClient := graphql.NewClient(ctx, token)
 
     // Fetch profile for 2024

@@ -50,18 +50,9 @@ repos, _ := client.ListUserRepos(ctx, user.Login)  // []*gogithub.Repository
 
 See the [Version-Isolated Client Guide](guides/clientv1.md) for full documentation.
 
-### Creating a Client (Legacy)
+### Creating a Client from Environment or GitHub Enterprise
 
-The following methods expose go-github types directly and require updates when go-github changes major versions:
-
-=== "With Token"
-
-    ```go
-    import "github.com/grokify/gogithub/auth"
-
-    ctx := context.Background()
-    gh := auth.NewGitHubClient(ctx, "your-github-token")
-    ```
+The `config` package can build a `clientv1.Client` too, via `NewClientV1`/`MustNewClientV1`:
 
 === "From Environment"
 
@@ -72,7 +63,7 @@ The following methods expose go-github types directly and require updates when g
     if err != nil {
         panic(err)
     }
-    gh, err := cfg.NewClient(ctx)
+    client, err := cfg.NewClientV1(ctx)
     ```
 
 === "GitHub Enterprise"
@@ -85,8 +76,29 @@ The following methods expose go-github types directly and require updates when g
         BaseURL:   "https://github.mycompany.com/api/v3",
         UploadURL: "https://github.mycompany.com/api/uploads",
     }
-    gh, err := cfg.NewClient(ctx)
+    client, err := cfg.NewClientV1(ctx)
     ```
+
+`config.Config.NewClient()`/`MustNewClient()` (returning `*github.Client` directly) are deprecated;
+use `NewClientV1()`/`MustNewClientV1()` instead.
+
+### Escape Hatch: Raw go-github Client
+
+For advanced operations not yet wrapped by `clientv1`, `auth.NewGitHubClient()` still returns a raw
+`*github.Client`:
+
+```go
+import "github.com/grokify/gogithub/auth"
+
+ctx := context.Background()
+gh, err := auth.NewGitHubClient(ctx, "your-github-token")
+if err != nil {
+    panic(err)
+}
+```
+
+This couples your code to go-github's current major version — prefer `clientv1.Client` wherever a
+package accepts it.
 
 ### Environment Variables
 
@@ -103,15 +115,17 @@ The `config` package reads from these environment variables:
 
 ## Common Operations
 
+These operations all take the `clientv1.Client` created in [Creating a Client (Recommended)](#creating-a-client-recommended) above.
+
 ### Search for Issues/PRs
 
 ```go
 import "github.com/grokify/gogithub/search"
 
-client := search.NewClient(gh)
+c := search.NewClient(client)
 
 // Using Query map
-issues, err := client.SearchIssuesAll(ctx, search.Query{
+issues, err := c.SearchIssuesAll(ctx, search.Query{
     search.ParamUser:  "octocat",
     search.ParamIs:    search.ParamIsValueIssue,
     search.ParamState: search.ParamStateValueOpen,
@@ -123,7 +137,7 @@ qb := search.NewQueryBuilder().
     Is(search.ParamIsValueIssue).
     State(search.ParamStateValueOpen)
 
-issues, err := client.SearchIssuesAll(ctx, qb.Build(), nil)
+issues, err = c.SearchIssuesAll(ctx, qb.Build(), nil)
 ```
 
 ### Create a Branch and Commit
@@ -132,16 +146,16 @@ issues, err := client.SearchIssuesAll(ctx, qb.Build(), nil)
 import "github.com/grokify/gogithub/repo"
 
 // Get the SHA of the base branch
-sha, err := repo.GetBranchSHA(ctx, gh, "owner", "repo", "main")
+sha, err := repo.GetBranchSHA(ctx, client, "owner", "repo", "main")
 
 // Create a new branch
-err = repo.CreateBranch(ctx, gh, "owner", "repo", "feature-branch", sha)
+err = repo.CreateBranch(ctx, client, "owner", "repo", "feature-branch", sha)
 
 // Commit files
 files := []repo.FileContent{
     {Path: "hello.txt", Content: []byte("Hello, World!")},
 }
-commit, err := repo.CreateCommit(ctx, gh, "owner", "repo", "feature-branch", "Add hello.txt", files)
+commitSHA, err := repo.CreateCommit(ctx, client, "owner", "repo", "feature-branch", "Add hello.txt", files)
 ```
 
 ### Create a Pull Request
@@ -149,14 +163,14 @@ commit, err := repo.CreateCommit(ctx, gh, "owner", "repo", "feature-branch", "Ad
 ```go
 import "github.com/grokify/gogithub/pr"
 
-pullRequest, err := pr.CreatePR(ctx, gh,
+pullRequest, err := pr.CreatePR(ctx, client,
     "upstream-owner", "upstream-repo",  // base repo
     "fork-owner", "feature-branch",     // head
     "main",                             // base branch
     "My PR Title",
     "Description of changes",
 )
-fmt.Printf("PR URL: %s\n", pullRequest.GetHTMLURL())
+fmt.Printf("PR URL: %s\n", pullRequest.HTMLURL)
 ```
 
 ### Get User Contribution Stats (GraphQL)

@@ -12,21 +12,24 @@
 //	repos, err := client.ListUserRepos(ctx, "user")    // Returns []*clientv1.Repository
 //	sha, err := client.GetBranchSHA(ctx, "owner", "repo", "main")
 //
-// # Legacy Packages
+// # Operation Packages
 //
-// The following packages expose go-github types directly and will require
-// consumer updates when go-github changes major versions:
+// The following packages also accept clientv1.Client and return stable gogithub.*
+// types, so they stay version-isolated like the client itself:
 //
-//   - auth: Authentication utilities and bot user constants
-//   - config: Configuration and environment variable loading
-//   - errors: Error types and translation utilities
-//   - pathutil: Path validation and normalization
 //   - search: Search API (issues, PRs, code, etc.)
 //   - repo: Repository operations (fork, branch, commit, batch)
 //   - pr: Pull request operations
 //   - release: Release and asset operations
+//   - checks: Check run polling and status
+//   - tag: Git tag operations
+//   - sarif: SARIF upload for code scanning
 //
-// Example using legacy packages:
+// A few legacy functions in auth and config still return go-github types directly
+// and are deprecated (auth.NewGitHubClient, config.Config.NewClient); prefer
+// clientv1.NewClient and config.Config.NewClientV1 instead.
+//
+// Example:
 //
 //	package main
 //
@@ -34,16 +37,19 @@
 //	    "context"
 //	    "fmt"
 //
-//	    "github.com/grokify/gogithub/auth"
+//	    "github.com/grokify/gogithub/clientv1"
 //	    "github.com/grokify/gogithub/search"
 //	)
 //
 //	func main() {
 //	    ctx := context.Background()
-//	    gh := auth.NewGitHubClient(ctx, "your-token")
+//	    client, err := clientv1.NewClient(ctx, "your-token")
+//	    if err != nil {
+//	        panic(err)
+//	    }
 //
-//	    client := search.NewClient(gh)
-//	    issues, err := client.SearchIssuesAll(ctx, search.Query{
+//	    c := search.NewClient(client)
+//	    issues, err := c.SearchIssuesAll(ctx, search.Query{
 //	        search.ParamUser:  "grokify",
 //	        search.ParamState: search.ParamStateValueOpen,
 //	    }, nil)

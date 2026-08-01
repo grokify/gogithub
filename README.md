@@ -183,9 +183,9 @@ func main() {
 }
 ```
 
-### Legacy Packages (Expose go-github Types)
+### Operation Packages (search, repo, pr, checks, tag, release, sarif)
 
-The following examples use legacy packages that expose go-github types directly. These require updates when go-github changes major versions.
+These packages take a `clientv1.Client`, so they stay version-isolated just like the client itself.
 
 ```go
 package main
@@ -194,19 +194,21 @@ import (
     "context"
     "fmt"
 
-    "github.com/grokify/gogithub/auth"
+    "github.com/grokify/gogithub/clientv1"
     "github.com/grokify/gogithub/search"
 )
 
 func main() {
     ctx := context.Background()
 
-    // Create authenticated client
-    gh := auth.NewGitHubClient(ctx, "your-github-token")
+    client, err := clientv1.NewClient(ctx, "your-github-token")
+    if err != nil {
+        panic(err)
+    }
 
     // Search for open pull requests
-    client := search.NewClient(gh)
-    issues, err := client.SearchIssuesAll(ctx, search.Query{
+    c := search.NewClient(client)
+    issues, err := c.SearchIssuesAll(ctx, search.Query{
         search.ParamUser:  "grokify",
         search.ParamState: search.ParamStateValueOpen,
         search.ParamIs:    search.ParamIsValuePR,
@@ -228,23 +230,26 @@ import (
     "context"
     "fmt"
 
-    "github.com/grokify/gogithub/auth"
+    "github.com/grokify/gogithub/clientv1"
     "github.com/grokify/gogithub/pr"
     "github.com/grokify/gogithub/repo"
 )
 
 func main() {
     ctx := context.Background()
-    gh := auth.NewGitHubClient(ctx, "your-github-token")
+    client, err := clientv1.NewClient(ctx, "your-github-token")
+    if err != nil {
+        panic(err)
+    }
 
     // Get branch SHA
-    sha, err := repo.GetBranchSHA(ctx, gh, "owner", "repo", "main")
+    sha, err := repo.GetBranchSHA(ctx, client, "owner", "repo", "main")
     if err != nil {
         panic(err)
     }
 
     // Create a new branch
-    err = repo.CreateBranch(ctx, gh, "owner", "repo", "feature-branch", sha)
+    err = repo.CreateBranch(ctx, client, "owner", "repo", "feature-branch", sha)
     if err != nil {
         panic(err)
     }
@@ -253,19 +258,19 @@ func main() {
     files := []repo.FileContent{
         {Path: "README.md", Content: []byte("# Hello")},
     }
-    _, err = repo.CreateCommit(ctx, gh, "owner", "repo", "feature-branch", "Add README", files)
+    _, err = repo.CreateCommit(ctx, client, "owner", "repo", "feature-branch", "Add README", files)
     if err != nil {
         panic(err)
     }
 
     // Create pull request
-    pullRequest, err := pr.CreatePR(ctx, gh, "upstream-owner", "upstream-repo",
+    pullRequest, err := pr.CreatePR(ctx, client, "upstream-owner", "upstream-repo",
         "fork-owner", "feature-branch", "main", "My PR Title", "PR description")
     if err != nil {
         panic(err)
     }
 
-    fmt.Printf("PR created: %s\n", pullRequest.GetHTMLURL())
+    fmt.Printf("PR created: %s\n", pullRequest.HTMLURL)
 }
 ```
 
@@ -279,16 +284,19 @@ import (
     "fmt"
     "time"
 
-    "github.com/grokify/gogithub/auth"
     "github.com/grokify/gogithub/checks"
+    "github.com/grokify/gogithub/clientv1"
 )
 
 func main() {
     ctx := context.Background()
-    gh := auth.NewGitHubClient(ctx, "your-github-token")
+    client, err := clientv1.NewClient(ctx, "your-github-token")
+    if err != nil {
+        panic(err)
+    }
 
     // Wait for all checks to complete (with 10 minute timeout)
-    checkRuns, allPassed, err := checks.WaitForChecks(ctx, gh, "owner", "repo", "commit-sha",
+    checkRuns, allPassed, err := checks.WaitForChecks(ctx, client, "owner", "repo", "commit-sha",
         10*time.Minute, 30*time.Second)
     if err != nil {
         panic(err)
@@ -314,23 +322,26 @@ import (
     "context"
     "fmt"
 
-    "github.com/grokify/gogithub/auth"
+    "github.com/grokify/gogithub/clientv1"
     "github.com/grokify/gogithub/release"
     "github.com/grokify/gogithub/tag"
 )
 
 func main() {
     ctx := context.Background()
-    gh := auth.NewGitHubClient(ctx, "your-github-token")
+    client, err := clientv1.NewClient(ctx, "your-github-token")
+    if err != nil {
+        panic(err)
+    }
 
     // Create an annotated tag
-    err := tag.CreateTag(ctx, gh, "owner", "repo", "v1.0.0", "commit-sha", "Release v1.0.0")
+    err = tag.CreateTag(ctx, client, "owner", "repo", "v1.0.0", "commit-sha", "Release v1.0.0")
     if err != nil {
         panic(err)
     }
 
     // Create a release
-    rel, err := release.CreateReleaseSimple(ctx, gh, "owner", "repo",
+    rel, err := release.CreateReleaseSimple(ctx, client, "owner", "repo",
         "v1.0.0",           // tag name
         "Version 1.0.0",    // release name
         "Release notes...", // body
@@ -342,7 +353,7 @@ func main() {
         panic(err)
     }
 
-    fmt.Printf("Release created: %s\n", rel.GetHTMLURL())
+    fmt.Printf("Release created: %s\n", rel.HTMLURL)
 }
 ```
 
@@ -358,7 +369,7 @@ import (
     "fmt"
     "time"
 
-    "github.com/google/go-github/v88/github"
+    "github.com/grokify/gogithub/clientv1"
     "github.com/grokify/gogithub/graphql"
     "github.com/grokify/gogithub/profile"
 )
@@ -367,7 +378,7 @@ func main() {
     ctx := context.Background()
     token := "your-github-token"
 
-    restClient, err := github.NewClient(github.WithAuthToken(token))
+    restClient, err := clientv1.NewClient(ctx, token)
     if err != nil {
         panic(err)
     }
@@ -472,7 +483,7 @@ When adding new GitHub API functionality, follow this structure:
    - Keep files focused and cohesive
 
 3. **Use consistent patterns**:
-   - Functions take `context.Context` and `*github.Client` as first parameters
+   - Functions take `context.Context` and `clientv1.Client` as first parameters (use `client.Raw()` internally only for operations `clientv1.Client` doesn't yet wrap)
    - Return appropriate error types with context
    - Provide both low-level functions and convenience wrappers
 
@@ -511,43 +522,37 @@ package gist
 
 import (
     "context"
-    "github.com/google/go-github/v88/github"
+
+    "github.com/grokify/gogithub"
+    "github.com/grokify/gogithub/clientv1"
 )
 
-func Create(ctx context.Context, gh *github.Client, description string, public bool, files map[string]string) (*github.Gist, error) {
-    // Implementation
+func Create(ctx context.Context, client clientv1.Client, description string, public bool, files map[string]string) (*gogithub.Gist, error) {
+    // Implementation, e.g. using client.Raw() until clientv1.Client wraps gist operations
 }
 
-func Get(ctx context.Context, gh *github.Client, id string) (*github.Gist, error) {
+func Get(ctx context.Context, client clientv1.Client, id string) (*gogithub.Gist, error) {
     // Implementation
 }
 ```
 
-## Backward Compatibility
+## Deprecated Functions
 
-The root `gogithub` package provides backward-compatible re-exports for existing code:
+A few legacy functions that return go-github types directly are deprecated in favor of `clientv1`:
 
-```go
-// Old style (still works)
-import "github.com/grokify/gogithub"
+| Deprecated | Use instead |
+|------------|-------------|
+| `auth.NewGitHubClient()` | `clientv1.NewClient()` |
+| `auth.GetAuthenticatedUser()` | `client.GetAuthenticatedUser()` |
+| `auth.GetUser()` | `client.GetUser()` |
+| `config.Config.NewClient()` / `MustNewClient()` | `config.Config.NewClientV1()` / `MustNewClientV1()` |
 
-c := gogithub.NewClient(httpClient)
-issues, _ := c.SearchIssuesAll(ctx, gogithub.Query{...}, nil)
-
-// New style (preferred)
-import (
-    "github.com/grokify/gogithub/auth"
-    "github.com/grokify/gogithub/search"
-)
-
-gh := auth.NewGitHubClient(ctx, token)
-c := search.NewClient(gh)
-issues, _ := c.SearchIssuesAll(ctx, search.Query{...}, nil)
-```
+They still work — go-github upgrades are the only thing that can break them — but new code should
+use `clientv1` so it never needs to change when go-github does.
 
 ## Dependencies
 
-- [google/go-github](https://github.com/google/go-github) v88 - GitHub API client
+- [google/go-github](https://github.com/google/go-github) v89 - GitHub API client (wrapped internally by `clientv1`; avoid importing it directly, see [Version-Isolated Client](#version-isolated-client-recommended))
 - [golang.org/x/oauth2](https://golang.org/x/oauth2) - OAuth2 authentication
 
 ## License

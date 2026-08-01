@@ -6,12 +6,15 @@ The `search` package provides a high-level interface for GitHub's Search API wit
 
 ```go
 import (
-    "github.com/grokify/gogithub/auth"
+    "github.com/grokify/gogithub/clientv1"
     "github.com/grokify/gogithub/search"
 )
 
 ctx := context.Background()
-gh := auth.NewGitHubClient(ctx, "your-token")
+gh, err := clientv1.NewClient(ctx, "your-token")
+if err != nil {
+    panic(err)
+}
 client := search.NewClient(gh)
 ```
 
@@ -60,7 +63,7 @@ fmt.Printf("Found %d results\n", len(issues))
 ### With Search Options
 
 ```go
-opts := &github.SearchOptions{
+opts := &clientv1.SearchOptions{
     Sort:  "created",
     Order: "desc",
 }
@@ -103,7 +106,7 @@ qb := search.NewQueryBuilder().
 
 ### Issues Type
 
-The `Issues` type (`[]*github.Issue`) provides convenience methods:
+The `Issues` type (`[]*gogithub.Issue`) provides convenience methods:
 
 ```go
 issues, _ := client.SearchIssuesAll(ctx, query, nil)
@@ -133,7 +136,7 @@ for _, is := range issues {
     age, _ := issue.CreatedAge()
 
     fmt.Printf("%s by %s (%s old)\n",
-        is.GetTitle(),
+        is.Title,
         username,
         age.Round(time.Hour*24),
     )

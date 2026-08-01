@@ -1,6 +1,8 @@
 # Repository Operations
 
-The `repo` package provides high-level functions for repository operations including forking, branching, committing, and batch file operations.
+The `repo` package provides high-level functions for repository operations including forking,
+branching, committing, and batch file operations. All functions take a
+[`clientv1.Client`](clientv1.md) and return stable `gogithub.*` types.
 
 ## Listing Repositories
 
@@ -9,22 +11,22 @@ The `repo` package provides high-level functions for repository operations inclu
 ```go
 import "github.com/grokify/gogithub/repo"
 
-repos, err := repo.ListUserRepos(ctx, gh, "octocat", nil)
+repos, err := repo.ListUserRepos(ctx, client, "octocat")
 for _, r := range repos {
-    fmt.Printf("%s: %s\n", r.GetFullName(), r.GetDescription())
+    fmt.Printf("%s: %s\n", r.FullName, r.Description)
 }
 ```
 
 ### List Organization Repositories
 
 ```go
-repos, err := repo.ListOrgRepos(ctx, gh, "github", nil)
+repos, err := repo.ListOrgRepos(ctx, client, "github")
 ```
 
 ### Get Single Repository
 
 ```go
-repository, err := repo.GetRepo(ctx, gh, "octocat", "hello-world")
+repository, err := repo.GetRepo(ctx, client, "octocat", "hello-world")
 ```
 
 ## Branch Operations
@@ -32,7 +34,7 @@ repository, err := repo.GetRepo(ctx, gh, "octocat", "hello-world")
 ### Get Branch SHA
 
 ```go
-sha, err := repo.GetBranchSHA(ctx, gh, "owner", "repo", "main")
+sha, err := repo.GetBranchSHA(ctx, client, "owner", "repo", "main")
 fmt.Printf("Branch SHA: %s\n", sha)
 ```
 
@@ -40,25 +42,25 @@ fmt.Printf("Branch SHA: %s\n", sha)
 
 ```go
 // First get the SHA of the base branch
-sha, err := repo.GetBranchSHA(ctx, gh, "owner", "repo", "main")
+sha, err := repo.GetBranchSHA(ctx, client, "owner", "repo", "main")
 if err != nil {
     return err
 }
 
 // Create new branch from that SHA
-err = repo.CreateBranch(ctx, gh, "owner", "repo", "feature-branch", sha)
+err = repo.CreateBranch(ctx, client, "owner", "repo", "feature-branch", sha)
 ```
 
 ### Delete Branch
 
 ```go
-err := repo.DeleteBranch(ctx, gh, "owner", "repo", "feature-branch")
+err := repo.DeleteBranch(ctx, client, "owner", "repo", "feature-branch")
 ```
 
 ### Get Default Branch
 
 ```go
-defaultBranch, err := repo.GetDefaultBranch(ctx, gh, "owner", "repo")
+defaultBranch, err := repo.GetDefaultBranch(ctx, client, "owner", "repo")
 fmt.Printf("Default branch: %s\n", defaultBranch)
 ```
 
@@ -66,18 +68,18 @@ fmt.Printf("Default branch: %s\n", defaultBranch)
 
 ### Ensure Fork Exists
 
-`EnsureFork` creates a fork if it doesn't exist, or returns the existing fork:
+`EnsureFork` creates a fork if it doesn't exist, or returns the existing fork's owner/repo names:
 
 ```go
-fork, err := repo.EnsureFork(ctx, gh, "upstream-owner", "upstream-repo")
-fmt.Printf("Fork: %s/%s\n", fork.GetOwner().GetLogin(), fork.GetName())
+forkOwner, forkRepo, err := repo.EnsureFork(ctx, client, "upstream-owner", "upstream-repo", "your-username")
+fmt.Printf("Fork: %s/%s\n", forkOwner, forkRepo)
 ```
 
 ## Commit Operations
 
 ### Create Single Commit
 
-Create a commit with multiple files using the Git Data API (tree-based):
+Create a commit with multiple files using the Git Data API (tree-based). Returns the new commit's SHA:
 
 ```go
 files := []repo.FileContent{
@@ -85,31 +87,32 @@ files := []repo.FileContent{
     {Path: "src/main.go", Content: []byte("package main\n\nfunc main() {}")},
 }
 
-commit, err := repo.CreateCommit(ctx, gh, "owner", "repo", "feature-branch", "Add initial files", files)
-fmt.Printf("Commit SHA: %s\n", commit.GetSHA())
+commitSHA, err := repo.CreateCommit(ctx, client, "owner", "repo", "feature-branch", "Add initial files", files)
+fmt.Printf("Commit SHA: %s\n", commitSHA)
 ```
 
 ### Read Local Files
 
-Helper to read files from the local filesystem:
+Helper to read files from the local filesystem, prepending `prefix` to each destination path:
 
 ```go
-files, err := repo.ReadLocalFiles("path/to/dir", []string{"file1.txt", "file2.txt"})
+files, err := repo.ReadLocalFiles("path/to/dir", "")
 if err != nil {
     return err
 }
 
-commit, err := repo.CreateCommit(ctx, gh, "owner", "repo", "branch", "Add files", files)
+commitSHA, err := repo.CreateCommit(ctx, client, "owner", "repo", "branch", "Add files", files)
 ```
 
 ## Batch Operations
 
-The `Batch` type allows atomic multi-file commits with queued operations:
+The `Batch` type allows atomic multi-file commits with queued operations. The commit message is
+set when the batch is created:
 
 ### Create a Batch
 
 ```go
-batch, err := repo.NewBatch(ctx, gh, "owner", "repo", "feature-branch")
+batch, err := repo.NewBatch(ctx, client, "owner", "repo", "feature-branch", "Update documentation")
 if err != nil {
     return err
 }
@@ -129,17 +132,17 @@ err = batch.Delete("old-file.txt")
 ### Commit All Changes
 
 ```go
-commit, err := batch.Commit(ctx, "Update documentation")
+commitSHA, err := batch.Commit(ctx)
 if err != nil {
     return err
 }
-fmt.Printf("Committed: %s\n", commit.GetSHA())
+fmt.Printf("Committed: %s\n", commitSHA)
 ```
 
 ### With Custom Author
 
 ```go
-batch, err := repo.NewBatch(ctx, gh, "owner", "repo", "branch",
+batch, err := repo.NewBatch(ctx, client, "owner", "repo", "branch", "Update as bot",
     repo.WithCommitAuthor("Bot", "bot@example.com"),
 )
 ```
@@ -147,7 +150,7 @@ batch, err := repo.NewBatch(ctx, gh, "owner", "repo", "branch",
 ### Full Example
 
 ```go
-batch, err := repo.NewBatch(ctx, gh, "owner", "repo", "main")
+batch, err := repo.NewBatch(ctx, client, "owner", "repo", "main", "Refactor configuration")
 if err != nil {
     return err
 }
@@ -158,16 +161,16 @@ batch.Write("src/app.go", []byte("package main"))
 batch.Delete("deprecated.txt")
 
 // Commit atomically
-commit, err := batch.Commit(ctx, "Refactor configuration")
+commitSHA, err := batch.Commit(ctx)
 if err != nil {
     return err
 }
 
-fmt.Printf("All changes committed in: %s\n", commit.GetSHA())
+fmt.Printf("All changes committed in: %s\n", commitSHA)
 ```
 
 !!! warning "Batch Commits Are Single-Use"
-    A `Batch` can only be committed once. After calling `Commit()`, create a new `Batch` for additional changes.
+    A `Batch` can only be committed once (check with `batch.Committed()`). After calling `Commit()`, create a new `Batch` for additional changes.
 
 ## Path Validation
 
@@ -191,12 +194,11 @@ path := pathutil.Join("dir", "subdir", "file.txt")  // "dir/subdir/file.txt"
 ### CommitError
 
 ```go
-commit, err := repo.CreateCommit(ctx, gh, owner, repo, branch, msg, files)
+commitSHA, err := repo.CreateCommit(ctx, client, owner, repo, branch, msg, files)
 if err != nil {
     var commitErr *repo.CommitError
     if errors.As(err, &commitErr) {
-        fmt.Printf("Commit failed for %s/%s: %v\n",
-            commitErr.Owner, commitErr.Repo, commitErr.Err)
+        fmt.Printf("Commit failed (%s): %v\n", commitErr.Message, commitErr.Err)
     }
 }
 ```
@@ -204,11 +206,11 @@ if err != nil {
 ### BatchError
 
 ```go
-commit, err := batch.Commit(ctx, message)
+commitSHA, err := batch.Commit(ctx)
 if err != nil {
     var batchErr *repo.BatchError
     if errors.As(err, &batchErr) {
-        fmt.Printf("Batch commit failed: %s\n", batchErr.Message)
+        fmt.Printf("Batch %s failed: %v\n", batchErr.Op, batchErr.Err)
     }
 }
 ```
