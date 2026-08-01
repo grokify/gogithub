@@ -888,6 +888,105 @@ func (c *client) ListPullRequestComments(ctx context.Context, owner, repo string
 	return pullRequestCommentsFromGitHub(allComments), nil
 }
 
+// GetIssue retrieves an issue by number.
+func (c *client) GetIssue(ctx context.Context, owner, repo string, number int) (*gogithub.Issue, error) {
+	issue, _, err := c.gh.Issues.Get(ctx, owner, repo, number)
+	if err != nil {
+		return nil, fmt.Errorf("get issue: %w", err)
+	}
+	return issueFromGitHub(issue), nil
+}
+
+// ListIssues lists issues in a repository.
+func (c *client) ListIssues(ctx context.Context, owner, repo string, opts *ListIssuesOptions) ([]*gogithub.Issue, error) {
+	listOpts := &github.IssueListByRepoOptions{
+		State:       "open",
+		ListOptions: github.ListOptions{PerPage: 100},
+	}
+	if opts != nil {
+		if opts.State != "" {
+			listOpts.State = opts.State
+		}
+		listOpts.Labels = opts.Labels
+		listOpts.Sort = opts.Sort
+		listOpts.Direction = opts.Direction
+		if opts.Since != nil {
+			listOpts.Since = *opts.Since
+		}
+		if opts.PerPage > 0 {
+			listOpts.ListOptions.PerPage = opts.PerPage
+		}
+		if opts.Page > 0 {
+			listOpts.ListOptions.Page = opts.Page
+		}
+	}
+	var allIssues []*github.Issue
+	for {
+		issues, resp, err := c.gh.Issues.ListByRepo(ctx, owner, repo, listOpts)
+		if err != nil {
+			return nil, fmt.Errorf("list issues: %w", err)
+		}
+		allIssues = append(allIssues, issues...)
+		if resp.NextPage == 0 {
+			break
+		}
+		listOpts.ListOptions.Page = resp.NextPage
+	}
+	return issuesFromGitHub(allIssues), nil
+}
+
+// CreateIssue creates a new issue.
+func (c *client) CreateIssue(ctx context.Context, owner, repo string, input *CreateIssueInput) (*gogithub.Issue, error) {
+	req := &github.IssueRequest{
+		Title: github.Ptr(input.Title),
+	}
+	if input.Body != "" {
+		req.Body = github.Ptr(input.Body)
+	}
+	if len(input.Labels) > 0 {
+		req.Labels = &input.Labels
+	}
+	if len(input.Assignees) > 0 {
+		req.Assignees = &input.Assignees
+	}
+	if input.Milestone != nil {
+		req.Milestone = input.Milestone
+	}
+	issue, _, err := c.gh.Issues.Create(ctx, owner, repo, req)
+	if err != nil {
+		return nil, fmt.Errorf("create issue: %w", err)
+	}
+	return issueFromGitHub(issue), nil
+}
+
+// UpdateIssue updates an existing issue.
+func (c *client) UpdateIssue(ctx context.Context, owner, repo string, number int, input *UpdateIssueInput) (*gogithub.Issue, error) {
+	req := &github.IssueRequest{}
+	if input.Title != nil {
+		req.Title = input.Title
+	}
+	if input.Body != nil {
+		req.Body = input.Body
+	}
+	if input.State != nil {
+		req.State = input.State
+	}
+	if len(input.Labels) > 0 {
+		req.Labels = &input.Labels
+	}
+	if len(input.Assignees) > 0 {
+		req.Assignees = &input.Assignees
+	}
+	if input.Milestone != nil {
+		req.Milestone = input.Milestone
+	}
+	issue, _, err := c.gh.Issues.Edit(ctx, owner, repo, number, req)
+	if err != nil {
+		return nil, fmt.Errorf("update issue: %w", err)
+	}
+	return issueFromGitHub(issue), nil
+}
+
 // CreateIssueComment creates a comment on an issue or pull request.
 func (c *client) CreateIssueComment(ctx context.Context, owner, repo string, number int, body string) (*gogithub.IssueComment, error) {
 	comment := &github.IssueComment{
@@ -1024,4 +1123,24 @@ func (c *client) GetContributorStats(ctx context.Context, owner, repo string) ([
 		return nil, fmt.Errorf("get contributor stats: %w", err)
 	}
 	return contributorStatsFromGitHub(stats), nil
+}
+
+// SearchCode searches for code in repositories.
+func (c *client) SearchCode(ctx context.Context, query string, opts *SearchOptions) (*gogithub.CodeSearchResult, error) {
+	searchOpts := &github.SearchOptions{}
+	if opts != nil {
+		searchOpts.Sort = opts.Sort
+		searchOpts.Order = opts.Order
+		if opts.PerPage > 0 {
+			searchOpts.ListOptions.PerPage = opts.PerPage
+		}
+		if opts.Page > 0 {
+			searchOpts.ListOptions.Page = opts.Page
+		}
+	}
+	result, _, err := c.gh.Search.Code(ctx, query, searchOpts)
+	if err != nil {
+		return nil, fmt.Errorf("search code: %w", err)
+	}
+	return codeSearchResultFromGitHub(result), nil
 }
