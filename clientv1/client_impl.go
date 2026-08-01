@@ -3,10 +3,11 @@ package clientv1
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/google/go-github/v89/github"
 	"github.com/grokify/gogithub"
-	"github.com/grokify/gogithub/auth"
+	"golang.org/x/oauth2"
 )
 
 // client implements the Client interface.
@@ -17,7 +18,20 @@ type client struct {
 // NewClient creates a new GitHub client with token authentication.
 // This is the primary way to create a version-isolated GitHub client.
 func NewClient(ctx context.Context, token string) (Client, error) {
-	gh, err := auth.NewGitHubClient(ctx, token)
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: token},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	gh, err := github.NewClient(github.WithHTTPClient(tc))
+	if err != nil {
+		return nil, err
+	}
+	return &client{gh: gh}, nil
+}
+
+// NewClientWithHTTP creates a new GitHub client with a custom HTTP client.
+func NewClientWithHTTP(httpClient *http.Client) (Client, error) {
+	gh, err := github.NewClient(github.WithHTTPClient(httpClient))
 	if err != nil {
 		return nil, err
 	}

@@ -1,4 +1,7 @@
 // Package auth provides GitHub authentication utilities.
+//
+// This package provides low-level authentication primitives for GitHub.
+// For version-isolated client creation, use clientv1.NewClient directly.
 package auth
 
 import (
@@ -41,11 +44,13 @@ func NewTokenClient(ctx context.Context, token string) *http.Client {
 }
 
 // NewGitHubClient creates a GitHub client authenticated with the given token.
+// Deprecated: Use clientv1.NewClient for version-isolated clients.
 func NewGitHubClient(ctx context.Context, token string) (*github.Client, error) {
 	return github.NewClient(github.WithHTTPClient(NewTokenClient(ctx, token)))
 }
 
 // GetAuthenticatedUser returns the authenticated user's login.
+// Deprecated: Use clientv1.Client.GetAuthenticatedUser for version-isolated access.
 func GetAuthenticatedUser(ctx context.Context, gh *github.Client) (string, error) {
 	user, _, err := gh.Users.Get(ctx, "")
 	if err != nil {
@@ -55,6 +60,7 @@ func GetAuthenticatedUser(ctx context.Context, gh *github.Client) (string, error
 }
 
 // GetUser returns information about a specific user.
+// Deprecated: Use clientv1.Client.GetUser for version-isolated access.
 func GetUser(ctx context.Context, gh *github.Client, username string) (*github.User, error) {
 	user, _, err := gh.Users.Get(ctx, username)
 	return user, err
