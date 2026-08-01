@@ -27,7 +27,32 @@ go get github.com/grokify/gogithub
 
 ## Basic Usage
 
-### Creating a Client
+### Creating a Client (Recommended)
+
+Use the `clientv1` package for a version-isolated client that won't break when go-github updates:
+
+```go
+import (
+    "github.com/grokify/gogithub"
+    "github.com/grokify/gogithub/clientv1"
+)
+
+ctx := context.Background()
+client, err := clientv1.NewClient(ctx, "your-github-token")
+if err != nil {
+    panic(err)
+}
+
+// Returns stable gogithub.* types
+user, _ := client.GetAuthenticatedUser(ctx)  // *gogithub.User
+repos, _ := client.ListUserRepos(ctx, user.Login)  // []*gogithub.Repository
+```
+
+See the [Version-Isolated Client Guide](guides/clientv1.md) for full documentation.
+
+### Creating a Client (Legacy)
+
+The following methods expose go-github types directly and require updates when go-github changes major versions:
 
 === "With Token"
 

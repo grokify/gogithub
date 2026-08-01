@@ -35,13 +35,61 @@
 go get github.com/grokify/gogithub
 ```
 
+## Version-Isolated Client (Recommended)
+
+The `clientv1` package provides a **stable, version-isolated** wrapper around go-github. Use it to avoid breaking changes when go-github updates its major version (v88 → v89 → v90...).
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+
+    "github.com/grokify/gogithub"
+    "github.com/grokify/gogithub/clientv1"
+)
+
+func main() {
+    ctx := context.Background()
+    client, err := clientv1.NewClient(ctx, "your-github-token")
+    if err != nil {
+        panic(err)
+    }
+
+    // All methods return stable gogithub.* types
+    user, _ := client.GetAuthenticatedUser(ctx)  // *gogithub.User
+    repos, _ := client.ListUserRepos(ctx, user.Login)  // []*gogithub.Repository
+    sha, _ := client.GetBranchSHA(ctx, "owner", "repo", "main")  // string
+    content, _ := client.GetFileContent(ctx, "owner", "repo", "README.md", nil)  // []byte
+    
+    fmt.Printf("Found %d repos for %s\n", len(repos), user.Login)
+}
+```
+
+**Benefits:**
+
+- Types like `gogithub.User` and `gogithub.Repository` won't change
+- When go-github updates, only gogithub needs updating—your code stays the same  
+- Single import pattern: `gogithub` for types, `clientv1` for the client
+
+**What does "v1" mean?** The "1" is the API version of the wrapper interface, not the go-github version. Consumers stay on `clientv1` indefinitely while gogithub internally updates go-github (v88 → v89 → v90...). If we ever need breaking changes to the wrapper's interface, we'd create `clientv2`.
+
+See the [Version-Isolated Client Guide](https://grokify.github.io/gogithub/guides/clientv1/) for full documentation.
+
 ## Directory Structure
 
 The package is organized into subdirectories by operation type for scalability:
 
 ```
 gogithub/
+├── types.go              # Stable types (User, Repository, etc.)
 ├── gogithub.go           # Client factory, backward-compatible re-exports
+├── clientv1/             # Version-isolated client wrapper (RECOMMENDED)
+│   ├── client.go         # Client interface
+│   ├── client_impl.go    # Implementation wrapping go-github
+│   ├── convert.go        # Type converters
+│   └── doc.go            # Package documentation
 ├── auth/                 # Authentication utilities
 │   └── auth.go           # NewGitHubClient, GetAuthenticatedUser
 ├── config/               # Configuration utilities
@@ -105,7 +153,39 @@ gogithub/
 
 ## Usage
 
-### Basic Example
+### Version-Isolated Client (Recommended)
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+
+    "github.com/grokify/gogithub"
+    "github.com/grokify/gogithub/clientv1"
+)
+
+func main() {
+    ctx := context.Background()
+    client, err := clientv1.NewClient(ctx, "your-github-token")
+    if err != nil {
+        panic(err)
+    }
+
+    // All methods return stable gogithub.* types
+    user, _ := client.GetAuthenticatedUser(ctx)
+    repos, _ := client.ListUserRepos(ctx, user.Login)
+    
+    for _, repo := range repos {
+        fmt.Printf("- %s (%s)\n", repo.FullName, repo.Language)
+    }
+}
+```
+
+### Legacy Packages (Expose go-github Types)
+
+The following examples use legacy packages that expose go-github types directly. These require updates when go-github changes major versions.
 
 ```go
 package main
