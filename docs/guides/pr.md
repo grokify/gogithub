@@ -1,6 +1,7 @@
 # Pull Requests
 
-The `pr` package provides functions for creating and managing pull requests.
+The `pr` package provides functions for creating and managing pull requests. All functions take a
+[`clientv1.Client`](clientv1.md) and return stable `gogithub.*` types.
 
 ## Creating Pull Requests
 
@@ -9,7 +10,7 @@ The `pr` package provides functions for creating and managing pull requests.
 ```go
 import "github.com/grokify/gogithub/pr"
 
-pullRequest, err := pr.CreatePR(ctx, gh,
+pullRequest, err := pr.CreatePR(ctx, client,
     "upstream-owner", "upstream-repo",  // Base repository
     "fork-owner", "feature-branch",     // Head (your fork and branch)
     "main",                             // Base branch to merge into
@@ -20,31 +21,32 @@ if err != nil {
     return err
 }
 
-fmt.Printf("PR created: %s\n", pullRequest.GetHTMLURL())
+fmt.Printf("PR created: %s\n", pullRequest.HTMLURL)
 ```
 
 ### Cross-Fork PRs
 
-When creating a PR from a fork to an upstream repository:
+When creating a PR from a fork to an upstream repository, `repo.EnsureFork` creates the fork if it
+doesn't already exist and returns its owner/repo names:
 
 ```go
 // First, ensure you have a fork
-fork, err := repo.EnsureFork(ctx, gh, "upstream-owner", "upstream-repo")
+forkOwner, forkRepo, err := repo.EnsureFork(ctx, client, "upstream-owner", "upstream-repo", "your-username")
 if err != nil {
     return err
 }
 
 // Create a branch in your fork
-sha, _ := repo.GetBranchSHA(ctx, gh, fork.GetOwner().GetLogin(), fork.GetName(), "main")
-repo.CreateBranch(ctx, gh, fork.GetOwner().GetLogin(), fork.GetName(), "my-feature", sha)
+sha, _ := repo.GetBranchSHA(ctx, client, forkOwner, forkRepo, "main")
+repo.CreateBranch(ctx, client, forkOwner, forkRepo, "my-feature", sha)
 
 // Make commits to your fork's branch
 // ...
 
 // Create PR from fork to upstream
-pullRequest, err := pr.CreatePR(ctx, gh,
-    "upstream-owner", "upstream-repo",           // base
-    fork.GetOwner().GetLogin(), "my-feature",    // head
+pullRequest, err := pr.CreatePR(ctx, client,
+    "upstream-owner", "upstream-repo",  // base
+    forkOwner, "my-feature",            // head
     "main",
     "My contribution",
     "Description of changes",
@@ -56,23 +58,25 @@ pullRequest, err := pr.CreatePR(ctx, gh,
 ### List PRs for a Repository
 
 ```go
-prs, err := pr.ListPRs(ctx, gh, "owner", "repo", &github.PullRequestListOptions{
-    State: "open",
-    Sort:  "created",
+prs, err := pr.ListPRs(ctx, client, "owner", "repo", &clientv1.ListPullRequestsOptions{
+    State:     "open",
+    Sort:      "created",
     Direction: "desc",
 })
 
 for _, p := range prs {
-    fmt.Printf("#%d: %s\n", p.GetNumber(), p.GetTitle())
+    fmt.Printf("#%d: %s\n", p.Number, p.Title)
 }
 ```
 
 ### Get Single PR
 
 ```go
-pullRequest, err := pr.GetPR(ctx, gh, "owner", "repo", 123)
-fmt.Printf("State: %s\n", pullRequest.GetState())
-fmt.Printf("Mergeable: %v\n", pullRequest.GetMergeable())
+pullRequest, err := pr.GetPR(ctx, client, "owner", "repo", 123)
+fmt.Printf("State: %s\n", pullRequest.State)
+if pullRequest.Mergeable != nil {
+    fmt.Printf("Mergeable: %v\n", *pullRequest.Mergeable)
+}
 ```
 
 ## Managing Pull Requests
@@ -80,12 +84,11 @@ fmt.Printf("Mergeable: %v\n", pullRequest.GetMergeable())
 ### Merge a PR
 
 ```go
-result, err := pr.MergePR(ctx, gh, "owner", "repo", 123, &github.PullRequestOptions{
-    CommitTitle: "Merge PR #123",
+result, err := pr.MergePR(ctx, client, "owner", "repo", 123, "Merge PR #123", &clientv1.MergePullRequestOptions{
     MergeMethod: "squash",  // "merge", "squash", or "rebase"
 })
 
-if result.GetMerged() {
+if result.Merged {
     fmt.Println("PR merged successfully")
 }
 ```
@@ -93,8 +96,8 @@ if result.GetMerged() {
 ### Close a PR
 
 ```go
-pullRequest, err := pr.ClosePR(ctx, gh, "owner", "repo", 123)
-fmt.Printf("PR state: %s\n", pullRequest.GetState())  // "closed"
+pullRequest, err := pr.ClosePR(ctx, client, "owner", "repo", 123)
+fmt.Printf("PR state: %s\n", pullRequest.State)  // "closed"
 ```
 
 ## Reviews and Comments
@@ -104,7 +107,7 @@ fmt.Printf("PR state: %s\n", pullRequest.GetState())  // "closed"
 Retrieve the diff content for a pull request:
 
 ```go
-diff, err := pr.GetPRDiff(ctx, gh, "owner", "repo", 123)
+diff, err := pr.GetPRDiff(ctx, client, "owner", "repo", 123)
 if err != nil {
     return err
 }
@@ -114,12 +117,12 @@ fmt.Println(diff)  // Raw diff output
 ### List Reviews
 
 ```go
-reviews, err := pr.ListPRReviews(ctx, gh, "owner", "repo", 123)
+reviews, err := pr.ListPRReviews(ctx, client, "owner", "repo", 123)
 for _, review := range reviews {
     fmt.Printf("%s: %s - %s\n",
-        review.GetUser().GetLogin(),
-        review.GetState(),
-        review.GetBody())
+        review.User.Login,
+        review.State,
+        review.Body)
 }
 ```
 
@@ -129,19 +132,19 @@ Use `CreateReview` to submit a formal review:
 
 ```go
 // Approve the PR
-review, err := pr.CreateReview(ctx, gh, "owner", "repo", 123,
+review, err := pr.CreateReview(ctx, client, "owner", "repo", 123,
     pr.ReviewEventApprove,
     "LGTM! Great work.",
 )
 
 // Request changes
-review, err := pr.CreateReview(ctx, gh, "owner", "repo", 123,
+review, err := pr.CreateReview(ctx, client, "owner", "repo", 123,
     pr.ReviewEventRequestChanges,
     "Please address the comments below.",
 )
 
 // Add a comment review (neither approve nor request changes)
-review, err := pr.CreateReview(ctx, gh, "owner", "repo", 123,
+review, err := pr.CreateReview(ctx, client, "owner", "repo", 123,
     pr.ReviewEventComment,
     "Some observations about the implementation...",
 )
@@ -155,12 +158,15 @@ Review events:
 | `pr.ReviewEventRequestChanges` | Request changes before merging |
 | `pr.ReviewEventComment` | General comment without approval status |
 
+`pr.ApprovePR`, `pr.RequestChangesPR`, and `pr.CommentPR` wrap `CreateReview` with the matching
+event for convenience.
+
 ### Add Comments
 
 **General PR comment** (appears in the conversation):
 
 ```go
-comment, err := pr.CreateIssueComment(ctx, gh, "owner", "repo", 123,
+comment, err := pr.CreateIssueComment(ctx, client, "owner", "repo", 123,
     "Thanks for the contribution! I have a few suggestions.",
 )
 ```
@@ -168,7 +174,7 @@ comment, err := pr.CreateIssueComment(ctx, gh, "owner", "repo", 123,
 **Line-level comment** (appears on specific code):
 
 ```go
-comment, err := pr.CreateLineComment(ctx, gh, "owner", "repo", 123,
+comment, err := pr.CreateLineComment(ctx, client, "owner", "repo", 123,
     "abc123def",           // Commit SHA
     "src/main.go",         // File path
     "Consider using a constant here for better readability.",
@@ -179,13 +185,13 @@ comment, err := pr.CreateLineComment(ctx, gh, "owner", "repo", 123,
 ### List PR Comments
 
 ```go
-comments, err := pr.ListPRComments(ctx, gh, "owner", "repo", 123)
+comments, err := pr.ListPRComments(ctx, client, "owner", "repo", 123)
 for _, c := range comments {
     fmt.Printf("%s at %s:%d: %s\n",
-        c.GetUser().GetLogin(),
-        c.GetPath(),
-        c.GetLine(),
-        c.GetBody())
+        c.User.Login,
+        c.Path,
+        c.Line,
+        c.Body)
 }
 ```
 
@@ -200,33 +206,35 @@ import (
     "context"
     "fmt"
 
-    "github.com/grokify/gogithub/auth"
+    "github.com/grokify/gogithub/clientv1"
     "github.com/grokify/gogithub/pr"
     "github.com/grokify/gogithub/repo"
 )
 
 func main() {
     ctx := context.Background()
-    gh := auth.NewGitHubClient(ctx, "your-token")
+    client, err := clientv1.NewClient(ctx, "your-token")
+    if err != nil {
+        panic(err)
+    }
 
     upstreamOwner := "upstream-owner"
     upstreamRepo := "upstream-repo"
 
-    // 1. Fork the repository
-    fork, err := repo.EnsureFork(ctx, gh, upstreamOwner, upstreamRepo)
+    // 1. Ensure a fork exists
+    forkOwner, forkRepo, err := repo.EnsureFork(ctx, client, upstreamOwner, upstreamRepo, "your-username")
     if err != nil {
         panic(err)
     }
-    forkOwner := fork.GetOwner().GetLogin()
 
     // 2. Create a feature branch
-    sha, err := repo.GetBranchSHA(ctx, gh, forkOwner, upstreamRepo, "main")
+    sha, err := repo.GetBranchSHA(ctx, client, forkOwner, forkRepo, "main")
     if err != nil {
         panic(err)
     }
 
     branchName := "add-documentation"
-    err = repo.CreateBranch(ctx, gh, forkOwner, upstreamRepo, branchName, sha)
+    err = repo.CreateBranch(ctx, client, forkOwner, forkRepo, branchName, sha)
     if err != nil {
         panic(err)
     }
@@ -235,13 +243,13 @@ func main() {
     files := []repo.FileContent{
         {Path: "CONTRIBUTING.md", Content: []byte("# Contributing\n\nWelcome!")},
     }
-    _, err = repo.CreateCommit(ctx, gh, forkOwner, upstreamRepo, branchName, "Add contributing guide", files)
+    _, err = repo.CreateCommit(ctx, client, forkOwner, forkRepo, branchName, "Add contributing guide", files)
     if err != nil {
         panic(err)
     }
 
     // 4. Create pull request
-    pullRequest, err := pr.CreatePR(ctx, gh,
+    pullRequest, err := pr.CreatePR(ctx, client,
         upstreamOwner, upstreamRepo,
         forkOwner, branchName,
         "main",
@@ -252,7 +260,7 @@ func main() {
         panic(err)
     }
 
-    fmt.Printf("PR created: %s\n", pullRequest.GetHTMLURL())
+    fmt.Printf("PR created: %s\n", pullRequest.HTMLURL)
 }
 ```
 
@@ -261,7 +269,7 @@ func main() {
 ### PRError
 
 ```go
-pullRequest, err := pr.CreatePR(ctx, gh, baseOwner, baseRepo, headOwner, headBranch, baseBranch, title, body)
+pullRequest, err := pr.CreatePR(ctx, client, baseOwner, baseRepo, headOwner, headBranch, baseBranch, title, body)
 if err != nil {
     var prErr *pr.PRError
     if errors.As(err, &prErr) {

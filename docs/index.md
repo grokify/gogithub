@@ -49,9 +49,10 @@ func main() {
 - **Error Handling** - Typed errors with helper functions for common cases
 - **GitHub Enterprise** - Full support for GitHub Enterprise Server
 
-## Legacy Quick Example
+## Search Example
 
-The following packages expose go-github types directly and require updates when go-github changes major versions:
+`search` and the other operation packages (`repo`, `pr`, `release`, `checks`, `tag`, `sarif`) take
+a `clientv1.Client`, so they're insulated from go-github version changes too:
 
 ```go
 package main
@@ -60,16 +61,19 @@ import (
     "context"
     "fmt"
 
-    "github.com/grokify/gogithub/auth"
+    "github.com/grokify/gogithub/clientv1"
     "github.com/grokify/gogithub/search"
 )
 
 func main() {
     ctx := context.Background()
-    gh := auth.NewGitHubClient(ctx, "your-github-token")
+    client, err := clientv1.NewClient(ctx, "your-github-token")
+    if err != nil {
+        panic(err)
+    }
 
-    client := search.NewClient(gh)
-    issues, err := client.SearchIssuesAll(ctx, search.Query{
+    c := search.NewClient(client)
+    issues, err := c.SearchIssuesAll(ctx, search.Query{
         search.ParamUser:  "grokify",
         search.ParamState: search.ParamStateValueOpen,
         search.ParamIs:    search.ParamIsValuePR,
@@ -88,16 +92,21 @@ func main() {
 |---------|-------------|-----------|
 | `clientv1` | **Version-isolated client** | **Stable** |
 | `gogithub` (root) | Stable types (User, Repository, etc.) | **Stable** |
-| [`auth`](guides/auth.md) | Authentication and client creation | Exposes go-github |
-| [`config`](guides/auth.md#configuration) | Configuration from environment variables | Exposes go-github |
-| [`search`](guides/search.md) | Search API with query builder | Exposes go-github |
-| [`repo`](guides/repo.md) | Repository operations (fork, branch, commit, batch) | Exposes go-github |
-| [`pr`](guides/pr.md) | Pull request operations | Exposes go-github |
-| [`release`](guides/release.md) | Release and asset operations | Exposes go-github |
-| [`graphql`](guides/graphql.md) | GraphQL API for contribution statistics | Exposes go-github |
+| [`search`](guides/search.md) | Search API with query builder | Stable (`clientv1.Client`) |
+| [`repo`](guides/repo.md) | Repository operations (fork, branch, commit, batch) | Stable (`clientv1.Client`) |
+| [`pr`](guides/pr.md) | Pull request operations | Stable (`clientv1.Client`) |
+| [`release`](guides/release.md) | Release and asset operations | Stable (`clientv1.Client`) |
+| [`checks`](guides/clientv1.md) | Check run polling and status | Stable (`clientv1.Client`) |
+| [`tag`](guides/clientv1.md) | Git tag operations | Stable (`clientv1.Client`) |
+| [`sarif`](guides/clientv1.md) | SARIF upload for code scanning | Stable (`clientv1.Client`) |
+| [`auth`](guides/auth.md) | Client creation and authentication utilities | Legacy functions return go-github types |
+| [`config`](guides/auth.md#configuration) | Configuration from environment variables | `NewClientV1()` is stable; `NewClient()` is deprecated |
+| [`graphql`](guides/graphql.md) | GraphQL API for contribution statistics | Exposes `githubv4` types |
 | [`errors`](guides/errors.md) | Error types and translation | Stable |
 
-Packages marked "Exposes go-github" will require consumer updates when go-github changes major versions. Use `clientv1` to avoid this.
+Packages marked "Legacy" or "Exposes ..." return or accept types from an external library
+(go-github or githubv4) and may require consumer updates when that library changes major
+versions. Prefer `clientv1.Client` wherever a package accepts it.
 
 ## Next Steps
 

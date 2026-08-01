@@ -12,8 +12,16 @@ The simplest way to authenticate is with a personal access token:
 import "github.com/grokify/gogithub/auth"
 
 ctx := context.Background()
-gh := auth.NewGitHubClient(ctx, "your-github-token")
+gh, err := auth.NewGitHubClient(ctx, "your-github-token")
+if err != nil {
+    panic(err)
+}
 ```
+
+!!! tip
+    `auth.NewGitHubClient()` returns a raw `*github.Client`, coupling your code to go-github's
+    current major version. Prefer [`clientv1.NewClient()`](clientv1.md) unless you specifically
+    need the functions on this page.
 
 ### HTTP Client
 
@@ -66,6 +74,10 @@ if err != nil {
     panic(err)
 }
 ```
+
+!!! tip
+    `cfg.NewClient()` returns a raw `*github.Client`. Use `cfg.NewClientV1()` instead to get a
+    version-isolated `clientv1.Client`.
 
 ### Environment Variables
 
