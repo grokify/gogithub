@@ -6,12 +6,14 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"time"
 
 	"github.com/google/go-github/v89/github"
+	"github.com/grokify/gogithub/clientv1"
 )
 
 // UploadOptions configures the SARIF upload.
@@ -52,14 +54,14 @@ type UploadResult struct {
 // The file is gzip-compressed and base64-encoded as required by the GitHub API.
 //
 // GitHub API docs: https://docs.github.com/rest/code-scanning/code-scanning#upload-an-analysis-as-sarif-data
-func UploadFile(ctx context.Context, gh *github.Client, owner, repo, filePath string, opts UploadOptions) (*UploadResult, error) {
+func UploadFile(ctx context.Context, client clientv1.Client, owner, repo, filePath string, opts UploadOptions) (*UploadResult, error) {
 	// Read the SARIF file
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read SARIF file: %w", err)
 	}
 
-	return Upload(ctx, gh, owner, repo, data, opts)
+	return Upload(ctx, client, owner, repo, data, opts)
 }
 
 // Upload uploads SARIF data to GitHub Code Scanning.
@@ -67,12 +69,18 @@ func UploadFile(ctx context.Context, gh *github.Client, owner, repo, filePath st
 // The data is gzip-compressed and base64-encoded as required by the GitHub API.
 //
 // GitHub API docs: https://docs.github.com/rest/code-scanning/code-scanning#upload-an-analysis-as-sarif-data
-func Upload(ctx context.Context, gh *github.Client, owner, repo string, sarifData []byte, opts UploadOptions) (*UploadResult, error) {
+func Upload(ctx context.Context, client clientv1.Client, owner, repo string, sarifData []byte, opts UploadOptions) (*UploadResult, error) {
 	if opts.CommitSHA == "" {
 		return nil, fmt.Errorf("CommitSHA is required")
 	}
 	if opts.Ref == "" {
 		return nil, fmt.Errorf("Ref is required")
+	}
+
+	// Extract raw github.Client for CodeScanning API
+	gh, ok := client.Raw().(*github.Client)
+	if !ok {
+		return nil, errors.New("sarif upload requires a clientv1.Client backed by go-github")
 	}
 
 	// Compress with gzip
@@ -142,7 +150,13 @@ type UploadStatus struct {
 // GetUploadStatus retrieves the processing status of a SARIF upload.
 //
 // GitHub API docs: https://docs.github.com/rest/code-scanning/code-scanning#get-information-about-a-sarif-upload
-func GetUploadStatus(ctx context.Context, gh *github.Client, owner, repo, sarifID string) (*UploadStatus, error) {
+func GetUploadStatus(ctx context.Context, client clientv1.Client, owner, repo, sarifID string) (*UploadStatus, error) {
+	// Extract raw github.Client for CodeScanning API
+	gh, ok := client.Raw().(*github.Client)
+	if !ok {
+		return nil, errors.New("sarif requires a clientv1.Client backed by go-github")
+	}
+
 	upload, _, err := gh.CodeScanning.GetSARIF(ctx, owner, repo, sarifID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get SARIF status: %w", err)
@@ -158,7 +172,7 @@ func GetUploadStatus(ctx context.Context, gh *github.Client, owner, repo, sarifI
 //
 // pollInterval specifies how long to wait between status checks.
 // Returns the final status when processing is complete or failed.
-func WaitForProcessing(ctx context.Context, gh *github.Client, owner, repo, sarifID string, pollInterval time.Duration) (*UploadStatus, error) {
+func WaitForProcessing(ctx context.Context, client clientv1.Client, owner, repo, sarifID string, pollInterval time.Duration) (*UploadStatus, error) {
 	ticker := time.NewTicker(pollInterval)
 	defer ticker.Stop()
 
@@ -167,7 +181,7 @@ func WaitForProcessing(ctx context.Context, gh *github.Client, owner, repo, sari
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		case <-ticker.C:
-			status, err := GetUploadStatus(ctx, gh, owner, repo, sarifID)
+			status, err := GetUploadStatus(ctx, client, owner, repo, sarifID)
 			if err != nil {
 				return nil, err
 			}
@@ -183,17 +197,17 @@ func WaitForProcessing(ctx context.Context, gh *github.Client, owner, repo, sari
 //
 // This is a convenience function that combines UploadFile and WaitForProcessing.
 // pollInterval specifies how long to wait between status checks (default: 5s).
-func UploadAndWait(ctx context.Context, gh *github.Client, owner, repo, filePath string, opts UploadOptions, pollInterval time.Duration) (*UploadStatus, error) {
+func UploadAndWait(ctx context.Context, client clientv1.Client, owner, repo, filePath string, opts UploadOptions, pollInterval time.Duration) (*UploadStatus, error) {
 	if pollInterval == 0 {
 		pollInterval = 5 * time.Second
 	}
 
-	result, err := UploadFile(ctx, gh, owner, repo, filePath, opts)
+	result, err := UploadFile(ctx, client, owner, repo, filePath, opts)
 	if err != nil {
 		return nil, err
 	}
 
-	return WaitForProcessing(ctx, gh, owner, repo, result.SarifID, pollInterval)
+	return WaitForProcessing(ctx, client, owner, repo, result.SarifID, pollInterval)
 }
 
 // gzipCompress compresses data using gzip.
