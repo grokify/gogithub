@@ -32,6 +32,33 @@ The `clientv1` package solves the version churn problem by:
 go get github.com/grokify/gogithub
 ```
 
+## Creating a Client
+
+### Standard (github.com)
+
+```go
+client, err := clientv1.NewClient(ctx, "your-github-token")
+```
+
+### GitHub Enterprise
+
+```go
+client, err := clientv1.NewClientWithOptions(ctx, clientv1.ClientOptions{
+    Token:     "your-token",
+    BaseURL:   "https://github.mycompany.com/api/v3/",
+    UploadURL: "https://github.mycompany.com/api/uploads/",
+})
+```
+
+### From Config
+
+```go
+import "github.com/grokify/gogithub/config"
+
+cfg := config.FromEnv()
+client, err := cfg.NewClientV1(ctx)
+```
+
 ## Basic Usage
 
 ```go
@@ -88,6 +115,8 @@ func main() {
 | `GetRepository(ctx, owner, repo)` | `*gogithub.Repository` | Get repository details |
 | `ListUserRepos(ctx, user)` | `[]*gogithub.Repository` | List user's repositories |
 | `ListOrgRepos(ctx, org)` | `[]*gogithub.Repository` | List organization's repositories |
+| `GetDefaultBranch(ctx, owner, repo)` | `string` | Get default branch name |
+| `CreateFork(ctx, owner, repo, opts)` | `*gogithub.Repository` | Fork a repository |
 
 ### Content
 
@@ -103,9 +132,19 @@ func main() {
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `GetRef(ctx, owner, repo, ref)` | `*gogithub.Reference` | Get a git reference |
+| `CreateRef(ctx, owner, repo, ref, sha)` | `*gogithub.Reference` | Create a git reference |
+| `UpdateRef(ctx, owner, repo, ref, sha, force)` | `*gogithub.Reference` | Update a git reference |
+| `DeleteRef(ctx, owner, repo, ref)` | `error` | Delete a git reference |
 | `GetBranchSHA(ctx, owner, repo, branch)` | `string` | Get commit SHA for branch |
 | `GetTagSHA(ctx, owner, repo, tag)` | `string` | Get commit SHA for tag |
 | `ListBranches(ctx, owner, repo)` | `[]*gogithub.Branch` | List all branches |
+
+### Tags
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `ListTags(ctx, owner, repo)` | `[]*gogithub.Tag` | List all tags |
+| `CreateTag(ctx, owner, repo, tag, sha, msg)` | `error` | Create an annotated tag |
 
 ### Commits
 
@@ -113,6 +152,8 @@ func main() {
 |--------|---------|-------------|
 | `GetCommit(ctx, owner, repo, sha)` | `*gogithub.Commit` | Get commit details |
 | `ListCommits(ctx, owner, repo, opts)` | `[]*gogithub.Commit` | List commits |
+| `CreateCommit(ctx, owner, repo, opts)` | `*gogithub.Commit` | Create a commit |
+| `CreateTree(ctx, owner, repo, base, entries)` | `string` | Create a git tree |
 
 ### Pull Requests
 
@@ -121,20 +162,60 @@ func main() {
 | `GetPullRequest(ctx, owner, repo, number)` | `*gogithub.PullRequest` | Get PR details |
 | `ListPullRequests(ctx, owner, repo, opts)` | `[]*gogithub.PullRequest` | List pull requests |
 | `CreatePullRequest(ctx, owner, repo, input)` | `*gogithub.PullRequest` | Create a new PR |
+| `UpdatePullRequest(ctx, owner, repo, num, input)` | `*gogithub.PullRequest` | Update a PR |
+| `MergePullRequest(ctx, owner, repo, num, opts)` | `*gogithub.MergeResult` | Merge a PR |
+| `ListPullRequestFiles(ctx, owner, repo, num)` | `[]*gogithub.CommitFile` | List changed files |
+| `GetPullRequestDiff(ctx, owner, repo, num)` | `string` | Get PR diff |
+| `GetPullRequestPatch(ctx, owner, repo, num)` | `string` | Get PR patch |
+
+### Pull Request Reviews
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `CreatePullRequestReview(ctx, owner, repo, num, input)` | `*gogithub.PullRequestReview` | Create a review |
+| `ListPullRequestReviews(ctx, owner, repo, num)` | `[]*gogithub.PullRequestReview` | List reviews |
+| `RequestReviewers(ctx, owner, repo, num, users, teams)` | `*gogithub.PullRequest` | Request reviewers |
+
+### Pull Request Comments
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `CreatePullRequestComment(ctx, owner, repo, num, input)` | `*gogithub.PullRequestComment` | Create a diff comment |
+| `ListPullRequestComments(ctx, owner, repo, num)` | `[]*gogithub.PullRequestComment` | List diff comments |
+| `CreateIssueComment(ctx, owner, repo, num, body)` | `*gogithub.IssueComment` | Create an issue/PR comment |
 
 ### Checks
 
 | Method | Returns | Description |
 |--------|---------|-------------|
+| `GetCheckRun(ctx, owner, repo, id)` | `*gogithub.CheckRun` | Get a check run by ID |
 | `ListCheckRuns(ctx, owner, repo, ref)` | `[]*gogithub.CheckRun` | List check runs for a ref |
+| `ListCheckSuites(ctx, owner, repo, ref)` | `[]*gogithub.CheckSuite` | List check suites for a ref |
 
 ### Releases
 
 | Method | Returns | Description |
 |--------|---------|-------------|
+| `GetRelease(ctx, owner, repo, id)` | `*gogithub.Release` | Get release by ID |
 | `GetLatestRelease(ctx, owner, repo)` | `*gogithub.Release` | Get latest release |
 | `GetReleaseByTag(ctx, owner, repo, tag)` | `*gogithub.Release` | Get release by tag |
 | `ListReleases(ctx, owner, repo)` | `[]*gogithub.Release` | List all releases |
+| `CreateRelease(ctx, owner, repo, input)` | `*gogithub.Release` | Create a release |
+| `UpdateRelease(ctx, owner, repo, id, input)` | `*gogithub.Release` | Update a release |
+| `DeleteRelease(ctx, owner, repo, id)` | `error` | Delete a release |
+| `ListReleaseAssets(ctx, owner, repo, id)` | `[]*gogithub.ReleaseAsset` | List release assets |
+
+### Search
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `SearchIssues(ctx, query, opts)` | `*gogithub.IssueSearchResult` | Search issues/PRs |
+
+### Contributors
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `GetContributorStats(ctx, owner, repo)` | `[]*gogithub.ContributorStats` | Get contributor statistics |
 
 ## Stable Types
 
@@ -143,13 +224,40 @@ All types are defined in the root `gogithub` package:
 ```go
 import "github.com/grokify/gogithub"
 
+// Core types
 var user *gogithub.User
 var repo *gogithub.Repository
 var ref *gogithub.Reference
+var branch *gogithub.Branch
+var tag *gogithub.Tag
 var commit *gogithub.Commit
+
+// Pull requests
 var pr *gogithub.PullRequest
-var check *gogithub.CheckRun
+var review *gogithub.PullRequestReview
+var prComment *gogithub.PullRequestComment
+var issueComment *gogithub.IssueComment
+var commitFile *gogithub.CommitFile
+var mergeResult *gogithub.MergeResult
+
+// CI/CD
+var checkRun *gogithub.CheckRun
+var checkSuite *gogithub.CheckSuite
+
+// Releases
 var release *gogithub.Release
+var asset *gogithub.ReleaseAsset
+
+// Content
+var fileContent *gogithub.FileContent
+var contentOpts *gogithub.ContentOptions
+
+// Search
+var searchResult *gogithub.IssueSearchResult
+var issue *gogithub.Issue
+
+// Stats
+var stats *gogithub.ContributorStats
 ```
 
 ## Escape Hatch
@@ -157,7 +265,7 @@ var release *gogithub.Release
 For advanced use cases not yet wrapped, use `Raw()` to access the underlying go-github client:
 
 ```go
-import "github.com/google/go-github/v88/github"
+import "github.com/google/go-github/v89/github"
 
 // Get raw client (couples you to go-github version)
 raw := client.Raw().(*github.Client)
@@ -175,7 +283,7 @@ result, _, err := raw.Actions.ListWorkflowRunsByFileName(ctx, owner, repo, "ci.y
 
 ```go
 import (
-    "github.com/google/go-github/v88/github"
+    "github.com/google/go-github/v89/github"
     "github.com/grokify/gogithub/auth"
     "github.com/grokify/gogithub/repo"
 )
