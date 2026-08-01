@@ -29,6 +29,14 @@ type Client interface {
 	// ListOrgRepos lists all repositories for an organization.
 	ListOrgRepos(ctx context.Context, org string) ([]*gogithub.Repository, error)
 
+	// GetDefaultBranch returns the default branch name for a repository.
+	GetDefaultBranch(ctx context.Context, owner, repo string) (string, error)
+
+	// Forks
+
+	// CreateFork creates a fork of a repository.
+	CreateFork(ctx context.Context, owner, repo string, opts *CreateForkOptions) (*gogithub.Repository, error)
+
 	// Content
 
 	// GetFileContent fetches a file's content from a repository.
@@ -48,6 +56,15 @@ type Client interface {
 	// GetRef retrieves a git reference by its full name (e.g., "refs/heads/main").
 	GetRef(ctx context.Context, owner, repo, ref string) (*gogithub.Reference, error)
 
+	// CreateRef creates a git reference.
+	CreateRef(ctx context.Context, owner, repo, ref, sha string) (*gogithub.Reference, error)
+
+	// UpdateRef updates a git reference to point to a new SHA.
+	UpdateRef(ctx context.Context, owner, repo, ref, sha string, force bool) (*gogithub.Reference, error)
+
+	// DeleteRef deletes a git reference.
+	DeleteRef(ctx context.Context, owner, repo, ref string) error
+
 	// GetBranchSHA returns the commit SHA for a branch.
 	GetBranchSHA(ctx context.Context, owner, repo, branch string) (string, error)
 
@@ -57,6 +74,14 @@ type Client interface {
 	// ListBranches lists all branches in a repository.
 	ListBranches(ctx context.Context, owner, repo string) ([]*gogithub.Branch, error)
 
+	// Tags
+
+	// ListTags lists all tags in a repository.
+	ListTags(ctx context.Context, owner, repo string) ([]*gogithub.Tag, error)
+
+	// CreateTag creates an annotated tag.
+	CreateTag(ctx context.Context, owner, repo, tag, sha, message string) error
+
 	// Commits
 
 	// GetCommit retrieves a commit by SHA.
@@ -64,6 +89,14 @@ type Client interface {
 
 	// ListCommits lists commits in a repository.
 	ListCommits(ctx context.Context, owner, repo string, opts *ListCommitsOptions) ([]*gogithub.Commit, error)
+
+	// CreateCommit creates a commit with the given tree and parent.
+	CreateCommit(ctx context.Context, owner, repo string, opts *CreateCommitOptions) (*gogithub.Commit, error)
+
+	// Git Trees
+
+	// CreateTree creates a git tree from file entries.
+	CreateTree(ctx context.Context, owner, repo, baseTree string, entries []TreeEntry) (string, error)
 
 	// Pull Requests
 
@@ -76,12 +109,60 @@ type Client interface {
 	// CreatePullRequest creates a new pull request.
 	CreatePullRequest(ctx context.Context, owner, repo string, input *CreatePullRequestInput) (*gogithub.PullRequest, error)
 
+	// UpdatePullRequest updates a pull request.
+	UpdatePullRequest(ctx context.Context, owner, repo string, number int, input *UpdatePullRequestInput) (*gogithub.PullRequest, error)
+
+	// MergePullRequest merges a pull request.
+	MergePullRequest(ctx context.Context, owner, repo string, number int, opts *MergePullRequestOptions) (*gogithub.MergeResult, error)
+
+	// ListPullRequestFiles lists files changed in a pull request.
+	ListPullRequestFiles(ctx context.Context, owner, repo string, number int) ([]*gogithub.CommitFile, error)
+
+	// GetPullRequestDiff gets the diff for a pull request.
+	GetPullRequestDiff(ctx context.Context, owner, repo string, number int) (string, error)
+
+	// GetPullRequestPatch gets the patch for a pull request.
+	GetPullRequestPatch(ctx context.Context, owner, repo string, number int) (string, error)
+
+	// Pull Request Reviews
+
+	// CreatePullRequestReview creates a review on a pull request.
+	CreatePullRequestReview(ctx context.Context, owner, repo string, number int, input *CreateReviewInput) (*gogithub.PullRequestReview, error)
+
+	// ListPullRequestReviews lists reviews on a pull request.
+	ListPullRequestReviews(ctx context.Context, owner, repo string, number int) ([]*gogithub.PullRequestReview, error)
+
+	// RequestReviewers requests reviewers for a pull request.
+	RequestReviewers(ctx context.Context, owner, repo string, number int, reviewers, teamReviewers []string) (*gogithub.PullRequest, error)
+
+	// Pull Request Comments
+
+	// CreatePullRequestComment creates a comment on a pull request diff.
+	CreatePullRequestComment(ctx context.Context, owner, repo string, number int, input *CreatePRCommentInput) (*gogithub.PullRequestComment, error)
+
+	// ListPullRequestComments lists comments on a pull request.
+	ListPullRequestComments(ctx context.Context, owner, repo string, number int) ([]*gogithub.PullRequestComment, error)
+
+	// Issues
+
+	// CreateIssueComment creates a comment on an issue or pull request.
+	CreateIssueComment(ctx context.Context, owner, repo string, number int, body string) (*gogithub.IssueComment, error)
+
 	// Checks
+
+	// GetCheckRun retrieves a check run by ID.
+	GetCheckRun(ctx context.Context, owner, repo string, checkRunID int64) (*gogithub.CheckRun, error)
 
 	// ListCheckRuns lists check runs for a git reference.
 	ListCheckRuns(ctx context.Context, owner, repo, ref string) ([]*gogithub.CheckRun, error)
 
+	// ListCheckSuites lists check suites for a git reference.
+	ListCheckSuites(ctx context.Context, owner, repo, ref string) ([]*gogithub.CheckSuite, error)
+
 	// Releases
+
+	// GetRelease retrieves a release by ID.
+	GetRelease(ctx context.Context, owner, repo string, id int64) (*gogithub.Release, error)
 
 	// GetLatestRelease retrieves the latest release.
 	GetLatestRelease(ctx context.Context, owner, repo string) (*gogithub.Release, error)
@@ -91,6 +172,28 @@ type Client interface {
 
 	// ListReleases lists all releases in a repository.
 	ListReleases(ctx context.Context, owner, repo string) ([]*gogithub.Release, error)
+
+	// CreateRelease creates a new release.
+	CreateRelease(ctx context.Context, owner, repo string, input *CreateReleaseInput) (*gogithub.Release, error)
+
+	// UpdateRelease updates a release.
+	UpdateRelease(ctx context.Context, owner, repo string, id int64, input *UpdateReleaseInput) (*gogithub.Release, error)
+
+	// DeleteRelease deletes a release.
+	DeleteRelease(ctx context.Context, owner, repo string, id int64) error
+
+	// ListReleaseAssets lists assets for a release.
+	ListReleaseAssets(ctx context.Context, owner, repo string, releaseID int64) ([]*gogithub.ReleaseAsset, error)
+
+	// Search
+
+	// SearchIssues searches for issues and pull requests.
+	SearchIssues(ctx context.Context, query string, opts *SearchOptions) (*gogithub.IssueSearchResult, error)
+
+	// Contributors
+
+	// GetContributorStats gets contribution statistics for a repository.
+	GetContributorStats(ctx context.Context, owner, repo string) ([]*gogithub.ContributorStats, error)
 
 	// Raw returns the underlying go-github client for advanced use cases.
 	// WARNING: Using this couples your code to a specific go-github version.
@@ -140,4 +243,96 @@ type CreatePullRequestInput struct {
 	Draft bool
 	// MaintainerCanModify allows maintainers to push to the head branch.
 	MaintainerCanModify bool
+}
+
+// UpdatePullRequestInput specifies the input for updating a pull request.
+type UpdatePullRequestInput struct {
+	Title               *string
+	Body                *string
+	State               *string // "open" or "closed"
+	Base                *string
+	MaintainerCanModify *bool
+}
+
+// MergePullRequestOptions specifies options for merging a pull request.
+type MergePullRequestOptions struct {
+	CommitTitle   string
+	CommitMessage string
+	MergeMethod   string // "merge", "squash", or "rebase"
+	SHA           string // Expected head SHA for optimistic locking
+}
+
+// CreateReviewInput specifies input for creating a PR review.
+type CreateReviewInput struct {
+	Event string // "APPROVE", "REQUEST_CHANGES", or "COMMENT"
+	Body  string
+}
+
+// CreatePRCommentInput specifies input for creating a PR diff comment.
+type CreatePRCommentInput struct {
+	Body     string
+	CommitID string
+	Path     string
+	Line     int
+	Side     string // "LEFT" or "RIGHT"
+}
+
+// CreateForkOptions specifies options for creating a fork.
+type CreateForkOptions struct {
+	Organization    string // Fork to this org instead of user's account
+	Name            string // Custom name for the fork
+	DefaultBranch   bool   // Only fork the default branch
+}
+
+// CreateCommitOptions specifies options for creating a commit.
+type CreateCommitOptions struct {
+	Message string
+	Tree    string   // Tree SHA
+	Parents []string // Parent commit SHAs
+	Author  *CommitAuthor
+}
+
+// CommitAuthor specifies author information for a commit.
+type CommitAuthor struct {
+	Name  string
+	Email string
+	Date  *time.Time
+}
+
+// TreeEntry represents a file entry for creating a git tree.
+type TreeEntry struct {
+	Path    string
+	Mode    string // "100644" (file), "100755" (executable), "040000" (directory), "160000" (submodule), "120000" (symlink)
+	Type    string // "blob", "tree", or "commit"
+	SHA     string // SHA of existing blob, or empty to use Content
+	Content string // File content (creates new blob)
+}
+
+// CreateReleaseInput specifies input for creating a release.
+type CreateReleaseInput struct {
+	TagName              string
+	TargetCommitish      string
+	Name                 string
+	Body                 string
+	Draft                bool
+	Prerelease           bool
+	GenerateReleaseNotes bool
+}
+
+// UpdateReleaseInput specifies input for updating a release.
+type UpdateReleaseInput struct {
+	TagName         *string
+	TargetCommitish *string
+	Name            *string
+	Body            *string
+	Draft           *bool
+	Prerelease      *bool
+}
+
+// SearchOptions specifies options for search queries.
+type SearchOptions struct {
+	Sort      string // "comments", "reactions", "created", "updated", etc.
+	Order     string // "asc" or "desc"
+	PerPage   int
+	Page      int
 }

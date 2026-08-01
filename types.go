@@ -205,3 +205,122 @@ type FileContent struct {
 type ContentOptions struct {
 	Ref string // Branch, tag, or commit SHA. Empty uses default branch.
 }
+
+// Tag represents a git tag.
+type Tag struct {
+	Name   string
+	Commit *Commit
+	SHA    string // SHA of the tag object (for annotated) or commit (for lightweight)
+}
+
+// CheckSuite represents a GitHub Actions check suite.
+type CheckSuite struct {
+	ID         int64
+	HeadBranch string
+	HeadSHA    string
+	Status     string // "queued", "in_progress", "completed"
+	Conclusion string // "success", "failure", "neutral", "cancelled", "skipped", "timed_out", "action_required"
+	URL        string
+	App        *App
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+}
+
+// App represents a GitHub App.
+type App struct {
+	ID          int64
+	Slug        string
+	Name        string
+	Description string
+	HTMLURL     string
+}
+
+// PullRequestReview represents a review on a pull request.
+type PullRequestReview struct {
+	ID          int64
+	User        *User
+	Body        string
+	State       string // "APPROVED", "CHANGES_REQUESTED", "COMMENTED", "DISMISSED", "PENDING"
+	HTMLURL     string
+	CommitID    string
+	SubmittedAt *time.Time
+}
+
+// PullRequestComment represents a comment on a pull request diff.
+type PullRequestComment struct {
+	ID        int64
+	User      *User
+	Body      string
+	Path      string
+	Line      int
+	Side      string // "LEFT" or "RIGHT"
+	CommitID  string
+	HTMLURL   string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+// IssueComment represents a comment on an issue or pull request.
+type IssueComment struct {
+	ID        int64
+	User      *User
+	Body      string
+	HTMLURL   string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+// CommitFile represents a file changed in a commit.
+type CommitFile struct {
+	SHA         string
+	Filename    string
+	Status      string // "added", "removed", "modified", "renamed", "copied", "changed", "unchanged"
+	Additions   int
+	Deletions   int
+	Changes     int
+	Patch       string
+	BlobURL     string
+	RawURL      string
+	ContentsURL string
+	Previous    string // Previous filename for renamed files
+}
+
+// MergeResult represents the result of merging a pull request.
+type MergeResult struct {
+	SHA     string
+	Merged  bool
+	Message string
+}
+
+// ContributorStats represents contribution statistics for a user.
+type ContributorStats struct {
+	Author *User
+	Total  int
+	Weeks  []WeeklyStats
+}
+
+// WeeklyStats represents contribution stats for a single week.
+type WeeklyStats struct {
+	Week      time.Time
+	Additions int
+	Deletions int
+	Commits   int
+}
+
+// SearchResult represents search results from the GitHub API.
+type SearchResult[T any] struct {
+	Total             int
+	IncompleteResults bool
+	Items             []T
+}
+
+// IssueSearchResult is a search result containing issues.
+type IssueSearchResult = SearchResult[*Issue]
+
+// ReleaseAssetUpload represents an asset being uploaded to a release.
+type ReleaseAssetUpload struct {
+	Name        string
+	Label       string
+	ContentType string
+	Content     []byte
+}

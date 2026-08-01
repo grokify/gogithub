@@ -347,3 +347,329 @@ func fileContentsFromGitHub(contents []*github.RepositoryContent) []*gogithub.Fi
 	}
 	return result
 }
+
+// tagFromGitHub converts a go-github RepositoryTag to our stable Tag type.
+func tagFromGitHub(t *github.RepositoryTag) *gogithub.Tag {
+	if t == nil {
+		return nil
+	}
+	tag := &gogithub.Tag{
+		Name: t.GetName(),
+	}
+	if c := t.GetCommit(); c != nil {
+		tag.SHA = c.GetSHA()
+	}
+	return tag
+}
+
+// tagsFromGitHub converts a slice of go-github RepositoryTags.
+func tagsFromGitHub(tags []*github.RepositoryTag) []*gogithub.Tag {
+	if tags == nil {
+		return nil
+	}
+	result := make([]*gogithub.Tag, len(tags))
+	for i, t := range tags {
+		result[i] = tagFromGitHub(t)
+	}
+	return result
+}
+
+// gitCommitToCommit converts a go-github git Commit to our stable Commit type.
+func gitCommitToCommit(c *github.Commit) *gogithub.Commit {
+	if c == nil {
+		return nil
+	}
+	commit := &gogithub.Commit{
+		SHA:     c.GetSHA(),
+		Message: c.GetMessage(),
+		HTMLURL: c.GetHTMLURL(),
+	}
+	if author := c.GetAuthor(); author != nil {
+		commit.Author = &gogithub.CommitAuthor{
+			Name:  author.GetName(),
+			Email: author.GetEmail(),
+			Date:  author.GetDate().Time,
+		}
+	}
+	if committer := c.GetCommitter(); committer != nil {
+		commit.Committer = &gogithub.CommitAuthor{
+			Name:  committer.GetName(),
+			Email: committer.GetEmail(),
+			Date:  committer.GetDate().Time,
+		}
+	}
+	for _, p := range c.Parents {
+		commit.Parents = append(commit.Parents, gogithub.CommitParent{
+			SHA: p.GetSHA(),
+			URL: p.GetURL(),
+		})
+	}
+	return commit
+}
+
+// commitFileFromGitHub converts a go-github CommitFile to our stable CommitFile type.
+func commitFileFromGitHub(f *github.CommitFile) *gogithub.CommitFile {
+	if f == nil {
+		return nil
+	}
+	return &gogithub.CommitFile{
+		SHA:         f.GetSHA(),
+		Filename:    f.GetFilename(),
+		Status:      f.GetStatus(),
+		Additions:   f.GetAdditions(),
+		Deletions:   f.GetDeletions(),
+		Changes:     f.GetChanges(),
+		Patch:       f.GetPatch(),
+		BlobURL:     f.GetBlobURL(),
+		RawURL:      f.GetRawURL(),
+		ContentsURL: f.GetContentsURL(),
+		Previous:    f.GetPreviousFilename(),
+	}
+}
+
+// commitFilesFromGitHub converts a slice of go-github CommitFiles.
+func commitFilesFromGitHub(files []*github.CommitFile) []*gogithub.CommitFile {
+	if files == nil {
+		return nil
+	}
+	result := make([]*gogithub.CommitFile, len(files))
+	for i, f := range files {
+		result[i] = commitFileFromGitHub(f)
+	}
+	return result
+}
+
+// pullRequestReviewFromGitHub converts a go-github PullRequestReview to our stable type.
+func pullRequestReviewFromGitHub(r *github.PullRequestReview) *gogithub.PullRequestReview {
+	if r == nil {
+		return nil
+	}
+	review := &gogithub.PullRequestReview{
+		ID:       r.GetID(),
+		User:     userFromGitHub(r.GetUser()),
+		Body:     r.GetBody(),
+		State:    r.GetState(),
+		HTMLURL:  r.GetHTMLURL(),
+		CommitID: r.GetCommitID(),
+	}
+	if r.SubmittedAt != nil {
+		t := r.GetSubmittedAt().Time
+		review.SubmittedAt = &t
+	}
+	return review
+}
+
+// pullRequestReviewsFromGitHub converts a slice of go-github PullRequestReviews.
+func pullRequestReviewsFromGitHub(reviews []*github.PullRequestReview) []*gogithub.PullRequestReview {
+	if reviews == nil {
+		return nil
+	}
+	result := make([]*gogithub.PullRequestReview, len(reviews))
+	for i, r := range reviews {
+		result[i] = pullRequestReviewFromGitHub(r)
+	}
+	return result
+}
+
+// pullRequestCommentFromGitHub converts a go-github PullRequestComment to our stable type.
+func pullRequestCommentFromGitHub(c *github.PullRequestComment) *gogithub.PullRequestComment {
+	if c == nil {
+		return nil
+	}
+	return &gogithub.PullRequestComment{
+		ID:        c.GetID(),
+		User:      userFromGitHub(c.GetUser()),
+		Body:      c.GetBody(),
+		Path:      c.GetPath(),
+		Line:      c.GetLine(),
+		Side:      c.GetSide(),
+		CommitID:  c.GetCommitID(),
+		HTMLURL:   c.GetHTMLURL(),
+		CreatedAt: c.GetCreatedAt().Time,
+		UpdatedAt: c.GetUpdatedAt().Time,
+	}
+}
+
+// pullRequestCommentsFromGitHub converts a slice of go-github PullRequestComments.
+func pullRequestCommentsFromGitHub(comments []*github.PullRequestComment) []*gogithub.PullRequestComment {
+	if comments == nil {
+		return nil
+	}
+	result := make([]*gogithub.PullRequestComment, len(comments))
+	for i, c := range comments {
+		result[i] = pullRequestCommentFromGitHub(c)
+	}
+	return result
+}
+
+// issueCommentFromGitHub converts a go-github IssueComment to our stable type.
+func issueCommentFromGitHub(c *github.IssueComment) *gogithub.IssueComment {
+	if c == nil {
+		return nil
+	}
+	return &gogithub.IssueComment{
+		ID:        c.GetID(),
+		User:      userFromGitHub(c.GetUser()),
+		Body:      c.GetBody(),
+		HTMLURL:   c.GetHTMLURL(),
+		CreatedAt: c.GetCreatedAt().Time,
+		UpdatedAt: c.GetUpdatedAt().Time,
+	}
+}
+
+// checkSuiteFromGitHub converts a go-github CheckSuite to our stable type.
+func checkSuiteFromGitHub(cs *github.CheckSuite) *gogithub.CheckSuite {
+	if cs == nil {
+		return nil
+	}
+	suite := &gogithub.CheckSuite{
+		ID:         cs.GetID(),
+		HeadBranch: cs.GetHeadBranch(),
+		HeadSHA:    cs.GetHeadSHA(),
+		Status:     cs.GetStatus(),
+		Conclusion: cs.GetConclusion(),
+		URL:        cs.GetURL(),
+		CreatedAt:  cs.GetCreatedAt().Time,
+		UpdatedAt:  cs.GetUpdatedAt().Time,
+	}
+	if app := cs.GetApp(); app != nil {
+		suite.App = &gogithub.App{
+			ID:          app.GetID(),
+			Slug:        app.GetSlug(),
+			Name:        app.GetName(),
+			Description: app.GetDescription(),
+			HTMLURL:     app.GetHTMLURL(),
+		}
+	}
+	return suite
+}
+
+// checkSuitesFromGitHub converts a slice of go-github CheckSuites.
+func checkSuitesFromGitHub(suites []*github.CheckSuite) []*gogithub.CheckSuite {
+	if suites == nil {
+		return nil
+	}
+	result := make([]*gogithub.CheckSuite, len(suites))
+	for i, cs := range suites {
+		result[i] = checkSuiteFromGitHub(cs)
+	}
+	return result
+}
+
+// releaseAssetFromGitHub converts a go-github ReleaseAsset to our stable type.
+func releaseAssetFromGitHub(a *github.ReleaseAsset) *gogithub.ReleaseAsset {
+	if a == nil {
+		return nil
+	}
+	return &gogithub.ReleaseAsset{
+		ID:                 a.GetID(),
+		Name:               a.GetName(),
+		Label:              a.GetLabel(),
+		State:              a.GetState(),
+		ContentType:        a.GetContentType(),
+		Size:               a.GetSize(),
+		DownloadCount:      a.GetDownloadCount(),
+		BrowserDownloadURL: a.GetBrowserDownloadURL(),
+		CreatedAt:          a.GetCreatedAt().Time,
+		UpdatedAt:          a.GetUpdatedAt().Time,
+	}
+}
+
+// releaseAssetsFromGitHub converts a slice of go-github ReleaseAssets.
+func releaseAssetsFromGitHub(assets []*github.ReleaseAsset) []*gogithub.ReleaseAsset {
+	if assets == nil {
+		return nil
+	}
+	result := make([]*gogithub.ReleaseAsset, len(assets))
+	for i, a := range assets {
+		result[i] = releaseAssetFromGitHub(a)
+	}
+	return result
+}
+
+// issueFromGitHub converts a go-github Issue to our stable Issue type.
+func issueFromGitHub(i *github.Issue) *gogithub.Issue {
+	if i == nil {
+		return nil
+	}
+	issue := &gogithub.Issue{
+		ID:        i.GetID(),
+		Number:    i.GetNumber(),
+		State:     i.GetState(),
+		Title:     i.GetTitle(),
+		Body:      i.GetBody(),
+		HTMLURL:   i.GetHTMLURL(),
+		User:      userFromGitHub(i.GetUser()),
+		CreatedAt: i.GetCreatedAt().Time,
+		UpdatedAt: i.GetUpdatedAt().Time,
+	}
+	if i.ClosedAt != nil {
+		t := i.GetClosedAt().Time
+		issue.ClosedAt = &t
+	}
+	for _, l := range i.Labels {
+		issue.Labels = append(issue.Labels, gogithub.Label{
+			ID:          l.GetID(),
+			Name:        l.GetName(),
+			Description: l.GetDescription(),
+			Color:       l.GetColor(),
+		})
+	}
+	for _, a := range i.Assignees {
+		issue.Assignees = append(issue.Assignees, userFromGitHub(a))
+	}
+	return issue
+}
+
+// issueSearchResultFromGitHub converts a go-github IssuesSearchResult to our stable type.
+func issueSearchResultFromGitHub(r *github.IssuesSearchResult) *gogithub.IssueSearchResult {
+	if r == nil {
+		return nil
+	}
+	result := &gogithub.IssueSearchResult{
+		Total:             r.GetTotal(),
+		IncompleteResults: r.GetIncompleteResults(),
+	}
+	for _, i := range r.Issues {
+		result.Items = append(result.Items, issueFromGitHub(i))
+	}
+	return result
+}
+
+// contributorFromGitHub converts a go-github Contributor to our stable User type.
+func contributorFromGitHub(c *github.Contributor) *gogithub.User {
+	if c == nil {
+		return nil
+	}
+	return &gogithub.User{
+		ID:        c.GetID(),
+		Login:     c.GetLogin(),
+		AvatarURL: c.GetAvatarURL(),
+		HTMLURL:   c.GetHTMLURL(),
+		Type:      c.GetType(),
+	}
+}
+
+// contributorStatsFromGitHub converts go-github ContributorStats to our stable type.
+func contributorStatsFromGitHub(stats []*github.ContributorStats) []*gogithub.ContributorStats {
+	if stats == nil {
+		return nil
+	}
+	result := make([]*gogithub.ContributorStats, len(stats))
+	for i, s := range stats {
+		cs := &gogithub.ContributorStats{
+			Author: contributorFromGitHub(s.GetAuthor()),
+			Total:  s.GetTotal(),
+		}
+		for _, w := range s.Weeks {
+			cs.Weeks = append(cs.Weeks, gogithub.WeeklyStats{
+				Week:      w.GetWeek().Time,
+				Additions: w.GetAdditions(),
+				Deletions: w.GetDeletions(),
+				Commits:   w.GetCommits(),
+			})
+		}
+		result[i] = cs
+	}
+	return result
+}
