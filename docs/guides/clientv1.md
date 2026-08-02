@@ -212,6 +212,8 @@ new tree, then update the branch ref to the new commit.
 | `CreateIssue(ctx, owner, repo, input)` | `*gogithub.Issue` | Create a new issue |
 | `UpdateIssue(ctx, owner, repo, number, input)` | `*gogithub.Issue` | Update an issue |
 | `CreateIssueComment(ctx, owner, repo, num, body)` | `*gogithub.IssueComment` | Create an issue/PR comment |
+| `EditIssueComment(ctx, owner, repo, commentID, body)` | `*gogithub.IssueComment` | Update an issue/PR comment's body |
+| `ListIssueComments(ctx, owner, repo, num)` | `[]*gogithub.IssueComment` | List comments on an issue or PR |
 
 `gogithub.Issue` includes an `IsPullRequest` field, since GitHub's issue-listing endpoints also
 return pull requests — check it to filter PRs out of issue results.
@@ -249,6 +251,27 @@ return pull requests — check it to filter PRs out of issue results.
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `GetContributorStats(ctx, owner, repo)` | `[]*gogithub.ContributorStats` | Get contributor statistics |
+
+### Rate Limits
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `GetRateLimit(ctx)` | `*gogithub.RateLimit` | Core (non-search) API rate limit status for the authenticated client |
+
+For detecting rate-limit errors from any clientv1 call, use `github.com/grokify/gogithub/errors`:
+
+```go
+import ghErrors "github.com/grokify/gogithub/errors"
+
+if _, err := client.ListOrgRepos(ctx, org); err != nil {
+    if ghErrors.IsRateLimitError(err) {
+        // back off and retry
+    }
+}
+```
+
+`IsRateLimitError` unwraps the error chain, so it works on raw errors returned directly from a
+clientv1 call — it does not require pre-processing with `errors.Translate`.
 
 ### Activity
 
@@ -335,6 +358,9 @@ var prReviewsEnforcement *gogithub.PullRequestReviewsEnforcement
 // Actions
 var workflow *gogithub.Workflow
 var workflowRun *gogithub.WorkflowRun
+
+// Rate limits
+var rateLimit *gogithub.RateLimit
 ```
 
 ## Escape Hatch
