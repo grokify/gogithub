@@ -99,6 +99,7 @@ type PullRequest struct {
 	Head      *PullRequestBranch
 	Base      *PullRequestBranch
 	Labels    []Label
+	Assignees []*User
 	Merged    bool
 	Mergeable *bool
 	Draft     bool
