@@ -8,6 +8,19 @@
   "maintainers": ["grokify"],
   "releases": [
     {
+      "version": "v0.16.1",
+      "date": "2026-08-02",
+      "highlights": [
+        { "description": "`gogithub.PullRequest` gained an `Assignees` field, closing another gap where consumers needing PR assignees had to fall back to raw go-github types", "commit": "86f555f" }
+      ],
+      "fixed": [
+        { "description": "[types] `PullRequest.Assignees` (`[]*gogithub.User`) mirrors go-github's `PullRequest.Assignees`, previously dropped by the stable type", "commit": "86f555f" }
+      ],
+      "documentation": [
+        { "description": "[clientv1] Documented `PullRequest.Assignees` in the version-isolated client guide", "commit": "fad047b" }
+      ]
+    },
+    {
       "version": "v0.16.0",
       "date": "2026-08-02",
       "highlights": [
