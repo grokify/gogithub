@@ -123,13 +123,22 @@ func (c *client) GetRepository(ctx context.Context, owner, repo string) (*gogith
 
 // ListUserRepos lists all repositories for a user.
 func (c *client) ListUserRepos(ctx context.Context, user string) ([]*gogithub.Repository, error) {
+	return c.ListUserReposWithOptions(ctx, user, nil)
+}
+
+// ListUserReposWithOptions lists repositories for a user, filtered by type.
+func (c *client) ListUserReposWithOptions(ctx context.Context, user string, opts *ListUserReposOptions) ([]*gogithub.Repository, error) {
+	repoType := "all"
+	if opts != nil && opts.Type != "" {
+		repoType = opts.Type
+	}
 	var allRepos []*github.Repository
-	opts := &github.RepositoryListByUserOptions{
-		Type:        "all",
+	listOpts := &github.RepositoryListByUserOptions{
+		Type:        repoType,
 		ListOptions: github.ListOptions{PerPage: 100},
 	}
 	for {
-		repos, resp, err := c.gh.Repositories.ListByUser(ctx, user, opts)
+		repos, resp, err := c.gh.Repositories.ListByUser(ctx, user, listOpts)
 		if err != nil {
 			return nil, fmt.Errorf("list user repos: %w", err)
 		}
@@ -137,7 +146,7 @@ func (c *client) ListUserRepos(ctx context.Context, user string) ([]*gogithub.Re
 		if resp.NextPage == 0 {
 			break
 		}
-		opts.Page = resp.NextPage
+		listOpts.Page = resp.NextPage
 	}
 	return repositoriesFromGitHub(allRepos), nil
 }
@@ -549,6 +558,29 @@ func (c *client) GetDefaultBranch(ctx context.Context, owner, repo string) (stri
 		return "", err
 	}
 	return r.GetDefaultBranch(), nil
+}
+
+// GetBranchProtection returns branch protection settings, or (nil, nil) if
+// the branch has no protection configured.
+func (c *client) GetBranchProtection(ctx context.Context, owner, repo, branch string) (*gogithub.BranchProtection, error) {
+	p, resp, err := c.gh.Repositories.GetBranchProtection(ctx, owner, repo, branch)
+	if err != nil {
+		if resp != nil && resp.StatusCode == 404 {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get branch protection: %w", err)
+	}
+	return branchProtectionFromGitHub(p), nil
+}
+
+// ListLanguages returns the languages used in a repository, mapped to bytes
+// of code written in that language.
+func (c *client) ListLanguages(ctx context.Context, owner, repo string) (map[string]int, error) {
+	langs, _, err := c.gh.Repositories.ListLanguages(ctx, owner, repo)
+	if err != nil {
+		return nil, fmt.Errorf("list languages: %w", err)
+	}
+	return langs, nil
 }
 
 // CreateFork creates a fork of a repository.
@@ -1145,6 +1177,45 @@ func (c *client) ListUserEvents(ctx context.Context, username string, opts *List
 		listOpts.Page = resp.NextPage
 	}
 	return eventsFromGitHub(allEvents), nil
+}
+
+// ListWorkflows lists the GitHub Actions workflows defined in a repository.
+func (c *client) ListWorkflows(ctx context.Context, owner, repo string) ([]*gogithub.Workflow, error) {
+	listOpts := &github.ListOptions{PerPage: 100}
+	var allWorkflows []*github.Workflow
+	for {
+		workflows, resp, err := c.gh.Actions.ListWorkflows(ctx, owner, repo, listOpts)
+		if err != nil {
+			return nil, fmt.Errorf("list workflows: %w", err)
+		}
+		allWorkflows = append(allWorkflows, workflows.Workflows...)
+		if resp.NextPage == 0 {
+			break
+		}
+		listOpts.Page = resp.NextPage
+	}
+	return workflowsFromGitHub(allWorkflows), nil
+}
+
+// ListWorkflowRuns lists runs of a workflow, most recent first. Unlike most
+// List* methods, this does not paginate through all results.
+func (c *client) ListWorkflowRuns(ctx context.Context, owner, repo string, workflowID int64, opts *ListWorkflowRunsOptions) ([]*gogithub.WorkflowRun, error) {
+	runOpts := &github.ListWorkflowRunsOptions{}
+	if opts != nil {
+		runOpts.Branch = opts.Branch
+		runOpts.Status = opts.Status
+		if opts.PerPage > 0 {
+			runOpts.ListOptions.PerPage = opts.PerPage
+		}
+		if opts.Page > 0 {
+			runOpts.ListOptions.Page = opts.Page
+		}
+	}
+	runs, _, err := c.gh.Actions.ListWorkflowRunsByID(ctx, owner, repo, workflowID, runOpts)
+	if err != nil {
+		return nil, fmt.Errorf("list workflow runs: %w", err)
+	}
+	return workflowRunsFromGitHub(runs.WorkflowRuns), nil
 }
 
 // SearchCode searches for code in repositories.

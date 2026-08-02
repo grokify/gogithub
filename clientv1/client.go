@@ -23,14 +23,28 @@ type Client interface {
 	// GetRepository retrieves a repository by owner and name.
 	GetRepository(ctx context.Context, owner, repo string) (*gogithub.Repository, error)
 
-	// ListUserRepos lists all repositories for a user.
+	// ListUserRepos lists all repositories for a user (equivalent to
+	// ListUserReposWithOptions with Type "all").
 	ListUserRepos(ctx context.Context, user string) ([]*gogithub.Repository, error)
+
+	// ListUserReposWithOptions lists repositories for a user, filtered by
+	// ListUserReposOptions.Type (e.g. "owner" to exclude repos the user is
+	// only a collaborator or org member on).
+	ListUserReposWithOptions(ctx context.Context, user string, opts *ListUserReposOptions) ([]*gogithub.Repository, error)
 
 	// ListOrgRepos lists all repositories for an organization.
 	ListOrgRepos(ctx context.Context, org string) ([]*gogithub.Repository, error)
 
 	// GetDefaultBranch returns the default branch name for a repository.
 	GetDefaultBranch(ctx context.Context, owner, repo string) (string, error)
+
+	// GetBranchProtection returns branch protection settings, or (nil, nil)
+	// if the branch has no protection configured.
+	GetBranchProtection(ctx context.Context, owner, repo, branch string) (*gogithub.BranchProtection, error)
+
+	// ListLanguages returns the languages used in a repository, mapped to
+	// bytes of code (as reported by GitHub's linguist).
+	ListLanguages(ctx context.Context, owner, repo string) (map[string]int, error)
 
 	// Forks
 
@@ -239,6 +253,17 @@ type Client interface {
 	// timeline). GitHub's Events API only returns the most recent ~300 events.
 	ListUserEvents(ctx context.Context, username string, opts *ListUserEventsOptions) ([]*gogithub.Event, error)
 
+	// Actions
+
+	// ListWorkflows lists the GitHub Actions workflows defined in a repository.
+	ListWorkflows(ctx context.Context, owner, repo string) ([]*gogithub.Workflow, error)
+
+	// ListWorkflowRuns lists runs of a workflow, most recent first. Unlike
+	// most List* methods, this does NOT paginate through all results — a
+	// workflow can accumulate thousands of runs, so it returns a single page
+	// per opts (PerPage defaults to GitHub's own default when opts is nil).
+	ListWorkflowRuns(ctx context.Context, owner, repo string, workflowID int64, opts *ListWorkflowRunsOptions) ([]*gogithub.WorkflowRun, error)
+
 	// Raw returns the underlying go-github client for advanced use cases.
 	// WARNING: Using this couples your code to a specific go-github version.
 	// The returned value is *github.Client from the go-github package.
@@ -439,4 +464,24 @@ type UpdateIssueInput struct {
 	Labels    []string
 	Assignees []string
 	Milestone *int
+}
+
+// ListUserReposOptions specifies options for listing a user's repositories.
+type ListUserReposOptions struct {
+	// Type filters by repository relationship: "all", "owner", or "member".
+	// Default: "all".
+	Type string
+}
+
+// ListWorkflowRunsOptions specifies options for listing workflow runs.
+type ListWorkflowRunsOptions struct {
+	// Branch filters runs by the branch that triggered them.
+	Branch string
+	// Status filters by run status (e.g. "completed", "in_progress", "queued")
+	// or conclusion (e.g. "success", "failure").
+	Status string
+	// PerPage sets the page size. Default: GitHub's API default (30).
+	PerPage int
+	// Page selects which page of results to return. Default: 1.
+	Page int
 }
