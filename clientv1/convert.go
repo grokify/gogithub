@@ -809,3 +809,37 @@ func codeResultFromGitHub(c *github.CodeResult) *gogithub.CodeResult {
 		Repository: repositoryFromGitHub(c.GetRepository()),
 	}
 }
+
+// eventFromGitHub converts a go-github Event to our stable Event type.
+func eventFromGitHub(e *github.Event) *gogithub.Event {
+	if e == nil {
+		return nil
+	}
+	event := &gogithub.Event{
+		ID:        e.GetID(),
+		Type:      e.GetType(),
+		Public:    e.GetPublic(),
+		Actor:     userFromGitHub(e.GetActor()),
+		CreatedAt: e.GetCreatedAt().Time,
+	}
+	if repo := e.GetRepo(); repo != nil {
+		event.Repo = &gogithub.EventRepo{
+			ID:   repo.GetID(),
+			Name: repo.GetName(),
+			URL:  repo.GetURL(),
+		}
+	}
+	return event
+}
+
+// eventsFromGitHub converts a slice of go-github Events.
+func eventsFromGitHub(events []*github.Event) []*gogithub.Event {
+	if events == nil {
+		return nil
+	}
+	result := make([]*gogithub.Event, len(events))
+	for i, e := range events {
+		result[i] = eventFromGitHub(e)
+	}
+	return result
+}

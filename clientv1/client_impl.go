@@ -1125,6 +1125,28 @@ func (c *client) GetContributorStats(ctx context.Context, owner, repo string) ([
 	return contributorStatsFromGitHub(stats), nil
 }
 
+// ListUserEvents lists activity events performed by a user (their public timeline).
+func (c *client) ListUserEvents(ctx context.Context, username string, opts *ListUserEventsOptions) ([]*gogithub.Event, error) {
+	publicOnly := false
+	if opts != nil {
+		publicOnly = opts.PublicOnly
+	}
+	listOpts := &github.ListOptions{PerPage: 100}
+	var allEvents []*github.Event
+	for {
+		events, resp, err := c.gh.Activity.ListEventsPerformedByUser(ctx, username, publicOnly, listOpts)
+		if err != nil {
+			return nil, fmt.Errorf("list user events: %w", err)
+		}
+		allEvents = append(allEvents, events...)
+		if resp.NextPage == 0 {
+			break
+		}
+		listOpts.Page = resp.NextPage
+	}
+	return eventsFromGitHub(allEvents), nil
+}
+
 // SearchCode searches for code in repositories.
 func (c *client) SearchCode(ctx context.Context, query string, opts *SearchOptions) (*gogithub.CodeSearchResult, error) {
 	searchOpts := &github.SearchOptions{}
