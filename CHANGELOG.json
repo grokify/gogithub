@@ -8,6 +8,23 @@
   "maintainers": ["grokify"],
   "releases": [
     {
+      "version": "v0.17.0",
+      "date": "2026-08-02",
+      "highlights": [
+        { "description": "**clientv1 gains branch protection, repo languages, GitHub Actions, and rate-limit APIs**: `GetBranchProtection`, `ListLanguages`, `ListWorkflows`, `ListWorkflowRuns`, `GetRateLimit`, `ListUserReposWithOptions`, `EditIssueComment`, and `ListIssueComments` close the gaps hit migrating a CI/CD pipeline collector and a dependency-graph/release-automation tool off raw `*github.Client` usage", "commit": "d75a9fd" }
+      ],
+      "added": [
+        { "description": "[clientv1] `GetBranchProtection(ctx, owner, repo, branch)` returns branch protection settings, or `(nil, nil)` if unprotected", "commit": "d75a9fd" },
+        { "description": "[clientv1] `ListLanguages(ctx, owner, repo)` returns languages used in a repository mapped to bytes of code", "commit": "d75a9fd" },
+        { "description": "[clientv1] `ListWorkflows` and `ListWorkflowRuns` wrap the GitHub Actions API; `ListWorkflowRuns` deliberately does not auto-paginate, since a long-lived workflow can accumulate thousands of runs", "commit": "d75a9fd" },
+        { "description": "[clientv1] `ListUserReposWithOptions(ctx, user, opts)` filters a user's repositories by relationship (`owner`, `member`, or `all`); `ListUserRepos` is now defined in terms of it", "commit": "596d0db" },
+        { "description": "[clientv1] `GetRateLimit(ctx)` returns the core (non-search) API rate limit status", "commit": "596d0db" },
+        { "description": "[clientv1] `EditIssueComment` and `ListIssueComments` round out issue/PR comment management", "commit": "596d0db" },
+        { "description": "[errors] `IsRateLimitError(err)` detects a go-github `*RateLimitError`/`*AbuseRateLimitError` on a raw error returned directly from a clientv1 call, without requiring `Translate` first", "commit": "596d0db" },
+        { "description": "[types] `Repository.Topics` and `Repository.Visibility`; `BranchProtection`, `RequiredStatusChecks`, `PullRequestReviewsEnforcement`, `Workflow`, `WorkflowRun`, `RateLimit`, `EventRepo` stable types", "commit": "d75a9fd" }
+      ]
+    },
+    {
       "version": "v0.16.1",
       "date": "2026-08-02",
       "highlights": [
