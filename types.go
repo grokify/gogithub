@@ -34,10 +34,12 @@ type Repository struct {
 	SSHURL          string
 	DefaultBranch   string
 	Private         bool
+	Visibility      string // "public", "private", or "internal"
 	Fork            bool
 	Archived        bool
 	Disabled        bool
 	Language        string
+	Topics          []string
 	ForksCount      int
 	StargazersCount int
 	WatchersCount   int
@@ -426,6 +428,15 @@ type Workflow struct {
 	BadgeURL  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+// RateLimit represents the core (non-search) API rate limit for the
+// authenticated client.
+type RateLimit struct {
+	Limit     int
+	Remaining int
+	Used      int
+	Reset     time.Time
 }
 
 // WorkflowRun represents a run of a GitHub Actions workflow.

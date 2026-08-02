@@ -197,6 +197,12 @@ type Client interface {
 	// CreateIssueComment creates a comment on an issue or pull request.
 	CreateIssueComment(ctx context.Context, owner, repo string, number int, body string) (*gogithub.IssueComment, error)
 
+	// EditIssueComment updates the body of an existing issue or pull request comment.
+	EditIssueComment(ctx context.Context, owner, repo string, commentID int64, body string) (*gogithub.IssueComment, error)
+
+	// ListIssueComments lists comments on an issue or pull request.
+	ListIssueComments(ctx context.Context, owner, repo string, number int) ([]*gogithub.IssueComment, error)
+
 	// Checks
 
 	// GetCheckRun retrieves a check run by ID.
@@ -246,6 +252,12 @@ type Client interface {
 
 	// GetContributorStats gets contribution statistics for a repository.
 	GetContributorStats(ctx context.Context, owner, repo string) ([]*gogithub.ContributorStats, error)
+
+	// Rate Limits
+
+	// GetRateLimit returns the core (non-search) API rate limit status for
+	// the authenticated client.
+	GetRateLimit(ctx context.Context) (*gogithub.RateLimit, error)
 
 	// Activity
 

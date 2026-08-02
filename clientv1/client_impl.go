@@ -1031,6 +1031,36 @@ func (c *client) CreateIssueComment(ctx context.Context, owner, repo string, num
 	return issueCommentFromGitHub(result), nil
 }
 
+// EditIssueComment updates the body of an existing issue or pull request comment.
+func (c *client) EditIssueComment(ctx context.Context, owner, repo string, commentID int64, body string) (*gogithub.IssueComment, error) {
+	comment := &github.IssueComment{
+		Body: github.Ptr(body),
+	}
+	result, _, err := c.gh.Issues.EditComment(ctx, owner, repo, commentID, comment)
+	if err != nil {
+		return nil, fmt.Errorf("edit issue comment: %w", err)
+	}
+	return issueCommentFromGitHub(result), nil
+}
+
+// ListIssueComments lists comments on an issue or pull request.
+func (c *client) ListIssueComments(ctx context.Context, owner, repo string, number int) ([]*gogithub.IssueComment, error) {
+	listOpts := &github.IssueListCommentsOptions{ListOptions: github.ListOptions{PerPage: 100}}
+	var allComments []*github.IssueComment
+	for {
+		comments, resp, err := c.gh.Issues.ListComments(ctx, owner, repo, number, listOpts)
+		if err != nil {
+			return nil, fmt.Errorf("list issue comments: %w", err)
+		}
+		allComments = append(allComments, comments...)
+		if resp.NextPage == 0 {
+			break
+		}
+		listOpts.Page = resp.NextPage
+	}
+	return issueCommentsFromGitHub(allComments), nil
+}
+
 // GetCheckRun retrieves a check run by ID.
 func (c *client) GetCheckRun(ctx context.Context, owner, repo string, checkRunID int64) (*gogithub.CheckRun, error) {
 	check, _, err := c.gh.Checks.GetCheckRun(ctx, owner, repo, checkRunID)
@@ -1155,6 +1185,24 @@ func (c *client) GetContributorStats(ctx context.Context, owner, repo string) ([
 		return nil, fmt.Errorf("get contributor stats: %w", err)
 	}
 	return contributorStatsFromGitHub(stats), nil
+}
+
+// GetRateLimit returns the core (non-search) API rate limit status.
+func (c *client) GetRateLimit(ctx context.Context) (*gogithub.RateLimit, error) {
+	limits, _, err := c.gh.RateLimit.Get(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get rate limit: %w", err)
+	}
+	core := limits.GetCore()
+	if core == nil {
+		return nil, fmt.Errorf("get rate limit: no core rate limit in response")
+	}
+	return &gogithub.RateLimit{
+		Limit:     core.Limit,
+		Remaining: core.Remaining,
+		Used:      core.Used,
+		Reset:     core.Reset.Time,
+	}, nil
 }
 
 // ListUserEvents lists activity events performed by a user (their public timeline).

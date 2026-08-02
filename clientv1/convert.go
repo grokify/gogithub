@@ -45,10 +45,12 @@ func repositoryFromGitHub(r *github.Repository) *gogithub.Repository {
 		SSHURL:          r.GetSSHURL(),
 		DefaultBranch:   r.GetDefaultBranch(),
 		Private:         r.GetPrivate(),
+		Visibility:      r.GetVisibility(),
 		Fork:            r.GetFork(),
 		Archived:        r.GetArchived(),
 		Disabled:        r.GetDisabled(),
 		Language:        r.GetLanguage(),
+		Topics:          r.Topics,
 		ForksCount:      r.GetForksCount(),
 		StargazersCount: r.GetStargazersCount(),
 		WatchersCount:   r.GetWatchersCount(),
@@ -535,6 +537,18 @@ func issueCommentFromGitHub(c *github.IssueComment) *gogithub.IssueComment {
 		CreatedAt: c.GetCreatedAt().Time,
 		UpdatedAt: c.GetUpdatedAt().Time,
 	}
+}
+
+// issueCommentsFromGitHub converts a slice of go-github IssueComments.
+func issueCommentsFromGitHub(comments []*github.IssueComment) []*gogithub.IssueComment {
+	if comments == nil {
+		return nil
+	}
+	result := make([]*gogithub.IssueComment, len(comments))
+	for i, c := range comments {
+		result[i] = issueCommentFromGitHub(c)
+	}
+	return result
 }
 
 // checkSuiteFromGitHub converts a go-github CheckSuite to our stable type.
