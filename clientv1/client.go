@@ -233,6 +233,12 @@ type Client interface {
 	// GetContributorStats gets contribution statistics for a repository.
 	GetContributorStats(ctx context.Context, owner, repo string) ([]*gogithub.ContributorStats, error)
 
+	// Activity
+
+	// ListUserEvents lists activity events performed by a user (their public
+	// timeline). GitHub's Events API only returns the most recent ~300 events.
+	ListUserEvents(ctx context.Context, username string, opts *ListUserEventsOptions) ([]*gogithub.Event, error)
+
 	// Raw returns the underlying go-github client for advanced use cases.
 	// WARNING: Using this couples your code to a specific go-github version.
 	// The returned value is *github.Client from the go-github package.
@@ -416,6 +422,13 @@ type CreateIssueInput struct {
 	Labels    []string
 	Assignees []string
 	Milestone *int
+}
+
+// ListUserEventsOptions specifies options for listing a user's activity events.
+type ListUserEventsOptions struct {
+	// PublicOnly restricts results to publicly visible events. When false and
+	// the request is authenticated as username, private events are also included.
+	PublicOnly bool
 }
 
 // UpdateIssueInput specifies input for updating an issue.

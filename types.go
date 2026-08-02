@@ -369,3 +369,22 @@ type CodeResult struct {
 	HTMLURL    string
 	Repository *Repository
 }
+
+// Event represents a GitHub activity event, such as those returned by a
+// user's public timeline (e.g., "PushEvent", "PullRequestEvent", "IssuesEvent").
+type Event struct {
+	ID        string
+	Type      string
+	Public    bool
+	Actor     *User
+	Repo      *EventRepo
+	CreatedAt time.Time
+}
+
+// EventRepo identifies the repository an Event occurred in. It carries only
+// the fields the GitHub Events API populates, not the full Repository.
+type EventRepo struct {
+	ID   int64
+	Name string // "owner/repo"
+	URL  string
+}
