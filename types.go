@@ -389,3 +389,58 @@ type EventRepo struct {
 	Name string // "owner/repo"
 	URL  string
 }
+
+// BranchProtection represents a repository branch's protection settings.
+type BranchProtection struct {
+	RequiredStatusChecks       *RequiredStatusChecks
+	RequiredPullRequestReviews *PullRequestReviewsEnforcement
+	EnforceAdmins              bool
+	RequireSignedCommits       bool
+	AllowForcePushes           bool
+	AllowDeletions             bool
+	URL                        string
+}
+
+// RequiredStatusChecks represents the required status checks of a protected branch.
+type RequiredStatusChecks struct {
+	Strict   bool
+	Contexts []string
+}
+
+// PullRequestReviewsEnforcement represents the pull request review
+// requirements of a protected branch.
+type PullRequestReviewsEnforcement struct {
+	DismissStaleReviews          bool
+	RequireCodeOwnerReviews      bool
+	RequiredApprovingReviewCount int
+}
+
+// Workflow represents a GitHub Actions workflow.
+type Workflow struct {
+	ID        int64
+	Name      string
+	Path      string
+	State     string
+	URL       string
+	HTMLURL   string
+	BadgeURL  string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+// WorkflowRun represents a run of a GitHub Actions workflow.
+type WorkflowRun struct {
+	ID         int64
+	Name       string
+	WorkflowID int64
+	RunNumber  int
+	Event      string
+	Status     string
+	Conclusion string
+	HeadBranch string
+	HeadSHA    string
+	URL        string
+	HTMLURL    string
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+}

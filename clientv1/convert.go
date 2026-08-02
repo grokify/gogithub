@@ -846,3 +846,103 @@ func eventsFromGitHub(events []*github.Event) []*gogithub.Event {
 	}
 	return result
 }
+
+// branchProtectionFromGitHub converts a go-github Protection to our stable BranchProtection type.
+func branchProtectionFromGitHub(p *github.Protection) *gogithub.BranchProtection {
+	if p == nil {
+		return nil
+	}
+	bp := &gogithub.BranchProtection{
+		URL: p.GetURL(),
+	}
+	if rsc := p.GetRequiredStatusChecks(); rsc != nil {
+		bp.RequiredStatusChecks = &gogithub.RequiredStatusChecks{
+			Strict:   rsc.Strict,
+			Contexts: rsc.GetContexts(),
+		}
+	}
+	if rprr := p.GetRequiredPullRequestReviews(); rprr != nil {
+		bp.RequiredPullRequestReviews = &gogithub.PullRequestReviewsEnforcement{
+			DismissStaleReviews:          rprr.DismissStaleReviews,
+			RequireCodeOwnerReviews:      rprr.RequireCodeOwnerReviews,
+			RequiredApprovingReviewCount: rprr.RequiredApprovingReviewCount,
+		}
+	}
+	if ea := p.GetEnforceAdmins(); ea != nil {
+		bp.EnforceAdmins = ea.Enabled
+	}
+	if rs := p.GetRequiredSignatures(); rs != nil && rs.Enabled != nil {
+		bp.RequireSignedCommits = *rs.Enabled
+	}
+	if afp := p.GetAllowForcePushes(); afp != nil {
+		bp.AllowForcePushes = afp.Enabled
+	}
+	if ad := p.GetAllowDeletions(); ad != nil {
+		bp.AllowDeletions = ad.Enabled
+	}
+	return bp
+}
+
+// workflowFromGitHub converts a go-github Workflow to our stable Workflow type.
+func workflowFromGitHub(w *github.Workflow) *gogithub.Workflow {
+	if w == nil {
+		return nil
+	}
+	return &gogithub.Workflow{
+		ID:        w.GetID(),
+		Name:      w.GetName(),
+		Path:      w.GetPath(),
+		State:     w.GetState(),
+		URL:       w.GetURL(),
+		HTMLURL:   w.GetHTMLURL(),
+		BadgeURL:  w.GetBadgeURL(),
+		CreatedAt: w.GetCreatedAt().Time,
+		UpdatedAt: w.GetUpdatedAt().Time,
+	}
+}
+
+// workflowsFromGitHub converts a slice of go-github Workflows.
+func workflowsFromGitHub(workflows []*github.Workflow) []*gogithub.Workflow {
+	if workflows == nil {
+		return nil
+	}
+	result := make([]*gogithub.Workflow, len(workflows))
+	for i, w := range workflows {
+		result[i] = workflowFromGitHub(w)
+	}
+	return result
+}
+
+// workflowRunFromGitHub converts a go-github WorkflowRun to our stable WorkflowRun type.
+func workflowRunFromGitHub(r *github.WorkflowRun) *gogithub.WorkflowRun {
+	if r == nil {
+		return nil
+	}
+	return &gogithub.WorkflowRun{
+		ID:         r.GetID(),
+		Name:       r.GetName(),
+		WorkflowID: r.GetWorkflowID(),
+		RunNumber:  r.GetRunNumber(),
+		Event:      r.GetEvent(),
+		Status:     r.GetStatus(),
+		Conclusion: r.GetConclusion(),
+		HeadBranch: r.GetHeadBranch(),
+		HeadSHA:    r.GetHeadSHA(),
+		URL:        r.GetURL(),
+		HTMLURL:    r.GetHTMLURL(),
+		CreatedAt:  r.GetCreatedAt().Time,
+		UpdatedAt:  r.GetUpdatedAt().Time,
+	}
+}
+
+// workflowRunsFromGitHub converts a slice of go-github WorkflowRuns.
+func workflowRunsFromGitHub(runs []*github.WorkflowRun) []*gogithub.WorkflowRun {
+	if runs == nil {
+		return nil
+	}
+	result := make([]*gogithub.WorkflowRun, len(runs))
+	for i, r := range runs {
+		result[i] = workflowRunFromGitHub(r)
+	}
+	return result
+}

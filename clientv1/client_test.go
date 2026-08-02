@@ -139,6 +139,117 @@ func TestReferenceFromGitHub(t *testing.T) {
 	}
 }
 
+func TestBranchProtectionFromGitHub(t *testing.T) {
+	ghProtection := &github.Protection{
+		RequiredStatusChecks: &github.RequiredStatusChecks{
+			Strict:   true,
+			Contexts: &[]string{"ci/test", "ci/lint"},
+		},
+		RequiredPullRequestReviews: &github.PullRequestReviewsEnforcement{
+			DismissStaleReviews:          true,
+			RequireCodeOwnerReviews:      true,
+			RequiredApprovingReviewCount: 2,
+		},
+		EnforceAdmins: &github.AdminEnforcement{Enabled: true},
+		RequiredSignatures: &github.SignaturesProtectedBranch{
+			Enabled: github.Ptr(true),
+		},
+		AllowForcePushes: &github.AllowForcePushes{Enabled: false},
+		AllowDeletions:   &github.AllowDeletions{Enabled: false},
+		URL:              github.Ptr("https://api.github.com/repos/owner/repo/branches/main/protection"),
+	}
+
+	bp := branchProtectionFromGitHub(ghProtection)
+
+	if bp.URL != "https://api.github.com/repos/owner/repo/branches/main/protection" {
+		t.Errorf("URL = %q, want protection URL", bp.URL)
+	}
+	if !bp.EnforceAdmins {
+		t.Error("EnforceAdmins = false, want true")
+	}
+	if !bp.RequireSignedCommits {
+		t.Error("RequireSignedCommits = false, want true")
+	}
+	if bp.AllowForcePushes {
+		t.Error("AllowForcePushes = true, want false")
+	}
+	if bp.RequiredStatusChecks == nil {
+		t.Fatal("RequiredStatusChecks should not be nil")
+	}
+	if !bp.RequiredStatusChecks.Strict {
+		t.Error("RequiredStatusChecks.Strict = false, want true")
+	}
+	if len(bp.RequiredStatusChecks.Contexts) != 2 {
+		t.Errorf("RequiredStatusChecks.Contexts = %v, want 2 entries", bp.RequiredStatusChecks.Contexts)
+	}
+	if bp.RequiredPullRequestReviews == nil {
+		t.Fatal("RequiredPullRequestReviews should not be nil")
+	}
+	if bp.RequiredPullRequestReviews.RequiredApprovingReviewCount != 2 {
+		t.Errorf("RequiredApprovingReviewCount = %d, want 2", bp.RequiredPullRequestReviews.RequiredApprovingReviewCount)
+	}
+}
+
+func TestBranchProtectionFromGitHubNil(t *testing.T) {
+	if bp := branchProtectionFromGitHub(nil); bp != nil {
+		t.Error("branchProtectionFromGitHub(nil) should return nil")
+	}
+}
+
+func TestWorkflowFromGitHub(t *testing.T) {
+	ghWorkflow := &github.Workflow{
+		ID:    github.Ptr(int64(161335)),
+		Name:  github.Ptr("CI"),
+		Path:  github.Ptr(".github/workflows/ci.yml"),
+		State: github.Ptr("active"),
+	}
+
+	w := workflowFromGitHub(ghWorkflow)
+
+	if w.ID != 161335 {
+		t.Errorf("ID = %d, want 161335", w.ID)
+	}
+	if w.Name != "CI" {
+		t.Errorf("Name = %q, want %q", w.Name, "CI")
+	}
+	if w.Path != ".github/workflows/ci.yml" {
+		t.Errorf("Path = %q, want %q", w.Path, ".github/workflows/ci.yml")
+	}
+	if w.State != "active" {
+		t.Errorf("State = %q, want %q", w.State, "active")
+	}
+}
+
+func TestWorkflowRunFromGitHub(t *testing.T) {
+	ghRun := &github.WorkflowRun{
+		ID:         github.Ptr(int64(30433642)),
+		Name:       github.Ptr("CI"),
+		WorkflowID: github.Ptr(int64(161335)),
+		HeadBranch: github.Ptr("main"),
+		HeadSHA:    github.Ptr("acb5820ced9479c074f688441"),
+		Status:     github.Ptr("completed"),
+		Conclusion: github.Ptr("success"),
+	}
+
+	run := workflowRunFromGitHub(ghRun)
+
+	if run.ID != 30433642 {
+		t.Errorf("ID = %d, want 30433642", run.ID)
+	}
+	if run.WorkflowID != 161335 {
+		t.Errorf("WorkflowID = %d, want 161335", run.WorkflowID)
+	}
+	if run.HeadBranch != "main" {
+		t.Errorf("HeadBranch = %q, want %q", run.HeadBranch, "main")
+	}
+	if run.Status != "completed" {
+		t.Errorf("Status = %q, want %q", run.Status, "completed")
+	}
+	if run.Conclusion != "success" {
+		t.Errorf("Conclusion = %q, want %q", run.Conclusion, "success")
+	}
+}
+
 func TestNewClientFromRaw(t *testing.T) {
 	ghClient, err := github.NewClient()
 	if err != nil {
