@@ -2,6 +2,7 @@ package errors
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -52,6 +53,31 @@ func TestTranslateRateLimited(t *testing.T) {
 
 	if !IsRateLimited(err) {
 		t.Error("expected IsRateLimited to return true")
+	}
+}
+
+func TestIsRateLimitError(t *testing.T) {
+	rateLimitErr := &github.RateLimitError{
+		Rate:    github.Rate{Limit: 5000, Remaining: 0},
+		Message: "API rate limit exceeded",
+	}
+	if !IsRateLimitError(rateLimitErr) {
+		t.Error("expected IsRateLimitError(*RateLimitError) to return true")
+	}
+	if !IsRateLimitError(fmt.Errorf("list repos: %w", rateLimitErr)) {
+		t.Error("expected IsRateLimitError to unwrap through fmt.Errorf")
+	}
+
+	abuseErr := &github.AbuseRateLimitError{Message: "secondary rate limit"}
+	if !IsRateLimitError(abuseErr) {
+		t.Error("expected IsRateLimitError(*AbuseRateLimitError) to return true")
+	}
+
+	if IsRateLimitError(errors.New("unrelated error")) {
+		t.Error("expected IsRateLimitError to return false for unrelated error")
+	}
+	if IsRateLimitError(nil) {
+		t.Error("expected IsRateLimitError(nil) to return false")
 	}
 }
 

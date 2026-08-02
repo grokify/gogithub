@@ -139,8 +139,26 @@ func IsPermissionDenied(err error) bool {
 }
 
 // IsRateLimited returns true if the error indicates rate limiting.
+// This only matches errors already translated by Translate; for a raw error
+// returned directly from a clientv1 call, use IsRateLimitError instead.
 func IsRateLimited(err error) bool {
 	return errors.Is(err, ErrRateLimited)
+}
+
+// IsRateLimitError returns true if err is (or wraps) a go-github
+// *RateLimitError or *AbuseRateLimitError. Unlike IsRateLimited, this
+// matches raw errors returned directly from a clientv1 call, without
+// requiring Translate to be called first.
+func IsRateLimitError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var rateLimitErr *github.RateLimitError
+	if errors.As(err, &rateLimitErr) {
+		return true
+	}
+	var abuseErr *github.AbuseRateLimitError
+	return errors.As(err, &abuseErr)
 }
 
 // IsConflict returns true if the error indicates a conflict.
