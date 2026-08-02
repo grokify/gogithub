@@ -199,6 +199,9 @@ func pullRequestFromGitHub(pr *github.PullRequest) *gogithub.PullRequest {
 			Color:       l.GetColor(),
 		})
 	}
+	for _, a := range pr.Assignees {
+		result.Assignees = append(result.Assignees, userFromGitHub(a))
+	}
 	if pr.ClosedAt != nil {
 		t := pr.GetClosedAt().Time
 		result.ClosedAt = &t
