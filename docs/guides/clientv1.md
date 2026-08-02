@@ -113,9 +113,12 @@ func main() {
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `GetRepository(ctx, owner, repo)` | `*gogithub.Repository` | Get repository details |
-| `ListUserRepos(ctx, user)` | `[]*gogithub.Repository` | List user's repositories |
+| `ListUserRepos(ctx, user)` | `[]*gogithub.Repository` | List user's repositories (all types) |
+| `ListUserReposWithOptions(ctx, user, opts)` | `[]*gogithub.Repository` | List user's repositories filtered by `ListUserReposOptions.Type` (`"all"`, `"owner"`, `"member"`) |
 | `ListOrgRepos(ctx, org)` | `[]*gogithub.Repository` | List organization's repositories |
 | `GetDefaultBranch(ctx, owner, repo)` | `string` | Get default branch name |
+| `GetBranchProtection(ctx, owner, repo, branch)` | `*gogithub.BranchProtection` | Get branch protection settings, or `(nil, nil)` if unprotected |
+| `ListLanguages(ctx, owner, repo)` | `map[string]int` | Languages used in a repository, mapped to bytes of code |
 | `CreateFork(ctx, owner, repo, opts)` | `*gogithub.Repository` | Fork a repository |
 
 ### Content
@@ -257,6 +260,18 @@ GitHub's Events API only returns the most recent ~300 events regardless of pagin
 `opts.PublicOnly` to `false` (the default) to include private events when authenticated as
 `username`, or `true` to restrict to public events.
 
+### Actions
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `ListWorkflows(ctx, owner, repo)` | `[]*gogithub.Workflow` | List GitHub Actions workflows defined in a repository |
+| `ListWorkflowRuns(ctx, owner, repo, workflowID, opts)` | `[]*gogithub.WorkflowRun` | List runs of a workflow, most recent first |
+
+Unlike most `List*` methods, `ListWorkflowRuns` does **not** paginate through all results — a
+long-lived workflow can accumulate thousands of runs, so it returns a single page controlled by
+`ListWorkflowRunsOptions.PerPage`/`Page` (GitHub's API defaults apply when `opts` is `nil`). To get
+only the latest run, pass `&ListWorkflowRunsOptions{PerPage: 1}` and take `runs[0]`.
+
 ## Stable Types
 
 All types are defined in the root `gogithub` package:
@@ -311,6 +326,15 @@ var stats *gogithub.ContributorStats
 // Activity
 var event *gogithub.Event
 var eventRepo *gogithub.EventRepo
+
+// Branch protection
+var branchProtection *gogithub.BranchProtection
+var requiredStatusChecks *gogithub.RequiredStatusChecks
+var prReviewsEnforcement *gogithub.PullRequestReviewsEnforcement
+
+// Actions
+var workflow *gogithub.Workflow
+var workflowRun *gogithub.WorkflowRun
 ```
 
 ## Escape Hatch
