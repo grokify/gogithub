@@ -245,6 +245,16 @@ return pull requests — check it to filter PRs out of issue results.
 |--------|---------|-------------|
 | `GetContributorStats(ctx, owner, repo)` | `[]*gogithub.ContributorStats` | Get contributor statistics |
 
+### Activity
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `ListUserEvents(ctx, username, opts)` | `[]*gogithub.Event` | List activity events performed by a user (their public timeline) |
+
+GitHub's Events API only returns the most recent ~300 events regardless of pagination. Set
+`opts.PublicOnly` to `false` (the default) to include private events when authenticated as
+`username`, or `true` to restrict to public events.
+
 ## Stable Types
 
 All types are defined in the root `gogithub` package:
@@ -295,6 +305,10 @@ var codeResult *gogithub.CodeResult
 
 // Stats
 var stats *gogithub.ContributorStats
+
+// Activity
+var event *gogithub.Event
+var eventRepo *gogithub.EventRepo
 ```
 
 ## Escape Hatch
