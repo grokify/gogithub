@@ -183,6 +183,8 @@ new tree, then update the branch ref to the new commit.
 | `GetPullRequestDiff(ctx, owner, repo, num)` | `string` | Get PR diff |
 | `GetPullRequestPatch(ctx, owner, repo, num)` | `string` | Get PR patch |
 
+`gogithub.PullRequest` includes an `Assignees` field (`[]*gogithub.User`).
+
 ### Pull Request Reviews
 
 | Method | Returns | Description |
