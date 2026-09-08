@@ -6,7 +6,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-github/v89 v89.0.0
 	github.com/grokify/gocharts/v2 v2.27.1
-	github.com/grokify/mogo v0.74.7
+	github.com/grokify/mogo v0.74.8
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/shurcooL/githubv4 v0.0.0-20260209031235-2402fdf4a9ed
 	github.com/spf13/cobra v1.10.2
