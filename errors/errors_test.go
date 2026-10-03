@@ -81,6 +81,67 @@ func TestIsRateLimitError(t *testing.T) {
 	}
 }
 
+func TestIsTokenPolicyError(t *testing.T) {
+	const policyMessage = "`exampleorg` forbids access via a personal access token (classic). " +
+		"Please use a GitHub App, OAuth App, or a personal access token with fine-grained permissions."
+
+	errResponse := func(statusCode int, message string) *github.ErrorResponse {
+		return &github.ErrorResponse{
+			Response: &http.Response{StatusCode: statusCode},
+			Message:  message,
+		}
+	}
+
+	tests := []struct {
+		name string
+		err  error
+		want bool
+	}{
+		{"raw policy error", errResponse(http.StatusForbidden, policyMessage), true},
+		{"wrapped policy error", fmt.Errorf("get user: %w", errResponse(http.StatusForbidden, policyMessage)), true},
+		{"translated policy error", Translate(errResponse(http.StatusForbidden, policyMessage), nil), true},
+		{"other forbidden", errResponse(http.StatusForbidden, "Resource not accessible by integration"), false},
+		{"policy message with other status", errResponse(http.StatusNotFound, policyMessage), false},
+		{"error response without http response", &github.ErrorResponse{Message: policyMessage}, false},
+		{"unrelated error", errors.New("unrelated error"), false},
+		{"nil", nil, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsTokenPolicyError(tt.err); got != tt.want {
+				t.Errorf("IsTokenPolicyError() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMessage(t *testing.T) {
+	errResp := &github.ErrorResponse{
+		Response: &http.Response{StatusCode: http.StatusForbidden},
+		Message:  "github message",
+	}
+
+	tests := []struct {
+		name string
+		err  error
+		want string
+	}{
+		{"raw error response", errResp, "github message"},
+		{"wrapped error response", fmt.Errorf("get repo: %w", errResp), "github message"},
+		{"translated error response", Translate(errResp, nil), "github message"},
+		{"APIError without message", &APIError{StatusCode: 404, Err: ErrNotFound}, ""},
+		{"plain error", errors.New("plain"), ""},
+		{"nil", nil, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Message(tt.err); got != tt.want {
+				t.Errorf("Message() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestTranslateConflict(t *testing.T) {
 	resp := &github.Response{Response: &http.Response{StatusCode: http.StatusConflict}}
 	err := Translate(errors.New("original"), resp)
