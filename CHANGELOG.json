@@ -8,6 +8,36 @@
   "maintainers": ["grokify"],
   "releases": [
     {
+      "version": "v0.18.0",
+      "date": "2026-10-03",
+      "highlights": [
+        { "description": "**Repository access listing**: `repo.ListNonMemberOrgRepos` answers \"which repositories have I been granted access to in organizations I don't belong to?\", backed by new `clientv1` methods for the authenticated user's repositories and organization memberships, and exposed as the `gogithub repo-access` CLI command", "commit": "1e56081" },
+        { "description": "**OAuth app authentication via goauth**: organizations can forbid personal access tokens; the new `auth/credentialsset` package obtains an OAuth app token from a goauth credentials set file using the authorization code grant, and `errors.IsTokenPolicyError` plus `repo.CheckAccess` make the policy block visible instead of looking like a missing repository", "commit": "8d58540" }
+      ],
+      "added": [
+        { "description": "[clientv1] `ListAuthenticatedUserRepos(ctx, opts)` wraps `GET /user/repos`, including private and collaborator-granted repositories, with `Visibility` and `Affiliations` filters; results include `Repository.Permissions`", "commit": "537dc4f" },
+        { "description": "[clientv1] `ListOrgMemberships(ctx, opts)` wraps `GET /user/memberships/orgs`, with a `State` filter", "commit": "537dc4f" },
+        { "description": "[types] `Repository.Permissions` with `RepositoryPermissions.Highest()`, `OrgMembership`, and constants for owner types, permission levels, membership states, and repository affiliations", "commit": "537dc4f" },
+        { "description": "[errors] `IsTokenPolicyError(err)` detects a 403 caused by an organization policy that rejects the token type (e.g. classic PATs forbidden); `Message(err)` extracts the message GitHub returned", "commit": "b77350a" },
+        { "description": "[repo] `ListNonMemberOrgRepos`, `FilterNonMemberOrgRepos`, and `MembershipOrgLogins` list and filter repositories owned by organizations the user is not an active member of", "commit": "1e56081" },
+        { "description": "[repo] `CheckAccess(ctx, client, owner, name)` reports access to one repository as `granted`, `not_visible`, or `blocked_by_token_policy`, probing the owner on a 404 to tell the last two apart", "commit": "1e56081" },
+        { "description": "[auth/credentialsset] `NewClient` and `NewToken` create clients from a goauth credentials set account, using a stored token or the authorization code grant via an `AuthCodePrompt`; `PromptReadWriter` provides a command-line prompt and `RedirectURL` the hosted redirect page", "commit": "8d58540" },
+        { "description": "[cli] `gogithub repo-access` lists accessible repositories with permission levels; `--non-member-orgs` filters to organizations the user is not a member of, `--repo owner/name` checks specific repositories, `--creds`/`--account` authenticate as an OAuth app, and `-f json` emits JSON", "commit": "0c8209c" }
+      ],
+      "dependencies": [
+        { "description": "Added `github.com/grokify/goauth` v0.25.0 for credentials set files and OAuth flows, imported only by `auth/credentialsset`; bumped `mogo`, `gocharts`, and `golang.org/x` modules", "commit": "0312e43" },
+        { "description": "Bumped `github.com/grokify/mogo` from 0.74.6 to 0.74.7", "commit": "60c36eb" },
+        { "description": "Updated Go module dependencies", "commit": "da03b61" }
+      ],
+      "documentation": [
+        { "description": "Documented repository access listing, `CheckAccess`, OAuth app authentication, token policy errors, and the `repo-access` CLI command across the clientv1, repo, auth, errors, and CLI guides", "commit": "90bb494" },
+        { "description": "Added coverage badge to README", "commit": "3698041" }
+      ],
+      "tests": [
+        { "description": "Covered the new clientv1 methods against a stubbed GitHub API, the repo access filter and `CheckAccess`, the token policy error helpers, and the credentials set authorization code flow", "commit": "d07e5a1" }
+      ]
+    },
+    {
       "version": "v0.17.0",
       "date": "2026-08-02",
       "highlights": [
