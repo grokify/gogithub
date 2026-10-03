@@ -35,4 +35,5 @@ func init() {
 	rootCmd.AddCommand(searchPRsCmd)
 	rootCmd.AddCommand(profileCmd)
 	rootCmd.AddCommand(statsReportCmd)
+	rootCmd.AddCommand(repoAccessCmd)
 }
