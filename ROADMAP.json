@@ -72,14 +72,14 @@
         {"id": "repo-tests", "description": "Add tests for repo package", "completed": false},
         {"id": "pr-tests", "description": "Add tests for pr package", "completed": false},
         {"id": "release-tests", "description": "Add tests for release package", "completed": false},
-        {"id": "cliutil-tests", "description": "Add tests for cliutil package", "completed": false}
+        {"id": "cliutil-tests", "description": "Add tests for cliutil package", "completed": true}
       ]
     },
     {
       "id": "fix-hardcoded-path",
       "title": "Fix hardcoded path in bulk_git_rm",
       "description": "cliutil/cmd/bulk_git_rm/main.go:15 contains hardcoded user-specific path. Should accept directory as command-line flag.",
-      "status": "planned",
+      "status": "completed",
       "area": "critical",
       "type": "Fixed",
       "phase": "phase1",
@@ -131,7 +131,7 @@
       "id": "add-cliutil-docs",
       "title": "Add cliutil package documentation",
       "description": "cliutil package has no package-level documentation comment. Add clear description of package purpose.",
-      "status": "planned",
+      "status": "completed",
       "area": "medium",
       "type": "Changed",
       "phase": "phase2",

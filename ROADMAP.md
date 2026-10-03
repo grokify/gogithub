@@ -23,9 +23,9 @@ Zero test files in entire codebase. Create *_test.go files for each package with
 - [ ] Add tests for repo package
 - [ ] Add tests for pr package
 - [ ] Add tests for release package
-- [ ] Add tests for cliutil package
+- [x] Add tests for cliutil package
 
-### [ ] Fix hardcoded path in bulk_git_rm
+### [x] Fix hardcoded path in bulk_git_rm
 
 cliutil/cmd/bulk_git_rm/main.go:15 contains hardcoded user-specific path. Should accept directory as command-line flag.
 
@@ -73,7 +73,7 @@ README references go-github v68 but go.mod uses v81. Align documentation with ac
 
 ## Medium Priority
 
-### [ ] Add cliutil package documentation
+### [x] Add cliutil package documentation
 
 cliutil package has no package-level documentation comment. Add clear description of package purpose.
 
