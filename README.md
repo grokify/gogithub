@@ -91,7 +91,8 @@ gogithub/
 │   ├── convert.go        # Type converters
 │   └── doc.go            # Package documentation
 ├── auth/                 # Authentication utilities
-│   └── auth.go           # NewGitHubClient, GetAuthenticatedUser
+│   ├── auth.go           # NewGitHubClient, GetAuthenticatedUser
+│   └── credentialsset/   # OAuth app clients from a goauth credentials set file
 ├── config/               # Configuration utilities
 │   └── config.go         # Config struct, FromEnv, GitHub Enterprise support
 ├── errors/               # Error types and translation
@@ -130,6 +131,7 @@ gogithub/
 │   ├── branch.go         # CreateBranch, GetBranchSHA, DeleteBranch
 │   ├── commit.go         # CreateCommit (Git tree API), ReadLocalFiles
 │   ├── list.go           # ListOrgRepos, ListUserRepos, GetRepo
+│   ├── access.go         # ListNonMemberOrgRepos, FilterNonMemberOrgRepos, CheckAccess
 │   ├── contributors.go   # ListContributorStats, GetContributorSummary
 │   └── batch.go          # Batch for atomic multi-file commits
 ├── pr/                   # Pull request operations

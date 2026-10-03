@@ -116,10 +116,17 @@ func main() {
 | `ListUserRepos(ctx, user)` | `[]*gogithub.Repository` | List user's repositories (all types) |
 | `ListUserReposWithOptions(ctx, user, opts)` | `[]*gogithub.Repository` | List user's repositories filtered by `ListUserReposOptions.Type` (`"all"`, `"owner"`, `"member"`) |
 | `ListOrgRepos(ctx, org)` | `[]*gogithub.Repository` | List organization's repositories |
+| `ListAuthenticatedUserRepos(ctx, opts)` | `[]*gogithub.Repository` | List repositories the authenticated user can access, including private and collaborator-granted ones, filtered by `Visibility` and `Affiliations`; results include `Repository.Permissions` |
 | `GetDefaultBranch(ctx, owner, repo)` | `string` | Get default branch name |
 | `GetBranchProtection(ctx, owner, repo, branch)` | `*gogithub.BranchProtection` | Get branch protection settings, or `(nil, nil)` if unprotected |
 | `ListLanguages(ctx, owner, repo)` | `map[string]int` | Languages used in a repository, mapped to bytes of code |
 | `CreateFork(ctx, owner, repo, opts)` | `*gogithub.Repository` | Fork a repository |
+
+### Organizations
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `ListOrgMemberships(ctx, opts)` | `[]*gogithub.OrgMembership` | List the authenticated user's organization memberships, filtered by `ListOrgMembershipsOptions.State` (`"active"`, `"pending"`) |
 
 ### Content
 

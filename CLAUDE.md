@@ -64,6 +64,7 @@ The `clientv1` package provides the `Client` interface that returns these types.
 |---------|---------|-----------|
 | `clientv1` | **Version-isolated client wrapper** | **STABLE - use this** |
 | `auth` | Authentication (OAuth2 tokens, GitHub App) | Exposes go-github types |
+| `auth/credentialsset` | OAuth app clients from a goauth credentials set file | Stable |
 | `checks` | CI/CD check runs and suites | Exposes go-github types |
 | `config` | Configuration loading from env/files | Exposes go-github types |
 | `errors` | Error types and translation utilities | Stable |
@@ -140,6 +141,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 - `golang.org/x/oauth2` - OAuth2 authentication
 - `github.com/golang-jwt/jwt/v5` - JWT for GitHub App auth
 - `github.com/grokify/mogo` - Utility functions
+- `github.com/grokify/goauth` - Credentials set files and OAuth flows (imported only by `auth/credentialsset`)
 
 ### Updating go-github
 

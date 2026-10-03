@@ -312,6 +312,59 @@ gogithub search-prs -a grokify -o prs.md
 gogithub search-prs -a grokify -o prs.csv
 ```
 
+### repo-access
+
+List the repositories the authenticated user can access, with the permission
+level granted on each.
+
+```bash
+gogithub repo-access [flags]
+```
+
+#### Flags
+
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--non-member-orgs` | | Only repositories in organizations the user is not a member of | `false` |
+| `--repo` | | Check specific repositories (`owner/name`, repeatable) instead of listing | |
+| `--format` | `-f` | Output format: `text` or `json` | `text` |
+| `--creds` | | [goauth](https://github.com/grokify/goauth) credentials set file | |
+| `--account` | | Account key in the credentials set file | |
+
+`--repo` and `--non-member-orgs` cannot be combined. `--creds` and `--account`
+must be given together; without them the command uses `GITHUB_TOKEN`.
+
+#### Status Values
+
+| Status | Meaning |
+|--------|---------|
+| `granted` | The user can access the repository |
+| `not_visible` | The repository does not exist or the user cannot access it |
+| `blocked_by_token_policy` | The owner rejects the type of token used, so access cannot be determined with it |
+
+Listings only contain `granted` repositories. The other statuses are reported
+by `--repo`.
+
+#### Examples
+
+```bash
+# Every repository you can access
+gogithub repo-access
+
+# Grants in organizations you don't belong to
+gogithub repo-access --non-member-orgs
+
+# Check specific repositories
+gogithub repo-access --repo owner/name --repo otherowner/othername
+
+# Authenticate as an OAuth app, for organizations that forbid personal access tokens
+gogithub repo-access --creds credentials.json --account github --non-member-orgs
+```
+
+See [OAuth App Authentication](auth.md#oauth-app-authentication) for the
+credentials set file and [Repository Operations](repo.md#list-repositories-in-organizations-you-are-not-a-member-of)
+for token requirements.
+
 ## Progress Display
 
 Long-running commands show real-time progress with:
@@ -337,7 +390,7 @@ Long-running commands show real-time progress with:
 
 | Variable | Description |
 |----------|-------------|
-| `GITHUB_TOKEN` | GitHub personal access token (required for API calls) |
+| `GITHUB_TOKEN` | GitHub personal access token (required for API calls, unless `--creds` and `--account` are given) |
 
 ## Tips
 

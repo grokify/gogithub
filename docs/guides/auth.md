@@ -129,6 +129,91 @@ if cfg.IsEnterprise() {
 }
 ```
 
+## OAuth App Authentication
+
+Some organizations forbid personal access tokens. A token issued to an OAuth
+app is still accepted, provided the organization allows the app. The
+`auth/credentialsset` package obtains one from a
+[goauth](https://github.com/grokify/goauth) credentials set file.
+
+### Creating an OAuth App
+
+1. Go to [GitHub Settings > Developer settings > OAuth Apps](https://github.com/settings/developers)
+2. Click "New OAuth App"
+3. Set the authorization callback URL to `https://grokify.github.io/goauth/oauth2callback/`
+   (available as `credentialsset.RedirectURL`). This page displays the
+   authorization code so it can be entered on the command line.
+4. Generate a client secret
+
+### Credentials Set File
+
+```json
+{
+  "credentials": {
+    "github": {
+      "service": "github",
+      "type": "oauth2",
+      "oauth2": {
+        "clientID": "your-client-id",
+        "clientSecret": "your-client-secret",
+        "redirectURL": "https://grokify.github.io/goauth/oauth2callback/",
+        "scope": ["repo", "read:org"],
+        "grantType": "authorization_code"
+      }
+    }
+  }
+}
+```
+
+This file holds a client secret. Keep it out of version control.
+
+### Creating a Client
+
+```go
+import (
+    "os"
+
+    "github.com/grokify/gogithub/auth/credentialsset"
+)
+
+client, err := credentialsset.NewClient(ctx, "credentials.json", "github",
+    credentialsset.PromptReadWriter(os.Stderr, os.Stdin))
+```
+
+`NewClient` returns a [`clientv1.Client`](clientv1.md). The prompt prints the
+authorization URL and reads the authorization code shown on the redirect
+page. Confirm that the state on the redirect page matches the one printed.
+
+To supply the code another way, pass your own `AuthCodePrompt`:
+
+```go
+prompt := func(ctx context.Context, authURL, state string) (string, error) {
+    // Show authURL to the user and return the authorization code.
+}
+```
+
+### Reusing a Token
+
+The token is not written back to the file, so each call repeats the
+authorization. To skip it, store the token with the account. A stored token
+is used as is and the prompt is not called:
+
+```json
+"github": {
+  "service": "github",
+  "type": "oauth2",
+  "oauth2": { "...": "..." },
+  "token": { "access_token": "your-oauth-token" }
+}
+```
+
+Use `credentialsset.NewToken` to obtain the token without creating a client.
+
+!!! note "Organization approval"
+    An organization with OAuth app access restrictions must approve the app
+    before its token can reach the organization's private resources. You can
+    request approval on the app's authorization page.
+
 ## GitHub App Authentication
 
 For automated workflows and CI/CD pipelines, GitHub Apps provide better security and higher rate limits than personal access tokens.

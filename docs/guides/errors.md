@@ -46,6 +46,7 @@ if err != nil {
 | `IsConflict(err)` | 409 | Resource conflict (e.g., branch already exists) |
 | `IsValidation(err)` | 422 | Validation error (invalid input) |
 | `IsServerError(err)` | 500, 502, 503 | GitHub server error |
+| `IsTokenPolicyError(err)` | 403 (token policy) | The organization rejects the type of token used |
 
 ## Translating Errors
 
@@ -71,6 +72,37 @@ if code == 404 {
 ```
 
 Returns 0 if the error is not an `APIError`.
+
+## Getting the GitHub Message
+
+Extract the message GitHub returned with an error:
+
+```go
+if msg := errors.Message(err); msg != "" {
+    fmt.Println(msg)
+}
+```
+
+Returns an empty string if the error carries no GitHub message.
+
+## Token Policy Errors
+
+An organization can reject a type of token, for example by forbidding classic
+personal access tokens. Requests for the organization then fail with a 403,
+while requests for its private repositories fail with a plain 404.
+`IsTokenPolicyError` identifies the 403, which means the request may succeed
+with a different kind of credential:
+
+```go
+_, err := client.GetUser(ctx, "someorg")
+if errors.IsTokenPolicyError(err) {
+    // Retry with an OAuth app token; see the auth guide.
+}
+```
+
+Like `IsRateLimitError`, it works on raw errors returned directly from a
+clientv1 call. To classify access to a single repository, including this
+case, use [`repo.CheckAccess`](repo.md#check-access-to-a-repository).
 
 ## Error Unwrapping
 
