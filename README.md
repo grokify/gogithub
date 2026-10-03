@@ -15,7 +15,7 @@
  [go-lint-url]: https://github.com/grokify/gogithub/actions/workflows/go-lint.yaml
  [go-sast-svg]: https://github.com/grokify/gogithub/actions/workflows/go-sast-codeql.yaml/badge.svg?branch=main
  [go-sast-url]: https://github.com/grokify/gogithub/actions/workflows/go-sast-codeql.yaml
- [coverage-svg]: https://img.shields.io/badge/coverage-54.0%25-orange
+ [coverage-svg]: https://img.shields.io/badge/coverage-54.7%25-orange
  [coverage-url]: https://github.com/grokify/gogithub
  [docs-godoc-svg]: https://pkg.go.dev/badge/github.com/grokify/gogithub
  [docs-godoc-url]: https://pkg.go.dev/github.com/grokify/gogithub
