@@ -2,6 +2,12 @@ package gogithub
 
 import "time"
 
+// Account types reported in User.Type.
+const (
+	OwnerTypeUser         = "User"
+	OwnerTypeOrganization = "Organization"
+)
+
 // User represents a GitHub user. This is a stable type that won't change
 // when go-github updates its major version.
 type User struct {
@@ -48,6 +54,61 @@ type Repository struct {
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	PushedAt        time.Time
+	// Permissions is the authenticated user's access to the repository.
+	// It is nil when the API response did not include permissions (e.g.
+	// unauthenticated requests).
+	Permissions *RepositoryPermissions
+}
+
+// Repository permission levels, ordered from most to least privileged.
+const (
+	PermissionAdmin    = "admin"
+	PermissionMaintain = "maintain"
+	PermissionPush     = "push"
+	PermissionTriage   = "triage"
+	PermissionPull     = "pull"
+)
+
+// RepositoryPermissions describes the authenticated user's access to a repository.
+type RepositoryPermissions struct {
+	Admin    bool
+	Maintain bool
+	Push     bool
+	Triage   bool
+	Pull     bool
+}
+
+// Highest returns the most privileged permission level granted, or an empty
+// string if no permission is granted. It is safe to call on a nil receiver.
+func (p *RepositoryPermissions) Highest() string {
+	switch {
+	case p == nil:
+		return ""
+	case p.Admin:
+		return PermissionAdmin
+	case p.Maintain:
+		return PermissionMaintain
+	case p.Push:
+		return PermissionPush
+	case p.Triage:
+		return PermissionTriage
+	case p.Pull:
+		return PermissionPull
+	}
+	return ""
+}
+
+// Organization membership states.
+const (
+	MembershipStateActive  = "active"
+	MembershipStatePending = "pending"
+)
+
+// OrgMembership represents the authenticated user's membership in an organization.
+type OrgMembership struct {
+	Organization *User  // Organization the membership is for
+	Role         string // "admin" (organization owner) or "member"
+	State        string // "active" or "pending"
 }
 
 // Reference represents a git reference (branch, tag).

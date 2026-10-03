@@ -59,7 +59,44 @@ func repositoryFromGitHub(r *github.Repository) *gogithub.Repository {
 		CreatedAt:       r.GetCreatedAt().Time,
 		UpdatedAt:       r.GetUpdatedAt().Time,
 		PushedAt:        r.GetPushedAt().Time,
+		Permissions:     repositoryPermissionsFromGitHub(r.Permissions),
 	}
+}
+
+// repositoryPermissionsFromGitHub converts go-github RepositoryPermissions to our stable type.
+func repositoryPermissionsFromGitHub(p *github.RepositoryPermissions) *gogithub.RepositoryPermissions {
+	if p == nil {
+		return nil
+	}
+	return &gogithub.RepositoryPermissions{
+		Admin:    p.GetAdmin(),
+		Maintain: p.GetMaintain(),
+		Push:     p.GetPush(),
+		Triage:   p.GetTriage(),
+		Pull:     p.GetPull(),
+	}
+}
+
+// orgMembershipFromGitHub converts a go-github Membership to our stable OrgMembership type.
+func orgMembershipFromGitHub(m *github.Membership) *gogithub.OrgMembership {
+	if m == nil {
+		return nil
+	}
+	membership := &gogithub.OrgMembership{
+		Role:  m.GetRole(),
+		State: m.GetState(),
+	}
+	if org := m.GetOrganization(); org != nil {
+		membership.Organization = &gogithub.User{
+			ID:        org.GetID(),
+			Login:     org.GetLogin(),
+			Name:      org.GetName(),
+			AvatarURL: org.GetAvatarURL(),
+			HTMLURL:   org.GetHTMLURL(),
+			Type:      gogithub.OwnerTypeOrganization,
+		}
+	}
+	return membership
 }
 
 // repositoriesFromGitHub converts a slice of go-github Repositories.

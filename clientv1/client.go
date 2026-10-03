@@ -35,6 +35,18 @@ type Client interface {
 	// ListOrgRepos lists all repositories for an organization.
 	ListOrgRepos(ctx context.Context, org string) ([]*gogithub.Repository, error)
 
+	// ListAuthenticatedUserRepos lists repositories the authenticated user
+	// has explicit access to, including private repositories and those
+	// granted as a collaborator. Unlike ListUserRepos, results include
+	// Repository.Permissions.
+	ListAuthenticatedUserRepos(ctx context.Context, opts *ListAuthenticatedUserReposOptions) ([]*gogithub.Repository, error)
+
+	// Organizations
+
+	// ListOrgMemberships lists the authenticated user's organization
+	// memberships.
+	ListOrgMemberships(ctx context.Context, opts *ListOrgMembershipsOptions) ([]*gogithub.OrgMembership, error)
+
 	// GetDefaultBranch returns the default branch name for a repository.
 	GetDefaultBranch(ctx context.Context, owner, repo string) (string, error)
 
@@ -483,6 +495,38 @@ type ListUserReposOptions struct {
 	// Type filters by repository relationship: "all", "owner", or "member".
 	// Default: "all".
 	Type string
+}
+
+// Repository affiliations for ListAuthenticatedUserReposOptions.Affiliations.
+const (
+	// AffiliationOwner selects repositories owned by the authenticated user.
+	AffiliationOwner = "owner"
+	// AffiliationCollaborator selects repositories the user has been added
+	// to as a collaborator.
+	AffiliationCollaborator = "collaborator"
+	// AffiliationOrganizationMember selects repositories the user can access
+	// through organization membership, including via teams.
+	AffiliationOrganizationMember = "organization_member"
+)
+
+// ListAuthenticatedUserReposOptions specifies options for listing the
+// authenticated user's repositories.
+type ListAuthenticatedUserReposOptions struct {
+	// Visibility filters by repository visibility: "all", "public", or
+	// "private". Default: "all".
+	Visibility string
+	// Affiliations filters by the user's relationship to the repository
+	// (AffiliationOwner, AffiliationCollaborator,
+	// AffiliationOrganizationMember). Default: all affiliations.
+	Affiliations []string
+}
+
+// ListOrgMembershipsOptions specifies options for listing the authenticated
+// user's organization memberships.
+type ListOrgMembershipsOptions struct {
+	// State filters by membership state: "active" or "pending".
+	// Default: both.
+	State string
 }
 
 // ListWorkflowRunsOptions specifies options for listing workflow runs.

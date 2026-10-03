@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/google/go-github/v89/github"
 	"github.com/grokify/gogithub"
@@ -170,6 +171,44 @@ func (c *client) ListOrgRepos(ctx context.Context, org string) ([]*gogithub.Repo
 		opts.Page = resp.NextPage
 	}
 	return repositoriesFromGitHub(allRepos), nil
+}
+
+// ListAuthenticatedUserRepos lists repositories the authenticated user has
+// explicit access to.
+func (c *client) ListAuthenticatedUserRepos(ctx context.Context, opts *ListAuthenticatedUserReposOptions) ([]*gogithub.Repository, error) {
+	listOpts := &github.RepositoryListByAuthenticatedUserOptions{
+		ListOptions: github.ListOptions{PerPage: 100},
+	}
+	if opts != nil {
+		listOpts.Visibility = opts.Visibility
+		listOpts.Affiliation = strings.Join(opts.Affiliations, ",")
+	}
+	var allRepos []*github.Repository
+	for r, err := range c.gh.Repositories.ListByAuthenticatedUserIter(ctx, listOpts) {
+		if err != nil {
+			return nil, fmt.Errorf("list authenticated user repos: %w", err)
+		}
+		allRepos = append(allRepos, r)
+	}
+	return repositoriesFromGitHub(allRepos), nil
+}
+
+// ListOrgMemberships lists the authenticated user's organization memberships.
+func (c *client) ListOrgMemberships(ctx context.Context, opts *ListOrgMembershipsOptions) ([]*gogithub.OrgMembership, error) {
+	listOpts := &github.ListOrgMembershipsOptions{
+		ListOptions: github.ListOptions{PerPage: 100},
+	}
+	if opts != nil {
+		listOpts.State = opts.State
+	}
+	var memberships []*gogithub.OrgMembership
+	for m, err := range c.gh.Organizations.ListOrgMembershipsIter(ctx, listOpts) {
+		if err != nil {
+			return nil, fmt.Errorf("list org memberships: %w", err)
+		}
+		memberships = append(memberships, orgMembershipFromGitHub(m))
+	}
+	return memberships, nil
 }
 
 // GetFileContent fetches a file's content from a repository.
