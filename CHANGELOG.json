@@ -11,155 +11,155 @@
       "version": "v0.18.0",
       "date": "2026-10-03",
       "highlights": [
-        { "description": "**Repository access listing**: `repo.ListNonMemberOrgRepos` answers \"which repositories have I been granted access to in organizations I don't belong to?\", backed by new `clientv1` methods for the authenticated user's repositories and organization memberships, and exposed as the `gogithub repo-access` CLI command", "commit": "1e56081" },
-        { "description": "**OAuth app authentication via goauth**: organizations can forbid personal access tokens; the new `auth/credentialsset` package obtains an OAuth app token from a goauth credentials set file using the authorization code grant, and `errors.IsTokenPolicyError` plus `repo.CheckAccess` make the policy block visible instead of looking like a missing repository", "commit": "8d58540" }
+        { "description": "**Repository access listing**: `repo.ListNonMemberOrgRepos` answers \"which repositories have I been granted access to in organizations I don't belong to?\", backed by new `clientv1` methods for the authenticated user's repositories and organization memberships, and exposed as the `gogithub repo-access` CLI command", "commit": "1016187" },
+        { "description": "**OAuth app authentication via goauth**: organizations can forbid personal access tokens; the new `auth/credentialsset` package obtains an OAuth app token from a goauth credentials set file using the authorization code grant, and `errors.IsTokenPolicyError` plus `repo.CheckAccess` make the policy block visible instead of looking like a missing repository", "commit": "22a3ee7" }
       ],
       "added": [
-        { "description": "[clientv1] `ListAuthenticatedUserRepos(ctx, opts)` wraps `GET /user/repos`, including private and collaborator-granted repositories, with `Visibility` and `Affiliations` filters; results include `Repository.Permissions`", "commit": "537dc4f" },
-        { "description": "[clientv1] `ListOrgMemberships(ctx, opts)` wraps `GET /user/memberships/orgs`, with a `State` filter", "commit": "537dc4f" },
-        { "description": "[types] `Repository.Permissions` with `RepositoryPermissions.Highest()`, `OrgMembership`, and constants for owner types, permission levels, membership states, and repository affiliations", "commit": "537dc4f" },
-        { "description": "[errors] `IsTokenPolicyError(err)` detects a 403 caused by an organization policy that rejects the token type (e.g. classic PATs forbidden); `Message(err)` extracts the message GitHub returned", "commit": "b77350a" },
-        { "description": "[repo] `ListNonMemberOrgRepos`, `FilterNonMemberOrgRepos`, and `MembershipOrgLogins` list and filter repositories owned by organizations the user is not an active member of", "commit": "1e56081" },
-        { "description": "[repo] `CheckAccess(ctx, client, owner, name)` reports access to one repository as `granted`, `not_visible`, or `blocked_by_token_policy`, probing the owner on a 404 to tell the last two apart", "commit": "1e56081" },
-        { "description": "[auth/credentialsset] `NewClient` and `NewToken` create clients from a goauth credentials set account, using a stored token or the authorization code grant via an `AuthCodePrompt`; `PromptReadWriter` provides a command-line prompt and `RedirectURL` the hosted redirect page", "commit": "8d58540" },
-        { "description": "[cli] `gogithub repo-access` lists accessible repositories with permission levels; `--non-member-orgs` filters to organizations the user is not a member of, `--repo owner/name` checks specific repositories, `--creds`/`--account` authenticate as an OAuth app, and `-f json` emits JSON", "commit": "0c8209c" }
+        { "description": "[clientv1] `ListAuthenticatedUserRepos(ctx, opts)` wraps `GET /user/repos`, including private and collaborator-granted repositories, with `Visibility` and `Affiliations` filters; results include `Repository.Permissions`", "commit": "1d900fb" },
+        { "description": "[clientv1] `ListOrgMemberships(ctx, opts)` wraps `GET /user/memberships/orgs`, with a `State` filter", "commit": "1d900fb" },
+        { "description": "[types] `Repository.Permissions` with `RepositoryPermissions.Highest()`, `OrgMembership`, and constants for owner types, permission levels, membership states, and repository affiliations", "commit": "1d900fb" },
+        { "description": "[errors] `IsTokenPolicyError(err)` detects a 403 caused by an organization policy that rejects the token type (e.g. classic PATs forbidden); `Message(err)` extracts the message GitHub returned", "commit": "f6f98a8" },
+        { "description": "[repo] `ListNonMemberOrgRepos`, `FilterNonMemberOrgRepos`, and `MembershipOrgLogins` list and filter repositories owned by organizations the user is not an active member of", "commit": "1016187" },
+        { "description": "[repo] `CheckAccess(ctx, client, owner, name)` reports access to one repository as `granted`, `not_visible`, or `blocked_by_token_policy`, probing the owner on a 404 to tell the last two apart", "commit": "1016187" },
+        { "description": "[auth/credentialsset] `NewClient` and `NewToken` create clients from a goauth credentials set account, using a stored token or the authorization code grant via an `AuthCodePrompt`; `PromptReadWriter` provides a command-line prompt and `RedirectURL` the hosted redirect page", "commit": "22a3ee7" },
+        { "description": "[cli] `gogithub repo-access` lists accessible repositories with permission levels; `--non-member-orgs` filters to organizations the user is not a member of, `--repo owner/name` checks specific repositories, `--creds`/`--account` authenticate as an OAuth app, and `-f json` emits JSON", "commit": "2def571" }
       ],
       "changed": [
-        { "description": "[cliutil] `GitStatusShortLines` runs git in the target directory with `-C` instead of changing the process working directory, uses the stable porcelain format, and omits empty lines; `GitRmDeletedLines` returns commands without trailing newlines and `GitRmDeletedFile` replaces the output file", "commit": "5755697" }
+        { "description": "[cliutil] `GitStatusShortLines` runs git in the target directory with `-C` instead of changing the process working directory, uses the stable porcelain format, and omits empty lines; `GitRmDeletedLines` returns commands without trailing newlines and `GitRmDeletedFile` replaces the output file", "commit": "29efed1" }
       ],
       "fixed": [
-        { "description": "[cliutil] `bulk_git_rm` takes the repository directory as `--dir` (default: current directory) instead of a hardcoded local path, and prints `git rm` commands to stdout or to `--out`", "commit": "19e153b" }
+        { "description": "[cliutil] `bulk_git_rm` takes the repository directory as `--dir` (default: current directory) instead of a hardcoded local path, and prints `git rm` commands to stdout or to `--out`", "commit": "bdf2ea3" }
       ],
       "dependencies": [
-        { "description": "Added `github.com/grokify/goauth` v0.25.0 for credentials set files and OAuth flows, imported only by `auth/credentialsset`; bumped `mogo`, `gocharts`, and `golang.org/x` modules", "commit": "0312e43" },
-        { "description": "Bumped `github.com/grokify/mogo` from 0.74.6 to 0.74.7", "commit": "60c36eb" },
-        { "description": "Updated Go module dependencies", "commit": "da03b61" }
+        { "description": "Added `github.com/grokify/goauth` v0.25.0 for credentials set files and OAuth flows, imported only by `auth/credentialsset`; bumped `mogo`, `gocharts`, and `golang.org/x` modules", "commit": "77059d6" },
+        { "description": "Bumped `github.com/grokify/mogo` from 0.74.6 to 0.74.7", "commit": "4081b61" },
+        { "description": "Updated Go module dependencies", "commit": "ffeb22e" }
       ],
       "documentation": [
-        { "description": "Documented repository access listing, `CheckAccess`, OAuth app authentication, token policy errors, and the `repo-access` CLI command across the clientv1, repo, auth, errors, and CLI guides", "commit": "90bb494" },
-        { "description": "Added coverage badge to README", "commit": "3698041" }
+        { "description": "Documented repository access listing, `CheckAccess`, OAuth app authentication, token policy errors, and the `repo-access` CLI command across the clientv1, repo, auth, errors, and CLI guides", "commit": "6f9b0cf" },
+        { "description": "Added coverage badge to README", "commit": "bacd650" }
       ],
       "tests": [
-        { "description": "Covered the new clientv1 methods against a stubbed GitHub API, the repo access filter and `CheckAccess`, the token policy error helpers, and the credentials set authorization code flow", "commit": "d07e5a1" },
-        { "description": "Covered cliutil git status and rm command generation against a temporary repository", "commit": "14f8eb9" }
+        { "description": "Covered the new clientv1 methods against a stubbed GitHub API, the repo access filter and `CheckAccess`, the token policy error helpers, and the credentials set authorization code flow", "commit": "118d1e3" },
+        { "description": "Covered cliutil git status and rm command generation against a temporary repository", "commit": "423eb20" }
       ]
     },
     {
       "version": "v0.17.0",
       "date": "2026-08-02",
       "highlights": [
-        { "description": "**clientv1 gains branch protection, repo languages, GitHub Actions, and rate-limit APIs**: `GetBranchProtection`, `ListLanguages`, `ListWorkflows`, `ListWorkflowRuns`, `GetRateLimit`, `ListUserReposWithOptions`, `EditIssueComment`, and `ListIssueComments` close the gaps hit migrating a CI/CD pipeline collector and a dependency-graph/release-automation tool off raw `*github.Client` usage", "commit": "d75a9fd" }
+        { "description": "**clientv1 gains branch protection, repo languages, GitHub Actions, and rate-limit APIs**: `GetBranchProtection`, `ListLanguages`, `ListWorkflows`, `ListWorkflowRuns`, `GetRateLimit`, `ListUserReposWithOptions`, `EditIssueComment`, and `ListIssueComments` close the gaps hit migrating a CI/CD pipeline collector and a dependency-graph/release-automation tool off raw `*github.Client` usage", "commit": "eb6957e" }
       ],
       "added": [
-        { "description": "[clientv1] `GetBranchProtection(ctx, owner, repo, branch)` returns branch protection settings, or `(nil, nil)` if unprotected", "commit": "d75a9fd" },
-        { "description": "[clientv1] `ListLanguages(ctx, owner, repo)` returns languages used in a repository mapped to bytes of code", "commit": "d75a9fd" },
-        { "description": "[clientv1] `ListWorkflows` and `ListWorkflowRuns` wrap the GitHub Actions API; `ListWorkflowRuns` deliberately does not auto-paginate, since a long-lived workflow can accumulate thousands of runs", "commit": "d75a9fd" },
-        { "description": "[clientv1] `ListUserReposWithOptions(ctx, user, opts)` filters a user's repositories by relationship (`owner`, `member`, or `all`); `ListUserRepos` is now defined in terms of it", "commit": "596d0db" },
-        { "description": "[clientv1] `GetRateLimit(ctx)` returns the core (non-search) API rate limit status", "commit": "596d0db" },
-        { "description": "[clientv1] `EditIssueComment` and `ListIssueComments` round out issue/PR comment management", "commit": "596d0db" },
-        { "description": "[errors] `IsRateLimitError(err)` detects a go-github `*RateLimitError`/`*AbuseRateLimitError` on a raw error returned directly from a clientv1 call, without requiring `Translate` first", "commit": "596d0db" },
-        { "description": "[types] `Repository.Topics` and `Repository.Visibility`; `BranchProtection`, `RequiredStatusChecks`, `PullRequestReviewsEnforcement`, `Workflow`, `WorkflowRun`, `RateLimit`, `EventRepo` stable types", "commit": "d75a9fd" }
+        { "description": "[clientv1] `GetBranchProtection(ctx, owner, repo, branch)` returns branch protection settings, or `(nil, nil)` if unprotected", "commit": "eb6957e" },
+        { "description": "[clientv1] `ListLanguages(ctx, owner, repo)` returns languages used in a repository mapped to bytes of code", "commit": "eb6957e" },
+        { "description": "[clientv1] `ListWorkflows` and `ListWorkflowRuns` wrap the GitHub Actions API; `ListWorkflowRuns` deliberately does not auto-paginate, since a long-lived workflow can accumulate thousands of runs", "commit": "eb6957e" },
+        { "description": "[clientv1] `ListUserReposWithOptions(ctx, user, opts)` filters a user's repositories by relationship (`owner`, `member`, or `all`); `ListUserRepos` is now defined in terms of it", "commit": "52ca86e" },
+        { "description": "[clientv1] `GetRateLimit(ctx)` returns the core (non-search) API rate limit status", "commit": "52ca86e" },
+        { "description": "[clientv1] `EditIssueComment` and `ListIssueComments` round out issue/PR comment management", "commit": "52ca86e" },
+        { "description": "[errors] `IsRateLimitError(err)` detects a go-github `*RateLimitError`/`*AbuseRateLimitError` on a raw error returned directly from a clientv1 call, without requiring `Translate` first", "commit": "52ca86e" },
+        { "description": "[types] `Repository.Topics` and `Repository.Visibility`; `BranchProtection`, `RequiredStatusChecks`, `PullRequestReviewsEnforcement`, `Workflow`, `WorkflowRun`, `RateLimit`, `EventRepo` stable types", "commit": "eb6957e" }
       ]
     },
     {
       "version": "v0.16.1",
       "date": "2026-08-02",
       "highlights": [
-        { "description": "`gogithub.PullRequest` gained an `Assignees` field, closing another gap where consumers needing PR assignees had to fall back to raw go-github types", "commit": "86f555f" }
+        { "description": "`gogithub.PullRequest` gained an `Assignees` field, closing another gap where consumers needing PR assignees had to fall back to raw go-github types", "commit": "53986a7" }
       ],
       "fixed": [
-        { "description": "[types] `PullRequest.Assignees` (`[]*gogithub.User`) mirrors go-github's `PullRequest.Assignees`, previously dropped by the stable type", "commit": "86f555f" }
+        { "description": "[types] `PullRequest.Assignees` (`[]*gogithub.User`) mirrors go-github's `PullRequest.Assignees`, previously dropped by the stable type", "commit": "53986a7" }
       ],
       "documentation": [
-        { "description": "[clientv1] Documented `PullRequest.Assignees` in the version-isolated client guide", "commit": "fad047b" }
+        { "description": "[clientv1] Documented `PullRequest.Assignees` in the version-isolated client guide", "commit": "d104705" }
       ]
     },
     {
       "version": "v0.16.0",
       "date": "2026-08-02",
       "highlights": [
-        { "description": "**clientv1 gains Activity API coverage**: `ListUserEvents` wraps go-github's user-events timeline behind a stable `gogithub.Event`/`EventRepo` type, closing the last gap that forced activity-heatmap consumers to import go-github directly", "commit": "6e00cd6" }
+        { "description": "**clientv1 gains Activity API coverage**: `ListUserEvents` wraps go-github's user-events timeline behind a stable `gogithub.Event`/`EventRepo` type, closing the last gap that forced activity-heatmap consumers to import go-github directly", "commit": "154f451" }
       ],
       "added": [
-        { "description": "[clientv1] `ListUserEvents(ctx, username, opts)` lists a user's activity events (their public timeline), paginating through go-github's `Activity.ListEventsPerformedByUser`", "commit": "6e00cd6" },
-        { "description": "[types] Stable `Event` and `EventRepo` types for version-isolated activity data", "commit": "6e00cd6" }
+        { "description": "[clientv1] `ListUserEvents(ctx, username, opts)` lists a user's activity events (their public timeline), paginating through go-github's `Activity.ListEventsPerformedByUser`", "commit": "154f451" },
+        { "description": "[types] Stable `Event` and `EventRepo` types for version-isolated activity data", "commit": "154f451" }
       ],
       "documentation": [
-        { "description": "[clientv1] Documented `ListUserEvents` and the `Event`/`EventRepo` types in the version-isolated client guide", "commit": "73b3c59" }
+        { "description": "[clientv1] Documented `ListUserEvents` and the `Event`/`EventRepo` types in the version-isolated client guide", "commit": "868def2" }
       ]
     },
     {
       "version": "v0.15.0",
       "date": "2026-08-01",
       "highlights": [
-        { "description": "**Version-isolation architecture completed**: `clientv1.Client` and stable `gogithub.*` types now cover the full GitHub API surface used by this module's own packages (`search`, `repo`, `sarif`)", "commit": "78777b2" },
-        { "description": "**clientv1 expanded to full API coverage**: file content writes, Git tree/blob operations for atomic multi-file commits, issue CRUD, and code search were added on top of the initial repositories/PRs/releases/checks coverage", "commit": "0a1f093" },
+        { "description": "**Version-isolation architecture completed**: `clientv1.Client` and stable `gogithub.*` types now cover the full GitHub API surface used by this module's own packages (`search`, `repo`, `sarif`)", "commit": "5446da4" },
+        { "description": "**clientv1 expanded to full API coverage**: file content writes, Git tree/blob operations for atomic multi-file commits, issue CRUD, and code search were added on top of the initial repositories/PRs/releases/checks coverage", "commit": "61aa283" },
         { "description": "**Breaking**: `search`, `repo`, and `sarif` packages now accept `clientv1.Client` instead of `*github.Client`; legacy `auth`/`config` helpers exposing go-github types are deprecated in favor of `clientv1`" }
       ],
       "breaking": [
-        { "description": "`search.NewClient()` now accepts `clientv1.Client`; `SearchIssues()`/`SearchOpenPullRequests()` accept `*clientv1.SearchOptions`; `Issues` is `[]*gogithub.Issue`", "commit": "f038072" },
-        { "description": "`repo.NewBatch()` now accepts `clientv1.Client` instead of `*github.Client`", "commit": "093b170" },
-        { "description": "`sarif` package functions (`Upload`, `UploadFile`, `GetUploadStatus`, `WaitForProcessing`, `UploadAndWait`) now accept `clientv1.Client` instead of `*github.Client`", "commit": "6fdafb3" }
+        { "description": "`search.NewClient()` now accepts `clientv1.Client`; `SearchIssues()`/`SearchOpenPullRequests()` accept `*clientv1.SearchOptions`; `Issues` is `[]*gogithub.Issue`", "commit": "9d28bff" },
+        { "description": "`repo.NewBatch()` now accepts `clientv1.Client` instead of `*github.Client`", "commit": "e10c8c2" },
+        { "description": "`sarif` package functions (`Upload`, `UploadFile`, `GetUploadStatus`, `WaitForProcessing`, `UploadAndWait`) now accept `clientv1.Client` instead of `*github.Client`", "commit": "68229f0" }
       ],
       "added": [
-        { "description": "[clientv1] Version-isolated `Client` interface and stable types wrapping go-github (users, repos, content, refs, commits, PRs, checks, releases)", "commit": "78777b2" },
-        { "description": "[types] Stable types for version isolation (`User`, `Repository`, `Reference`, `Commit`, `PullRequest`, `CheckRun`, `Release`, etc.)", "commit": "9a85494" },
-        { "description": "[clientv1] Expanded API coverage: forks, git refs/tags, `CreateCommit`/`CreateTree`, PR reviews/comments/merge, issue comments, check suites, release CRUD, `SearchIssues`, contributor stats", "commit": "02d05f4" },
-        { "description": "[clientv1] `NewClientWithOptions()` for GitHub Enterprise support (custom BaseURL/UploadURL)", "commit": "2434938" },
-        { "description": "[clientv1] File content writes (`CreateFile`, `UpdateFile`, `DeleteFile`, `GetFileContentWithSHA`) and Git Data API tree/blob operations (`GetTree`, `CreateBlob`) plus a `Tree` field on `Commit`, enabling atomic multi-file commits entirely through clientv1", "commit": "0a1f093" },
-        { "description": "[clientv1] Issue CRUD (`GetIssue`, `ListIssues`, `CreateIssue`, `UpdateIssue`) and `SearchCode`; `PullRequest` gained `Labels`/`Additions`/`Deletions`/`Commits`, `Issue` gained `Comments`/`IsPullRequest`", "commit": "c118448" }
+        { "description": "[clientv1] Version-isolated `Client` interface and stable types wrapping go-github (users, repos, content, refs, commits, PRs, checks, releases)", "commit": "5446da4" },
+        { "description": "[types] Stable types for version isolation (`User`, `Repository`, `Reference`, `Commit`, `PullRequest`, `CheckRun`, `Release`, etc.)", "commit": "0dbb2f7" },
+        { "description": "[clientv1] Expanded API coverage: forks, git refs/tags, `CreateCommit`/`CreateTree`, PR reviews/comments/merge, issue comments, check suites, release CRUD, `SearchIssues`, contributor stats", "commit": "7336e91" },
+        { "description": "[clientv1] `NewClientWithOptions()` for GitHub Enterprise support (custom BaseURL/UploadURL)", "commit": "3a59eec" },
+        { "description": "[clientv1] File content writes (`CreateFile`, `UpdateFile`, `DeleteFile`, `GetFileContentWithSHA`) and Git Data API tree/blob operations (`GetTree`, `CreateBlob`) plus a `Tree` field on `Commit`, enabling atomic multi-file commits entirely through clientv1", "commit": "61aa283" },
+        { "description": "[clientv1] Issue CRUD (`GetIssue`, `ListIssues`, `CreateIssue`, `UpdateIssue`) and `SearchCode`; `PullRequest` gained `Labels`/`Additions`/`Deletions`/`Commits`, `Issue` gained `Comments`/`IsPullRequest`", "commit": "85b4c79" }
       ],
       "changed": [
-        { "description": "[search] Migrated to `clientv1.Client` and stable types", "commit": "f038072" },
-        { "description": "[repo] Migrated batch operations to `clientv1.Client`", "commit": "093b170" },
-        { "description": "[sarif] Migrated to `clientv1.Client`", "commit": "6fdafb3" },
-        { "description": "[cmd] Updated `search-prs` commands to use `clientv1.Client` directly", "commit": "692496f" },
-        { "description": "Migrated `checks`, `pr`, `release`, `repo`, `tag` packages to use `clientv1.Client` internally", "commit": "66ed142" },
-        { "description": "[release] Adapted to go-github v89 API changes (`CreateReleaseRequest`, `UpdateRelease` replacing `EditRelease`)", "commit": "9813628" }
+        { "description": "[search] Migrated to `clientv1.Client` and stable types", "commit": "9d28bff" },
+        { "description": "[repo] Migrated batch operations to `clientv1.Client`", "commit": "e10c8c2" },
+        { "description": "[sarif] Migrated to `clientv1.Client`", "commit": "68229f0" },
+        { "description": "[cmd] Updated `search-prs` commands to use `clientv1.Client` directly", "commit": "0fd5da9" },
+        { "description": "Migrated `checks`, `pr`, `release`, `repo`, `tag` packages to use `clientv1.Client` internally", "commit": "f7bc71e" },
+        { "description": "[release] Adapted to go-github v89 API changes (`CreateReleaseRequest`, `UpdateRelease` replacing `EditRelease`)", "commit": "87466e2" }
       ],
       "fixed": [
-        { "description": "[clientv1] `GetTree` and `CreateBlob` were implemented but missing from the `Client` interface declaration, so callers using the interface type couldn't reach them", "commit": "a95809a" }
+        { "description": "[clientv1] `GetTree` and `CreateBlob` were implemented but missing from the `Client` interface declaration, so callers using the interface type couldn't reach them", "commit": "2064b7a" }
       ],
       "deprecated": [
         { "description": "`auth.NewGitHubClient()`, `auth.GetAuthenticatedUser()`, `auth.GetUser()` - use `clientv1.NewClient()` and `Client` methods instead" },
         { "description": "`config.Config.NewClient()`/`MustNewClient()` - use `NewClientV1()`/`MustNewClientV1()` instead" }
       ],
       "documentation": [
-        { "description": "Added v0.15.0 release notes with breaking-change migration guide", "commit": "51e20cf" },
-        { "description": "Added version-isolated client guide (`docs/guides/clientv1.md`)", "commit": "7b24458" },
-        { "description": "Updated README and docs site to recommend `clientv1` as the primary usage pattern", "commit": "530a90c" },
-        { "description": "Updated package-level docs (`gogithub.go`) to recommend clientv1 for new code", "commit": "6a7da9a" },
-        { "description": "Added CLAUDE.md guidance covering clientv1 usage and update workflow", "commit": "c6e5470" },
-        { "description": "Added v0.15.0 to the MkDocs release notes navigation", "commit": "568e82b" }
+        { "description": "Added v0.15.0 release notes with breaking-change migration guide", "commit": "0ef8bd1" },
+        { "description": "Added version-isolated client guide (`docs/guides/clientv1.md`)", "commit": "8e6934f" },
+        { "description": "Updated README and docs site to recommend `clientv1` as the primary usage pattern", "commit": "d4f843e" },
+        { "description": "Updated package-level docs (`gogithub.go`) to recommend clientv1 for new code", "commit": "ca54ae1" },
+        { "description": "Added CLAUDE.md guidance covering clientv1 usage and update workflow", "commit": "8a3a45c" },
+        { "description": "Added v0.15.0 to the MkDocs release notes navigation", "commit": "93557be" }
       ],
       "dependencies": [
-        { "description": "Upgraded `github.com/google/go-github` from v88.0.0 to v89.0.0", "commit": "cfde76d" },
-        { "description": "Updated indirect dependencies (go-isatty, go-runewidth, golang.org/x/exp)", "commit": "f660572" }
+        { "description": "Upgraded `github.com/google/go-github` from v88.0.0 to v89.0.0", "commit": "e03a2d7" },
+        { "description": "Updated indirect dependencies (go-isatty, go-runewidth, golang.org/x/exp)", "commit": "331da5d" }
       ],
       "chores": [
-        { "description": "Bumped `actions/setup-python` from 6 to 7", "commit": "ea17f11" }
+        { "description": "Bumped `actions/setup-python` from 6 to 7", "commit": "0497686" }
       ]
     },
     {
       "version": "v0.14.0",
       "date": "2026-07-19",
       "highlights": [
-        { "description": "**search-prs stdout default and multi-format output**: results print to stdout by default with selectable output formats", "commit": "4693787" }
+        { "description": "**search-prs stdout default and multi-format output**: results print to stdout by default with selectable output formats", "commit": "8efefeb" }
       ],
       "added": [
-        { "description": "[cli] `search-prs` stdout default and multi-format output", "commit": "4693787" }
+        { "description": "[cli] `search-prs` stdout default and multi-format output", "commit": "8efefeb" }
       ],
       "documentation": [
-        { "description": "[cli] search-prs documentation updated for the stdout default", "commit": "61d6ff8" },
-        { "description": "README shields standardized; dev-guide badge added", "commit": "5e400a2" }
+        { "description": "[cli] search-prs documentation updated for the stdout default", "commit": "6211319" },
+        { "description": "README shields standardized; dev-guide badge added", "commit": "afc1d2b" }
       ],
       "dependencies": [
-        { "description": "go-isatty v0.0.23, excelize v2.11.0", "commit": "754f289" },
-        { "description": "GitHub Actions setup-go bumped from 5 to 7", "commit": "81e539b" }
+        { "description": "go-isatty v0.0.23, excelize v2.11.0", "commit": "039ea1a" },
+        { "description": "GitHub Actions setup-go bumped from 5 to 7", "commit": "d74ac83" }
       ],
       "chores": [
-        { "description": "Ignore .envrc and local xlsx exports", "commit": "5eb28f3" },
-        { "description": "Automated profile stats SVG refreshes", "commit": "f437c9a" }
+        { "description": "Ignore .envrc and local xlsx exports", "commit": "da4a880" },
+        { "description": "Automated profile stats SVG refreshes", "commit": "bc5e29b" }
       ]
     },
     {
@@ -171,36 +171,36 @@
         {"description": "Expanded test coverage for graphql and sarif packages"}
       ],
       "added": [
-        {"description": "`AggregateMonthlyStats()` function for computing aggregated statistics across multiple months", "commit": "d5b8772"},
-        {"description": "`AggregatedStats` type with Commits, PRs, Reviews, Issues, Releases, Additions, Deletions, NetAdditions, and unique Repositories", "commit": "d5b8772"},
-        {"description": "`Repositories` field on `MonthlyStats` for tracking repos with commits per month", "commit": "d5b8772"}
+        {"description": "`AggregateMonthlyStats()` function for computing aggregated statistics across multiple months", "commit": "4b4eea1"},
+        {"description": "`AggregatedStats` type with Commits, PRs, Reviews, Issues, Releases, Additions, Deletions, NetAdditions, and unique Repositories", "commit": "4b4eea1"},
+        {"description": "`Repositories` field on `MonthlyStats` for tracking repos with commits per month", "commit": "4b4eea1"}
       ],
       "changed": [
-        {"description": "Upgraded `github.com/google/go-github` from v84 to v88", "commit": "b6058f9"},
-        {"description": "`github.NewClient()` now returns `(*Client, error)` - all internal usages updated", "commit": "b6058f9"},
-        {"description": "`WithAuthToken` and `WithEnterpriseURLs` are now `ClientOptionsFunc` passed to `NewClient`", "commit": "b6058f9"},
-        {"description": "`auth.NewGitHubClient()` now returns `(*github.Client, error)` instead of `*github.Client`", "commit": "b6058f9"}
+        {"description": "Upgraded `github.com/google/go-github` from v84 to v88", "commit": "c0d5211"},
+        {"description": "`github.NewClient()` now returns `(*Client, error)` - all internal usages updated", "commit": "c0d5211"},
+        {"description": "`WithAuthToken` and `WithEnterpriseURLs` are now `ClientOptionsFunc` passed to `NewClient`", "commit": "c0d5211"},
+        {"description": "`auth.NewGitHubClient()` now returns `(*github.Client, error)` instead of `*github.Client`", "commit": "c0d5211"}
       ],
       "tests": [
-        {"description": "Added tests for graphql `Visibility` constants and `MonthlyCommitStats.YearMonth()` method", "commit": "dc0b868"},
-        {"description": "Added tests for graphql `CommitStats`, `RepoCommitStats`, and `monthlyMapToSlice` function", "commit": "dc0b868"},
-        {"description": "Added tests for graphql `MonthlyContribution.YearMonth()` and `ContributionStats` struct", "commit": "b1ea423"},
-        {"description": "Added tests for graphql `mapToMonthlyContributions` with invalid date handling", "commit": "b1ea423"},
-        {"description": "Added tests for sarif `gzipCompress`/`gzipDecompress` with empty, large, and binary data", "commit": "a411084"},
-        {"description": "Added tests for sarif `UploadOptions`, `UploadResult`, `UploadStatus` structs", "commit": "a411084"},
-        {"description": "Added tests for sarif `ProcessingStatus` comparison", "commit": "a411084"}
+        {"description": "Added tests for graphql `Visibility` constants and `MonthlyCommitStats.YearMonth()` method", "commit": "636c3bf"},
+        {"description": "Added tests for graphql `CommitStats`, `RepoCommitStats`, and `monthlyMapToSlice` function", "commit": "636c3bf"},
+        {"description": "Added tests for graphql `MonthlyContribution.YearMonth()` and `ContributionStats` struct", "commit": "ad66755"},
+        {"description": "Added tests for graphql `mapToMonthlyContributions` with invalid date handling", "commit": "ad66755"},
+        {"description": "Added tests for sarif `gzipCompress`/`gzipDecompress` with empty, large, and binary data", "commit": "0a02f63"},
+        {"description": "Added tests for sarif `UploadOptions`, `UploadResult`, `UploadStatus` structs", "commit": "0a02f63"},
+        {"description": "Added tests for sarif `ProcessingStatus` comparison", "commit": "0a02f63"}
       ],
       "dependencies": [
-        {"description": "Upgraded `github.com/google/go-github` from v84.0.0 to v88.0.0", "commit": "b6058f9"},
-        {"description": "Updated `github.com/grokify/mogo` from v0.74.1 to v0.74.6", "commit": "e7fa28d"},
-        {"description": "Updated `actions/checkout` from 6 to 7", "commit": "0100169"}
+        {"description": "Upgraded `github.com/google/go-github` from v84.0.0 to v88.0.0", "commit": "c0d5211"},
+        {"description": "Updated `github.com/grokify/mogo` from v0.74.1 to v0.74.6", "commit": "164a9ba"},
+        {"description": "Updated `actions/checkout` from 6 to 7", "commit": "42a373e"}
       ],
       "documentation": [
-        {"description": "Added CLAUDE.md for project-specific AI assistant guidelines", "commit": "e27d4a3"},
-        {"description": "Updated README.md examples to use go-github v88 API patterns", "commit": "b6058f9"}
+        {"description": "Added CLAUDE.md for project-specific AI assistant guidelines", "commit": "662938e"},
+        {"description": "Updated README.md examples to use go-github v88 API patterns", "commit": "c0d5211"}
       ],
       "chores": [
-        {"description": "Fixed `gofmt` formatting issues via golangci-lint", "commit": "1c6f12d"}
+        {"description": "Fixed `gofmt` formatting issues via golangci-lint", "commit": "367c36a"}
       ]
     },
     {
@@ -212,23 +212,23 @@
         {"description": "Expanded test coverage for constants and error types"}
       ],
       "refactored": [
-        {"description": "Use `auth.NewTokenClient` in graphql package to eliminate duplicate OAuth2 client creation", "commit": "8b3093e"},
-        {"description": "Extract Git reference prefixes (`RefHeadsPrefix`, `RefTagsPrefix`) to `repo/constants.go`", "commit": "e8879cf"},
-        {"description": "Extract file mode constants (`FileModeRegular`, `FileModeExecutable`, etc.) to `repo/constants.go`", "commit": "e8879cf"},
-        {"description": "Extract `ErrAlreadyExists` error fragment to constants for consistent error matching", "commit": "e8879cf"},
-        {"description": "Extract `JWTExpiry` constant in `auth/app.go` for GitHub App JWT validity duration", "commit": "8d5f601"},
-        {"description": "Replace manual pagination loops with go-github v84 built-in iterators (`ListReleasesIter`, `ListTagsIter`, `ListCheckRunsForRefIter`, `ListCheckSuitesForRefIter`)", "commit": "9c5336c"}
+        {"description": "Use `auth.NewTokenClient` in graphql package to eliminate duplicate OAuth2 client creation", "commit": "a41c557"},
+        {"description": "Extract Git reference prefixes (`RefHeadsPrefix`, `RefTagsPrefix`) to `repo/constants.go`", "commit": "0207a5b"},
+        {"description": "Extract file mode constants (`FileModeRegular`, `FileModeExecutable`, etc.) to `repo/constants.go`", "commit": "0207a5b"},
+        {"description": "Extract `ErrAlreadyExists` error fragment to constants for consistent error matching", "commit": "0207a5b"},
+        {"description": "Extract `JWTExpiry` constant in `auth/app.go` for GitHub App JWT validity duration", "commit": "8d6a09b"},
+        {"description": "Replace manual pagination loops with go-github v84 built-in iterators (`ListReleasesIter`, `ListTagsIter`, `ListCheckRunsForRefIter`, `ListCheckSuitesForRefIter`)", "commit": "5215add"}
       ],
       "documentation": [
-        {"description": "Add usage example to `Batch` type documentation showing Write/Delete/Commit workflow", "commit": "1f0f739"},
-        {"description": "Clarify `search.Issue.MustAuthorUsername()` and `MustAuthorUserID()` return default values on error (not panic)", "commit": "1f0f739"},
-        {"description": "Add `TASKS.md` for tracking refactoring opportunities and progress", "commit": "53aa6ee"}
+        {"description": "Add usage example to `Batch` type documentation showing Write/Delete/Commit workflow", "commit": "c85cf4c"},
+        {"description": "Clarify `search.Issue.MustAuthorUsername()` and `MustAuthorUserID()` return default values on error (not panic)", "commit": "c85cf4c"},
+        {"description": "Add `TASKS.md` for tracking refactoring opportunities and progress", "commit": "515b848"}
       ],
       "tests": [
-        {"description": "Add tests for Git reference and file mode constants in `repo/constants_test.go`", "commit": "6da1e28"},
-        {"description": "Add tests for error types (`CommitError`, `BranchError`, `ForkError`, `BatchError`) in `repo/errors_test.go`", "commit": "6da1e28"},
-        {"description": "Add tests for tag constants in `tag/constants_test.go`", "commit": "6da1e28"},
-        {"description": "Add test for `JWTExpiry` constant in `auth/app_test.go`", "commit": "6da1e28"}
+        {"description": "Add tests for Git reference and file mode constants in `repo/constants_test.go`", "commit": "f06b0c4"},
+        {"description": "Add tests for error types (`CommitError`, `BranchError`, `ForkError`, `BatchError`) in `repo/errors_test.go`", "commit": "f06b0c4"},
+        {"description": "Add tests for tag constants in `tag/constants_test.go`", "commit": "f06b0c4"},
+        {"description": "Add test for `JWTExpiry` constant in `auth/app_test.go`", "commit": "f06b0c4"}
       ]
     },
     {
@@ -241,44 +241,44 @@
         {"description": "Enhanced profile command with `--visibility` and `--release-orgs` filtering flags"}
       ],
       "added": [
-        {"description": "New `stats-report` CLI command for generating aggregated statistics reports", "commit": "a129344"},
-        {"description": "`StatsReport` type with hierarchical structure (years → quarters → months)", "commit": "a2aa857"},
-        {"description": "`LoadMonthlyFiles()` for loading monthly JSON files from a directory", "commit": "a2aa857"},
-        {"description": "`BuildStatsReport()` for aggregating monthly data into hierarchical structure", "commit": "a2aa857"},
-        {"description": "`WriteStatsReport()` and `LoadStatsReport()` for JSON persistence", "commit": "a2aa857"},
-        {"description": "`RenderToMarkdown()` for generating Markdown reports with tables", "commit": "944b321"},
-        {"description": "`RenderToHTML()` for generating styled HTML reports", "commit": "944b321"},
-        {"description": "`RenderToText()` for generating plain text reports", "commit": "944b321"},
-        {"description": "`RenderToFile()` for writing reports in any supported format", "commit": "944b321"},
-        {"description": "`MonthlyStats` type for JSON-serializable monthly activity data", "commit": "d7d953e"},
-        {"description": "`NetAdditions()` method for calculating additions minus deletions", "commit": "d7d953e"},
-        {"description": "`RepoCountCreated()` method for counting repos created in a month", "commit": "d7d953e"},
-        {"description": "`ToMonthlyStats()` methods for converting activity data to serializable format", "commit": "d7d953e"},
-        {"description": "`WriteMonthlyFile()` for writing single month stats to file", "commit": "2d53d00"},
-        {"description": "`WriteMonthlyFiles()` for writing individual files per month", "commit": "2d53d00"},
-        {"description": "`WriteMonthlyMultiFile()` for writing all months to single file with merge", "commit": "2d53d00"},
-        {"description": "`QueryMetadata` struct for capturing query parameters in output", "commit": "2d53d00"},
-        {"description": "`--visibility` CLI flag for filtering public/private repositories", "commit": "1320ac6"},
-        {"description": "`--release-orgs` CLI flag for filtering release counts by organization", "commit": "1320ac6"},
-        {"description": "`--output-monthly-dir` CLI flag for generating individual monthly JSON files", "commit": "1320ac6"},
-        {"description": "`ReleaseOrgs` field in `Options` for org-based release filtering", "commit": "9cba9ca"}
+        {"description": "New `stats-report` CLI command for generating aggregated statistics reports", "commit": "2dd73ea"},
+        {"description": "`StatsReport` type with hierarchical structure (years → quarters → months)", "commit": "969773e"},
+        {"description": "`LoadMonthlyFiles()` for loading monthly JSON files from a directory", "commit": "969773e"},
+        {"description": "`BuildStatsReport()` for aggregating monthly data into hierarchical structure", "commit": "969773e"},
+        {"description": "`WriteStatsReport()` and `LoadStatsReport()` for JSON persistence", "commit": "969773e"},
+        {"description": "`RenderToMarkdown()` for generating Markdown reports with tables", "commit": "b73e2bb"},
+        {"description": "`RenderToHTML()` for generating styled HTML reports", "commit": "b73e2bb"},
+        {"description": "`RenderToText()` for generating plain text reports", "commit": "b73e2bb"},
+        {"description": "`RenderToFile()` for writing reports in any supported format", "commit": "b73e2bb"},
+        {"description": "`MonthlyStats` type for JSON-serializable monthly activity data", "commit": "4def691"},
+        {"description": "`NetAdditions()` method for calculating additions minus deletions", "commit": "4def691"},
+        {"description": "`RepoCountCreated()` method for counting repos created in a month", "commit": "4def691"},
+        {"description": "`ToMonthlyStats()` methods for converting activity data to serializable format", "commit": "4def691"},
+        {"description": "`WriteMonthlyFile()` for writing single month stats to file", "commit": "b19263b"},
+        {"description": "`WriteMonthlyFiles()` for writing individual files per month", "commit": "b19263b"},
+        {"description": "`WriteMonthlyMultiFile()` for writing all months to single file with merge", "commit": "b19263b"},
+        {"description": "`QueryMetadata` struct for capturing query parameters in output", "commit": "b19263b"},
+        {"description": "`--visibility` CLI flag for filtering public/private repositories", "commit": "c752930"},
+        {"description": "`--release-orgs` CLI flag for filtering release counts by organization", "commit": "c752930"},
+        {"description": "`--output-monthly-dir` CLI flag for generating individual monthly JSON files", "commit": "c752930"},
+        {"description": "`ReleaseOrgs` field in `Options` for org-based release filtering", "commit": "e6b9565"}
       ],
       "changed": [
-        {"description": "Profile command now includes query metadata in output JSON for reproducibility", "commit": "1320ac6"},
-        {"description": "Monthly JSON output includes computed fields (netAdditions, repoCountContributed, repoCountCreated)", "commit": "1320ac6"}
+        {"description": "Profile command now includes query metadata in output JSON for reproducibility", "commit": "c752930"},
+        {"description": "Monthly JSON output includes computed fields (netAdditions, repoCountContributed, repoCountCreated)", "commit": "c752930"}
       ],
       "fixed": [
-        {"description": "Resolved golangci-lint gosec G115 warnings in test code", "commit": "5b481df"},
-        {"description": "Removed unused functions flagged by golangci-lint", "commit": "5b481df"}
+        {"description": "Resolved golangci-lint gosec G115 warnings in test code", "commit": "6309668"},
+        {"description": "Removed unused functions flagged by golangci-lint", "commit": "6309668"}
       ],
       "dependencies": [
-        {"description": "Updated `github.com/mattn/go-runewidth` from v0.0.21 to v0.0.22", "commit": "0418c5d"}
+        {"description": "Updated `github.com/mattn/go-runewidth` from v0.0.21 to v0.0.22", "commit": "a69eb27"}
       ],
       "tests": [
-        {"description": "Added unit tests for `StatsReport` aggregation logic", "commit": "a2aa857"},
-        {"description": "Added unit tests for `MonthlyStats` type and conversion methods", "commit": "d7d953e"},
-        {"description": "Added unit tests for report rendering (Markdown, HTML, text)", "commit": "944b321"},
-        {"description": "Added unit tests for monthly output file functions", "commit": "2d53d00"}
+        {"description": "Added unit tests for `StatsReport` aggregation logic", "commit": "969773e"},
+        {"description": "Added unit tests for `MonthlyStats` type and conversion methods", "commit": "4def691"},
+        {"description": "Added unit tests for report rendering (Markdown, HTML, text)", "commit": "b73e2bb"},
+        {"description": "Added unit tests for monthly output file functions", "commit": "b19263b"}
       ]
     },
     {
@@ -291,53 +291,53 @@
         {"description": "New `--output-monthly` flag for incremental contribution tracking"}
       ],
       "breaking": [
-        {"description": "JSON output fields renamed from snake_case to camelCase (e.g., `total_commits` → `totalCommits`, `month_name` → `monthName`)", "commit": "261ee4a"}
+        {"description": "JSON output fields renamed from snake_case to camelCase (e.g., `total_commits` → `totalCommits`, `month_name` → `monthName`)", "commit": "61f16c7"}
       ],
       "added": [
-        {"description": "New `sarif` package for GitHub Code Scanning integration", "commit": "2a28bb9"},
-        {"description": "`sarif.Upload()` and `sarif.UploadFile()` for uploading SARIF analysis results", "commit": "2a28bb9"},
-        {"description": "`sarif.GetUploadStatus()` for checking SARIF processing status", "commit": "2a28bb9"},
-        {"description": "`sarif.WaitForProcessing()` for polling until upload is processed", "commit": "2a28bb9"},
-        {"description": "`sarif.UploadAndWait()` convenience function for upload with automatic status polling", "commit": "2a28bb9"},
-        {"description": "GitHub App authentication via `auth.NewAppClient()`", "commit": "375e43d"},
-        {"description": "`auth.AppConfig` type for GitHub App configuration", "commit": "375e43d"},
-        {"description": "`auth.LoadAppConfig()` for loading config from environment or file", "commit": "375e43d"},
-        {"description": "`auth.ListAppInstallations()` for listing App installations", "commit": "375e43d"},
-        {"description": "`pr.GetPRDiff()` for retrieving PR diff content", "commit": "b81bebb"},
-        {"description": "`pr.ListPRReviews()` for listing all reviews on a PR", "commit": "b81bebb"},
-        {"description": "`pr.CreateReview()` for submitting PR reviews with approve/request changes/comment", "commit": "b81bebb"},
-        {"description": "`pr.CreateLineComment()` for adding comments on specific lines", "commit": "b81bebb"},
-        {"description": "`pr.CreateIssueComment()` for adding general comments to PRs", "commit": "b81bebb"},
-        {"description": "`--output-monthly` CLI flag for generating monthly contribution JSON with auto-merge", "commit": "e951ea6"}
+        {"description": "New `sarif` package for GitHub Code Scanning integration", "commit": "b406442"},
+        {"description": "`sarif.Upload()` and `sarif.UploadFile()` for uploading SARIF analysis results", "commit": "b406442"},
+        {"description": "`sarif.GetUploadStatus()` for checking SARIF processing status", "commit": "b406442"},
+        {"description": "`sarif.WaitForProcessing()` for polling until upload is processed", "commit": "b406442"},
+        {"description": "`sarif.UploadAndWait()` convenience function for upload with automatic status polling", "commit": "b406442"},
+        {"description": "GitHub App authentication via `auth.NewAppClient()`", "commit": "98a8c82"},
+        {"description": "`auth.AppConfig` type for GitHub App configuration", "commit": "98a8c82"},
+        {"description": "`auth.LoadAppConfig()` for loading config from environment or file", "commit": "98a8c82"},
+        {"description": "`auth.ListAppInstallations()` for listing App installations", "commit": "98a8c82"},
+        {"description": "`pr.GetPRDiff()` for retrieving PR diff content", "commit": "004914e"},
+        {"description": "`pr.ListPRReviews()` for listing all reviews on a PR", "commit": "004914e"},
+        {"description": "`pr.CreateReview()` for submitting PR reviews with approve/request changes/comment", "commit": "004914e"},
+        {"description": "`pr.CreateLineComment()` for adding comments on specific lines", "commit": "004914e"},
+        {"description": "`pr.CreateIssueComment()` for adding general comments to PRs", "commit": "004914e"},
+        {"description": "`--output-monthly` CLI flag for generating monthly contribution JSON with auto-merge", "commit": "f42ec85"}
       ],
       "changed": [
-        {"description": "All JSON output struct tags now use camelCase instead of snake_case", "commit": "261ee4a"},
-        {"description": "Use `osutil.ReadDirFilesSecure` for symlink-safe file reading in `repo.ReadLocalFiles`", "commit": "3815005"}
+        {"description": "All JSON output struct tags now use camelCase instead of snake_case", "commit": "61f16c7"},
+        {"description": "Use `osutil.ReadDirFilesSecure` for symlink-safe file reading in `repo.ReadLocalFiles`", "commit": "ab1568b"}
       ],
       "dependencies": [
-        {"description": "Added `github.com/golang-jwt/jwt/v5` for GitHub App JWT signing", "commit": "375e43d"},
-        {"description": "Updated `github.com/grokify/mogo` from v0.73.4 to v0.74.1", "commit": "0cdf0d9"},
-        {"description": "Updated `github.com/grokify/gocharts/v2` from v2.26.9 to v2.27.0", "commit": "0ccd69e"},
-        {"description": "Updated `golang.org/x/oauth2` from v0.35.0 to v0.36.0", "commit": "bfa0803"}
+        {"description": "Added `github.com/golang-jwt/jwt/v5` for GitHub App JWT signing", "commit": "98a8c82"},
+        {"description": "Updated `github.com/grokify/mogo` from v0.73.4 to v0.74.1", "commit": "1636f69"},
+        {"description": "Updated `github.com/grokify/gocharts/v2` from v2.26.9 to v2.27.0", "commit": "0d6c677"},
+        {"description": "Updated `golang.org/x/oauth2` from v0.35.0 to v0.36.0", "commit": "c470dff"}
       ],
       "tests": [
-        {"description": "Added unit tests for `auth.AppConfig` loading and path expansion", "commit": "60e44fc"},
-        {"description": "Added unit tests for `auth.AuthError` type", "commit": "60e44fc"},
-        {"description": "Added unit tests for `checks.GetChecksStatus` and `AllChecksPassed`", "commit": "60e44fc"},
-        {"description": "Added unit tests for `pr.PRError`, `ReviewEvent` constants, and `MergeableState`", "commit": "60e44fc"},
-        {"description": "Added unit tests for `search.Issue` methods and `Query` builder", "commit": "60e44fc"}
+        {"description": "Added unit tests for `auth.AppConfig` loading and path expansion", "commit": "7ab9757"},
+        {"description": "Added unit tests for `auth.AuthError` type", "commit": "7ab9757"},
+        {"description": "Added unit tests for `checks.GetChecksStatus` and `AllChecksPassed`", "commit": "7ab9757"},
+        {"description": "Added unit tests for `pr.PRError`, `ReviewEvent` constants, and `MergeableState`", "commit": "7ab9757"},
+        {"description": "Added unit tests for `search.Issue` methods and `Query` builder", "commit": "7ab9757"}
       ],
       "documentation": [
-        {"description": "Added GitHub App authentication section to `docs/guides/auth.md`", "commit": "b53b55f"},
-        {"description": "Added PR review and diff functions to `docs/guides/pr.md`", "commit": "b53b55f"},
-        {"description": "Updated `docs/guides/cli.md` with `--output-monthly` flag documentation", "commit": "e951ea6"},
-        {"description": "Added `sarif/` package to README.md directory structure", "commit": "b53b55f"},
-        {"description": "Updated README.md shield links for CI workflows", "commit": "3b37958"}
+        {"description": "Added GitHub App authentication section to `docs/guides/auth.md`", "commit": "dd7f86e"},
+        {"description": "Added PR review and diff functions to `docs/guides/pr.md`", "commit": "dd7f86e"},
+        {"description": "Updated `docs/guides/cli.md` with `--output-monthly` flag documentation", "commit": "f42ec85"},
+        {"description": "Added `sarif/` package to README.md directory structure", "commit": "dd7f86e"},
+        {"description": "Updated README.md shield links for CI workflows", "commit": "27807a2"}
       ],
       "chores": [
-        {"description": "Moved CI workflows to reusable workflows from grokify/.github", "commit": "956b392"},
-        {"description": "Added CodeQL SAST workflow for security analysis", "commit": "20da81c"},
-        {"description": "Renamed workflow files: `ci.yaml` → `go-ci.yaml`, `lint.yaml` → `go-lint.yaml`", "commit": "e481ae5"}
+        {"description": "Moved CI workflows to reusable workflows from grokify/.github", "commit": "ddedd3b"},
+        {"description": "Added CodeQL SAST workflow for security analysis", "commit": "9908280"},
+        {"description": "Renamed workflow files: `ci.yaml` → `go-ci.yaml`, `lint.yaml` → `go-lint.yaml`", "commit": "74e615a"}
       ]
     },
     {
@@ -350,41 +350,41 @@
         {"description": "Upgraded go-github from v82 to v84 for latest GitHub API features"}
       ],
       "added": [
-        {"description": "New `profile/readme` package for generating GitHub profile README files", "commit": "b380872"},
-        {"description": "`readme.Generate()` function for template-based README generation", "commit": "b380872"},
-        {"description": "`readme.RenderHeatmap()` for GitHub-style contribution calendar using Unicode blocks", "commit": "b380872"},
-        {"description": "Configurable README generation via JSON config file", "commit": "b380872"},
-        {"description": "New `profile/svg` package for generating embeddable visualizations", "commit": "8e1769e"},
-        {"description": "`svg.GenerateStatsCard()` for stats card with theme support", "commit": "8e1769e"},
-        {"description": "`svg.GenerateMonthlyChart()` for monthly activity bar charts", "commit": "8e1769e"},
-        {"description": "`svg.GenerateStackedBarChart()` for commit type breakdown", "commit": "8e1769e"},
-        {"description": "Built-in themes: default, dark, dracula, nord, gruvbox, solarized", "commit": "8e1769e"},
-        {"description": "Icon support for common metrics (commits, PRs, issues, etc.)", "commit": "8e1769e"},
-        {"description": "`profile/svg/chart` subpackage for chart primitives", "commit": "8e1769e"},
-        {"description": "`--output-readme` CLI flag for README.md generation", "commit": "b26893c"},
-        {"description": "`--output-svg` CLI flag for SVG stats card generation", "commit": "b26893c"},
-        {"description": "`--output-chart` CLI flag for monthly chart SVG", "commit": "b26893c"},
-        {"description": "`--output-chart-json` CLI flag for chart data as JSON IR", "commit": "b26893c"},
-        {"description": "`--svg-theme` CLI flag for selecting card theme", "commit": "b26893c"},
-        {"description": "`--svg-title` CLI flag for custom card title", "commit": "b26893c"},
-        {"description": "`--readme-config` CLI flag for README config file path", "commit": "b26893c"},
-        {"description": "GitHub Actions workflow for automatic profile README updates", "commit": "8b2b1c9"}
+        {"description": "New `profile/readme` package for generating GitHub profile README files", "commit": "d65f0f9"},
+        {"description": "`readme.Generate()` function for template-based README generation", "commit": "d65f0f9"},
+        {"description": "`readme.RenderHeatmap()` for GitHub-style contribution calendar using Unicode blocks", "commit": "d65f0f9"},
+        {"description": "Configurable README generation via JSON config file", "commit": "d65f0f9"},
+        {"description": "New `profile/svg` package for generating embeddable visualizations", "commit": "af37f27"},
+        {"description": "`svg.GenerateStatsCard()` for stats card with theme support", "commit": "af37f27"},
+        {"description": "`svg.GenerateMonthlyChart()` for monthly activity bar charts", "commit": "af37f27"},
+        {"description": "`svg.GenerateStackedBarChart()` for commit type breakdown", "commit": "af37f27"},
+        {"description": "Built-in themes: default, dark, dracula, nord, gruvbox, solarized", "commit": "af37f27"},
+        {"description": "Icon support for common metrics (commits, PRs, issues, etc.)", "commit": "af37f27"},
+        {"description": "`profile/svg/chart` subpackage for chart primitives", "commit": "af37f27"},
+        {"description": "`--output-readme` CLI flag for README.md generation", "commit": "4fa9fc7"},
+        {"description": "`--output-svg` CLI flag for SVG stats card generation", "commit": "4fa9fc7"},
+        {"description": "`--output-chart` CLI flag for monthly chart SVG", "commit": "4fa9fc7"},
+        {"description": "`--output-chart-json` CLI flag for chart data as JSON IR", "commit": "4fa9fc7"},
+        {"description": "`--svg-theme` CLI flag for selecting card theme", "commit": "4fa9fc7"},
+        {"description": "`--svg-title` CLI flag for custom card title", "commit": "4fa9fc7"},
+        {"description": "`--readme-config` CLI flag for README config file path", "commit": "4fa9fc7"},
+        {"description": "GitHub Actions workflow for automatic profile README updates", "commit": "b77705e"}
       ],
       "changed": [
-        {"description": "Upgraded `github.com/google/go-github` from v82 to v84", "commit": "44008e4"},
-        {"description": "Updated documentation examples to use go-github/v84", "commit": "9a82a44"}
+        {"description": "Upgraded `github.com/google/go-github` from v82 to v84", "commit": "8829fe6"},
+        {"description": "Updated documentation examples to use go-github/v84", "commit": "57062e6"}
       ],
       "dependencies": [
-        {"description": "Upgraded `github.com/google/go-github` from v82 to v84", "commit": "44008e4"}
+        {"description": "Upgraded `github.com/google/go-github` from v82 to v84", "commit": "8829fe6"}
       ],
       "documentation": [
-        {"description": "Added `docs/guides/profile-svg.md` guide for SVG stats card generation", "commit": "9a82a44"},
-        {"description": "Added `docs/guides/readme-config-example.json` for README generation config", "commit": "9a82a44"},
-        {"description": "Updated `docs/guides/profile.md` with v84 import paths", "commit": "9a82a44"},
-        {"description": "Updated README.md code examples to use go-github/v84", "commit": "9a82a44"}
+        {"description": "Added `docs/guides/profile-svg.md` guide for SVG stats card generation", "commit": "57062e6"},
+        {"description": "Added `docs/guides/readme-config-example.json` for README generation config", "commit": "57062e6"},
+        {"description": "Updated `docs/guides/profile.md` with v84 import paths", "commit": "57062e6"},
+        {"description": "Updated README.md code examples to use go-github/v84", "commit": "57062e6"}
       ],
       "chores": [
-        {"description": "Updated .gitignore to exclude profile output test files", "commit": "5daf573"}
+        {"description": "Updated .gitignore to exclude profile output test files", "commit": "d69a28a"}
       ]
     },
     {
@@ -397,41 +397,41 @@
         {"description": "Added `net_additions` field to aggregate output (additions minus deletions)"}
       ],
       "added": [
-        {"description": "Profile Viewer web app with stats card, contribution calendar, and charts", "commit": "16d92db"},
-        {"description": "Stats card SVG/PNG export for embedding in documentation", "commit": "16d92db"},
-        {"description": "GitHub-style contribution calendar heatmap visualization", "commit": "16d92db"},
-        {"description": "Monthly activity bar/line charts with Chart.js", "commit": "16d92db"},
-        {"description": "Dark mode support with automatic theme detection", "commit": "16d92db"},
-        {"description": "`--include-releases` CLI flag to fetch release counts for contributed repositories", "commit": "0b99753"},
-        {"description": "Monthly release aggregation based on release `published_at` date", "commit": "fe10cf6"},
-        {"description": "`total_releases` field in aggregate JSON output", "commit": "0b99753"},
-        {"description": "`releases` field in monthly breakdown JSON output", "commit": "0b99753"},
-        {"description": "`net_additions` field in aggregate JSON (total_additions - total_deletions)", "commit": "0b99753"},
-        {"description": "`profile.MonthlyActivity.Releases` field for monthly release counts", "commit": "fe10cf6"},
-        {"description": "`graphql.GetCommitStatsWithProgress()` function with progress callback", "commit": "bfe8ea1"},
-        {"description": "`graphql.CommitStatsProgressFunc` type for progress reporting", "commit": "bfe8ea1"}
+        {"description": "Profile Viewer web app with stats card, contribution calendar, and charts", "commit": "8307a01"},
+        {"description": "Stats card SVG/PNG export for embedding in documentation", "commit": "8307a01"},
+        {"description": "GitHub-style contribution calendar heatmap visualization", "commit": "8307a01"},
+        {"description": "Monthly activity bar/line charts with Chart.js", "commit": "8307a01"},
+        {"description": "Dark mode support with automatic theme detection", "commit": "8307a01"},
+        {"description": "`--include-releases` CLI flag to fetch release counts for contributed repositories", "commit": "c9116eb"},
+        {"description": "Monthly release aggregation based on release `published_at` date", "commit": "92f6087"},
+        {"description": "`total_releases` field in aggregate JSON output", "commit": "c9116eb"},
+        {"description": "`releases` field in monthly breakdown JSON output", "commit": "c9116eb"},
+        {"description": "`net_additions` field in aggregate JSON (total_additions - total_deletions)", "commit": "c9116eb"},
+        {"description": "`profile.MonthlyActivity.Releases` field for monthly release counts", "commit": "92f6087"},
+        {"description": "`graphql.GetCommitStatsWithProgress()` function with progress callback", "commit": "b1a21b9"},
+        {"description": "`graphql.CommitStatsProgressFunc` type for progress reporting", "commit": "b1a21b9"}
       ],
       "changed": [
-        {"description": "CLI now uses `mogo/fmt/progress.MultiStageRenderer` for progress display", "commit": "0b99753"},
-        {"description": "Stage 2 progress bar (Fetching commit details) now updates after each repository", "commit": "0b99753"},
-        {"description": "Release fetching now aggregates by month and filters to profile date range", "commit": "fe10cf6"}
+        {"description": "CLI now uses `mogo/fmt/progress.MultiStageRenderer` for progress display", "commit": "c9116eb"},
+        {"description": "Stage 2 progress bar (Fetching commit details) now updates after each repository", "commit": "c9116eb"},
+        {"description": "Release fetching now aggregates by month and filters to profile date range", "commit": "92f6087"}
       ],
       "removed": [
-        {"description": "Removed local `renderProgressBar()` function in favor of `mogo/fmt/progress.RenderBar()`", "commit": "0b99753"}
+        {"description": "Removed local `renderProgressBar()` function in favor of `mogo/fmt/progress.RenderBar()`", "commit": "c9116eb"}
       ],
       "dependencies": [
-        {"description": "Updated `github.com/grokify/mogo` from v0.72.7 to v0.73.0 for `fmt/progress` package", "commit": "0b99753"}
+        {"description": "Updated `github.com/grokify/mogo` from v0.72.7 to v0.73.0 for `fmt/progress` package", "commit": "c9116eb"}
       ],
       "documentation": [
-        {"description": "Added Profile Viewer guide with deployment and customization instructions", "commit": "e36b612"},
-        {"description": "Added `--include-releases` flag to CLI flags table in docs/guides/cli.md", "commit": "d732c3f"},
-        {"description": "Added example for including release counts in CLI documentation", "commit": "d732c3f"},
-        {"description": "Added 'Release Data' section explaining API overhead and recommendations", "commit": "d732c3f"},
-        {"description": "Updated JSON output example with `net_additions`, `total_releases`, and monthly `releases` fields", "commit": "d732c3f"},
-        {"description": "Updated Tips section with release data caching advice", "commit": "d732c3f"}
+        {"description": "Added Profile Viewer guide with deployment and customization instructions", "commit": "70334d2"},
+        {"description": "Added `--include-releases` flag to CLI flags table in docs/guides/cli.md", "commit": "ddbeeca"},
+        {"description": "Added example for including release counts in CLI documentation", "commit": "ddbeeca"},
+        {"description": "Added 'Release Data' section explaining API overhead and recommendations", "commit": "ddbeeca"},
+        {"description": "Updated JSON output example with `net_additions`, `total_releases`, and monthly `releases` fields", "commit": "ddbeeca"},
+        {"description": "Updated Tips section with release data caching advice", "commit": "ddbeeca"}
       ],
       "chores": [
-        {"description": "Updated .gitignore for web app node_modules and dist directories", "commit": "0f09bef"}
+        {"description": "Updated .gitignore for web app node_modules and dist directories", "commit": "278ba1b"}
       ]
     },
     {
@@ -444,50 +444,50 @@
         {"description": "Integration tests that run against real GitHub API when token is available"}
       ],
       "added": [
-        {"description": "New `profile` package for user contribution statistics aggregation", "commit": "e57ae36"},
-        {"description": "`profile.GetUserProfile()` - fetch comprehensive profile stats from multiple API sources", "commit": "e57ae36"},
-        {"description": "`profile.UserProfile` type with commits, PRs, issues, reviews, repos, additions/deletions", "commit": "e57ae36"},
-        {"description": "`profile.ContributionCalendar` type with weekly/daily grid and streak tracking", "commit": "e57ae36"},
-        {"description": "`profile.ActivityTimeline` type with monthly activity breakdown", "commit": "e57ae36"},
-        {"description": "`profile.ProgressInfo` type for stage-based progress reporting", "commit": "e57ae36"},
-        {"description": "Calendar streak calculations: `LongestStreak()`, `CurrentStreak()`, `DaysWithContributions()`", "commit": "e57ae36"},
-        {"description": "GitHub-style monthly summaries: `CommitSummary()`, `PRSummary()`, `IssueSummary()`", "commit": "e57ae36"},
-        {"description": "`repo.ListContributorStats()` - list all contributors for a repository", "commit": "a2447e7"},
-        {"description": "`repo.GetContributorStats()` - get stats for a specific contributor", "commit": "a2447e7"},
-        {"description": "`repo.GetContributorSummary()` - get aggregated summary with first/last commit dates", "commit": "a2447e7"},
-        {"description": "`repo.ContributorSummary` type with TotalCommits, TotalAdditions, TotalDeletions, FirstCommit, LastCommit", "commit": "a2447e7"},
-        {"description": "Automatic 202 Accepted retry handling with exponential backoff for contributor stats", "commit": "a2447e7"},
-        {"description": "New `gogithub` CLI tool built with Cobra", "commit": "653ed99"},
-        {"description": "`gogithub profile` command for fetching user contribution statistics", "commit": "653ed99"},
-        {"description": "`gogithub search-prs` command for searching open PRs by user", "commit": "653ed99"},
-        {"description": "CLI progress display with Unicode progress bars and stage indicators", "commit": "653ed99"},
-        {"description": "CLI output formats: summary, JSON, raw+aggregate JSON files", "commit": "653ed99"},
-        {"description": "CLI can regenerate aggregate from raw file without API calls (`--input` flag)", "commit": "653ed99"},
-        {"description": "Integration tests for profile package (8 tests)", "commit": "3aae93f"},
-        {"description": "Integration tests for repo/contributors (6 tests)", "commit": "3aae93f"},
-        {"description": "Integration tests automatically skip when GITHUB_TOKEN is not set", "commit": "3aae93f"}
+        {"description": "New `profile` package for user contribution statistics aggregation", "commit": "496b7bd"},
+        {"description": "`profile.GetUserProfile()` - fetch comprehensive profile stats from multiple API sources", "commit": "496b7bd"},
+        {"description": "`profile.UserProfile` type with commits, PRs, issues, reviews, repos, additions/deletions", "commit": "496b7bd"},
+        {"description": "`profile.ContributionCalendar` type with weekly/daily grid and streak tracking", "commit": "496b7bd"},
+        {"description": "`profile.ActivityTimeline` type with monthly activity breakdown", "commit": "496b7bd"},
+        {"description": "`profile.ProgressInfo` type for stage-based progress reporting", "commit": "496b7bd"},
+        {"description": "Calendar streak calculations: `LongestStreak()`, `CurrentStreak()`, `DaysWithContributions()`", "commit": "496b7bd"},
+        {"description": "GitHub-style monthly summaries: `CommitSummary()`, `PRSummary()`, `IssueSummary()`", "commit": "496b7bd"},
+        {"description": "`repo.ListContributorStats()` - list all contributors for a repository", "commit": "c9cec44"},
+        {"description": "`repo.GetContributorStats()` - get stats for a specific contributor", "commit": "c9cec44"},
+        {"description": "`repo.GetContributorSummary()` - get aggregated summary with first/last commit dates", "commit": "c9cec44"},
+        {"description": "`repo.ContributorSummary` type with TotalCommits, TotalAdditions, TotalDeletions, FirstCommit, LastCommit", "commit": "c9cec44"},
+        {"description": "Automatic 202 Accepted retry handling with exponential backoff for contributor stats", "commit": "c9cec44"},
+        {"description": "New `gogithub` CLI tool built with Cobra", "commit": "f99b1fa"},
+        {"description": "`gogithub profile` command for fetching user contribution statistics", "commit": "f99b1fa"},
+        {"description": "`gogithub search-prs` command for searching open PRs by user", "commit": "f99b1fa"},
+        {"description": "CLI progress display with Unicode progress bars and stage indicators", "commit": "f99b1fa"},
+        {"description": "CLI output formats: summary, JSON, raw+aggregate JSON files", "commit": "f99b1fa"},
+        {"description": "CLI can regenerate aggregate from raw file without API calls (`--input` flag)", "commit": "f99b1fa"},
+        {"description": "Integration tests for profile package (8 tests)", "commit": "b037dfb"},
+        {"description": "Integration tests for repo/contributors (6 tests)", "commit": "b037dfb"},
+        {"description": "Integration tests automatically skip when GITHUB_TOKEN is not set", "commit": "b037dfb"}
       ],
       "dependencies": [
-        {"description": "Added `github.com/spf13/cobra` v1.10.2 for CLI", "commit": "653ed99"}
+        {"description": "Added `github.com/spf13/cobra` v1.10.2 for CLI", "commit": "f99b1fa"}
       ],
       "documentation": [
-        {"description": "Added `docs/guides/cli.md` - comprehensive CLI usage guide", "commit": "5f944e5"},
-        {"description": "Added `docs/guides/profile.md` - comprehensive profile package guide", "commit": "7829ff2"},
-        {"description": "Added `docs/guides/testing.md` - testing guide with integration test instructions", "commit": "8670f87"},
-        {"description": "Expanded `docs/guides/auth.md` with detailed token requirements for fine-grained PATs", "commit": "14a05c4"},
-        {"description": "Added `docs/releases/v0.8.0.md` release notes", "commit": "b13afc8"},
-        {"description": "Updated mkdocs.yml navigation with Testing guide and v0.8.0 release notes", "commit": "451dbc9"},
-        {"description": "Updated getting-started.md with link to testing guide", "commit": "451dbc9"},
-        {"description": "Updated README.md directory structure with profile, repo/contributors, cmd/gogithub", "commit": "4b87f5b"}
+        {"description": "Added `docs/guides/cli.md` - comprehensive CLI usage guide", "commit": "8f12b12"},
+        {"description": "Added `docs/guides/profile.md` - comprehensive profile package guide", "commit": "6a57061"},
+        {"description": "Added `docs/guides/testing.md` - testing guide with integration test instructions", "commit": "8638223"},
+        {"description": "Expanded `docs/guides/auth.md` with detailed token requirements for fine-grained PATs", "commit": "3f36b06"},
+        {"description": "Added `docs/releases/v0.8.0.md` release notes", "commit": "53226bf"},
+        {"description": "Updated mkdocs.yml navigation with Testing guide and v0.8.0 release notes", "commit": "7e3c72c"},
+        {"description": "Updated getting-started.md with link to testing guide", "commit": "7e3c72c"},
+        {"description": "Updated README.md directory structure with profile, repo/contributors, cmd/gogithub", "commit": "b46734b"}
       ],
       "chores": [
-        {"description": "Updated .gitignore for CLI binary and MkDocs site directory", "commit": "1ba3f1e"}
+        {"description": "Updated .gitignore for CLI binary and MkDocs site directory", "commit": "3d5a001"}
       ],
       "tests": [
-        {"description": "Added unit tests for `repo.ContributorSummary` type", "commit": "d9ea699"},
-        {"description": "Added unit tests for `profile.UserProfile` (summary, top repos, filtering)", "commit": "96efa24"},
-        {"description": "Added unit tests for `profile.ContributionCalendar` (levels, streaks, lookups)", "commit": "96efa24"},
-        {"description": "Added unit tests for `profile.ActivityTimeline` (aggregation, summaries)", "commit": "96efa24"}
+        {"description": "Added unit tests for `repo.ContributorSummary` type", "commit": "3a69aa3"},
+        {"description": "Added unit tests for `profile.UserProfile` (summary, top repos, filtering)", "commit": "b2c8001"},
+        {"description": "Added unit tests for `profile.ContributionCalendar` (levels, streaks, lookups)", "commit": "b2c8001"},
+        {"description": "Added unit tests for `profile.ActivityTimeline` (aggregation, summaries)", "commit": "b2c8001"}
       ]
     },
     {
@@ -501,46 +501,46 @@
         {"description": "Extended `release` package with create/delete operations"}
       ],
       "breaking": [
-        {"description": "Upgraded `github.com/google/go-github` from v81 to v82 - update your imports accordingly", "commit": "e2e20fc"}
+        {"description": "Upgraded `github.com/google/go-github` from v81 to v82 - update your imports accordingly", "commit": "fda8018"}
       ],
       "added": [
-        {"description": "New `checks` package for GitHub Check Runs API", "commit": "8cf1789"},
-        {"description": "`checks.ListCheckRuns()` - list check runs for a commit SHA or branch", "commit": "8cf1789"},
-        {"description": "`checks.ListCheckRunsForPR()` - list check runs for a pull request", "commit": "8cf1789"},
-        {"description": "`checks.GetChecksStatus()` - get aggregate status (passed/failed/pending counts)", "commit": "8cf1789"},
-        {"description": "`checks.AllChecksPassed()` - check if all runs completed successfully", "commit": "8cf1789"},
-        {"description": "`checks.WaitForChecks()` - poll until all checks complete or timeout", "commit": "8cf1789"},
-        {"description": "`checks.GetCheckRun()` - get a specific check run by ID", "commit": "8cf1789"},
-        {"description": "`checks.ListCheckSuites()` - list check suites for a commit", "commit": "8cf1789"},
-        {"description": "`checks.ChecksStatus` type with Total, Passed, Failed, Pending, AllPassed, AnyFailed, AnyPending fields", "commit": "8cf1789"},
-        {"description": "New `tag` package for Git tag operations", "commit": "d331ec9"},
-        {"description": "`tag.ListTags()` - list all tags for a repository with pagination", "commit": "d331ec9"},
-        {"description": "`tag.GetTagSHA()` - get the commit SHA for a tag", "commit": "d331ec9"},
-        {"description": "`tag.CreateTag()` - create an annotated tag", "commit": "d331ec9"},
-        {"description": "`tag.CreateLightweightTag()` - create a lightweight tag (reference only)", "commit": "d331ec9"},
-        {"description": "`tag.DeleteTag()` - delete a tag", "commit": "d331ec9"},
-        {"description": "`tag.TagExists()` - check if a tag exists", "commit": "d331ec9"},
-        {"description": "`tag.GetTagNames()` - get just the tag names from a repository", "commit": "d331ec9"},
-        {"description": "`pr.ApprovePR()` - add an approval review to a pull request", "commit": "1ab80ba"},
-        {"description": "`pr.RequestChangesPR()` - request changes on a pull request", "commit": "1ab80ba"},
-        {"description": "`pr.CommentPR()` - add a comment review to a pull request", "commit": "1ab80ba"},
-        {"description": "`pr.IsMergeable()` - check if a PR can be merged with detailed status", "commit": "1ab80ba"},
-        {"description": "`pr.ListPRReviews()` - list all reviews on a pull request", "commit": "1ab80ba"},
-        {"description": "`pr.MergeableState` type with Mergeable, State, Message fields", "commit": "1ab80ba"},
-        {"description": "`release.CreateRelease()` - create a new release for a repository", "commit": "e09af77"},
-        {"description": "`release.CreateReleaseSimple()` - create a release with common options", "commit": "e09af77"},
-        {"description": "`release.DeleteRelease()` - delete a release by ID", "commit": "e09af77"},
-        {"description": "`release.EditRelease()` - update a release", "commit": "e09af77"}
+        {"description": "New `checks` package for GitHub Check Runs API", "commit": "63e24b7"},
+        {"description": "`checks.ListCheckRuns()` - list check runs for a commit SHA or branch", "commit": "63e24b7"},
+        {"description": "`checks.ListCheckRunsForPR()` - list check runs for a pull request", "commit": "63e24b7"},
+        {"description": "`checks.GetChecksStatus()` - get aggregate status (passed/failed/pending counts)", "commit": "63e24b7"},
+        {"description": "`checks.AllChecksPassed()` - check if all runs completed successfully", "commit": "63e24b7"},
+        {"description": "`checks.WaitForChecks()` - poll until all checks complete or timeout", "commit": "63e24b7"},
+        {"description": "`checks.GetCheckRun()` - get a specific check run by ID", "commit": "63e24b7"},
+        {"description": "`checks.ListCheckSuites()` - list check suites for a commit", "commit": "63e24b7"},
+        {"description": "`checks.ChecksStatus` type with Total, Passed, Failed, Pending, AllPassed, AnyFailed, AnyPending fields", "commit": "63e24b7"},
+        {"description": "New `tag` package for Git tag operations", "commit": "9f9d37c"},
+        {"description": "`tag.ListTags()` - list all tags for a repository with pagination", "commit": "9f9d37c"},
+        {"description": "`tag.GetTagSHA()` - get the commit SHA for a tag", "commit": "9f9d37c"},
+        {"description": "`tag.CreateTag()` - create an annotated tag", "commit": "9f9d37c"},
+        {"description": "`tag.CreateLightweightTag()` - create a lightweight tag (reference only)", "commit": "9f9d37c"},
+        {"description": "`tag.DeleteTag()` - delete a tag", "commit": "9f9d37c"},
+        {"description": "`tag.TagExists()` - check if a tag exists", "commit": "9f9d37c"},
+        {"description": "`tag.GetTagNames()` - get just the tag names from a repository", "commit": "9f9d37c"},
+        {"description": "`pr.ApprovePR()` - add an approval review to a pull request", "commit": "d388df6"},
+        {"description": "`pr.RequestChangesPR()` - request changes on a pull request", "commit": "d388df6"},
+        {"description": "`pr.CommentPR()` - add a comment review to a pull request", "commit": "d388df6"},
+        {"description": "`pr.IsMergeable()` - check if a PR can be merged with detailed status", "commit": "d388df6"},
+        {"description": "`pr.ListPRReviews()` - list all reviews on a pull request", "commit": "d388df6"},
+        {"description": "`pr.MergeableState` type with Mergeable, State, Message fields", "commit": "d388df6"},
+        {"description": "`release.CreateRelease()` - create a new release for a repository", "commit": "beeda60"},
+        {"description": "`release.CreateReleaseSimple()` - create a release with common options", "commit": "beeda60"},
+        {"description": "`release.DeleteRelease()` - delete a release by ID", "commit": "beeda60"},
+        {"description": "`release.EditRelease()` - update a release", "commit": "beeda60"}
       ],
       "dependencies": [
-        {"description": "Upgraded `github.com/google/go-github` from v81 to v82", "commit": "e2e20fc"}
+        {"description": "Upgraded `github.com/google/go-github` from v81 to v82", "commit": "fda8018"}
       ],
       "documentation": [
-        {"description": "Added v0.7.0 changelog entry with all new features", "commit": "0dde90f"},
-        {"description": "Updated README directory structure with checks and tag packages", "commit": "0dde90f"},
-        {"description": "Updated README with examples for checks, tag, and release packages", "commit": "0dde90f"},
-        {"description": "Added docs/releases/v0.7.0.md with comprehensive release notes", "commit": "0dde90f"},
-        {"description": "Updated go-github version reference from v81 to v82 in README", "commit": "0dde90f"}
+        {"description": "Added v0.7.0 changelog entry with all new features", "commit": "c27fa49"},
+        {"description": "Updated README directory structure with checks and tag packages", "commit": "c27fa49"},
+        {"description": "Updated README with examples for checks, tag, and release packages", "commit": "c27fa49"},
+        {"description": "Added docs/releases/v0.7.0.md with comprehensive release notes", "commit": "c27fa49"},
+        {"description": "Updated go-github version reference from v81 to v82 in README", "commit": "c27fa49"}
       ]
     },
     {
@@ -552,31 +552,31 @@
         {"description": "Two approaches for commit statistics: quick stats (profile view) and detailed stats (additions/deletions)"}
       ],
       "added": [
-        {"description": "New `graphql` package for GitHub GraphQL API", "commit": "6277bd5"},
-        {"description": "`graphql.NewClient()` and `graphql.NewEnterpriseClient()` for GraphQL client creation", "commit": "6277bd5"},
-        {"description": "`graphql.GetContributionStats()` for quick contribution statistics (like GitHub profile)", "commit": "6277bd5"},
-        {"description": "`graphql.GetContributionStatsMultiYear()` for multi-year contribution queries", "commit": "6277bd5"},
-        {"description": "`graphql.GetCommitStats()` for detailed commit stats with additions/deletions", "commit": "6277bd5"},
-        {"description": "`graphql.GetCommitStatsByVisibility()` for stats split by public/private repositories", "commit": "6277bd5"},
-        {"description": "`graphql.Visibility` type with `VisibilityAll`, `VisibilityPublic`, `VisibilityPrivate` constants", "commit": "6277bd5"},
-        {"description": "`graphql.ContributionStats` type with monthly contribution breakdown", "commit": "6277bd5"},
-        {"description": "`graphql.CommitStats` type with per-repo and per-month breakdowns including line changes", "commit": "6277bd5"},
-        {"description": "MkDocs documentation site with Material theme at https://grokify.github.io/gogithub/", "commit": "88108f5"},
-        {"description": "Documentation guides for all packages: auth, search, repo, pr, release, graphql, errors", "commit": "88108f5"},
-        {"description": "GitHub Actions workflow for automatic documentation deployment to gh-pages", "commit": "88108f5"}
+        {"description": "New `graphql` package for GitHub GraphQL API", "commit": "b030606"},
+        {"description": "`graphql.NewClient()` and `graphql.NewEnterpriseClient()` for GraphQL client creation", "commit": "b030606"},
+        {"description": "`graphql.GetContributionStats()` for quick contribution statistics (like GitHub profile)", "commit": "b030606"},
+        {"description": "`graphql.GetContributionStatsMultiYear()` for multi-year contribution queries", "commit": "b030606"},
+        {"description": "`graphql.GetCommitStats()` for detailed commit stats with additions/deletions", "commit": "b030606"},
+        {"description": "`graphql.GetCommitStatsByVisibility()` for stats split by public/private repositories", "commit": "b030606"},
+        {"description": "`graphql.Visibility` type with `VisibilityAll`, `VisibilityPublic`, `VisibilityPrivate` constants", "commit": "b030606"},
+        {"description": "`graphql.ContributionStats` type with monthly contribution breakdown", "commit": "b030606"},
+        {"description": "`graphql.CommitStats` type with per-repo and per-month breakdowns including line changes", "commit": "b030606"},
+        {"description": "MkDocs documentation site with Material theme at https://grokify.github.io/gogithub/", "commit": "a310a2f"},
+        {"description": "Documentation guides for all packages: auth, search, repo, pr, release, graphql, errors", "commit": "a310a2f"},
+        {"description": "GitHub Actions workflow for automatic documentation deployment to gh-pages", "commit": "a310a2f"}
       ],
       "dependencies": [
-        {"description": "Added `github.com/shurcooL/githubv4` for GitHub GraphQL API support", "commit": "6277bd5"},
-        {"description": "Added `github.com/shurcooL/graphql` (indirect dependency)", "commit": "6277bd5"}
+        {"description": "Added `github.com/shurcooL/githubv4` for GitHub GraphQL API support", "commit": "b030606"},
+        {"description": "Added `github.com/shurcooL/graphql` (indirect dependency)", "commit": "b030606"}
       ],
       "documentation": [
-        {"description": "Added MkDocs configuration (mkdocs.yml) with Material theme", "commit": "88108f5"},
-        {"description": "Added documentation home page (docs/index.md)", "commit": "88108f5"},
-        {"description": "Added getting started guide (docs/getting-started.md)", "commit": "88108f5"},
-        {"description": "Added API reference page with links to pkg.go.dev (docs/api-reference.md)", "commit": "88108f5"},
-        {"description": "Added package guides: auth, search, repo, pr, release, graphql, errors", "commit": "88108f5"},
-        {"description": "Added .github/workflows/docs.yaml for automatic gh-pages deployment", "commit": "88108f5"},
-        {"description": "Updated README.md with documentation site link", "commit": "88108f5"}
+        {"description": "Added MkDocs configuration (mkdocs.yml) with Material theme", "commit": "a310a2f"},
+        {"description": "Added documentation home page (docs/index.md)", "commit": "a310a2f"},
+        {"description": "Added getting started guide (docs/getting-started.md)", "commit": "a310a2f"},
+        {"description": "Added API reference page with links to pkg.go.dev (docs/api-reference.md)", "commit": "a310a2f"},
+        {"description": "Added package guides: auth, search, repo, pr, release, graphql, errors", "commit": "a310a2f"},
+        {"description": "Added .github/workflows/docs.yaml for automatic gh-pages deployment", "commit": "a310a2f"},
+        {"description": "Updated README.md with documentation site link", "commit": "a310a2f"}
       ]
     },
     {
@@ -630,8 +630,8 @@
         {"description": "Moved `BaseURLRepoAPI` and `BaseURLRepoHTML` from `search` to root `gogithub` package"}
       ],
       "added": [
-        {"description": "`AuthError.Unwrap()` method for Go 1.13+ error chain compatibility", "commit": "ca95de0"},
-        {"description": "`AuthError.Err` field to wrap underlying errors", "commit": "ca95de0"}
+        {"description": "`AuthError.Unwrap()` method for Go 1.13+ error chain compatibility", "commit": "995ec57"},
+        {"description": "`AuthError.Err` field to wrap underlying errors", "commit": "995ec57"}
       ],
       "changed": [
         {"description": "Root package now contains only package documentation and URL constants"},
@@ -640,7 +640,7 @@
         {"description": "`search/issues.go` now imports URL constants from root package"}
       ],
       "fixed": [
-        {"description": "`Query.Encode()` now produces deterministic output by sorting keys", "commit": "9be7777"}
+        {"description": "`Query.Encode()` now produces deterministic output by sorting keys", "commit": "aa096e7"}
       ],
       "removed": [
         {"description": "Removed `Client` type wrapper from root package"},
@@ -675,43 +675,43 @@
         {"description": "New `repo` package with listing operations (`ListOrgRepos`, `ListUserRepos`, `GetRepo`, `ParseRepoName`)", "commit": "8c7104e"},
         {"description": "New `repo` package with batch operations (`Batch` type for atomic multi-file commits)", "commit": "8c7104e"},
         {"description": "New `pr` package with `CreatePR`, `GetPR`, `ListPRs`, `MergePR`, `ClosePR`, `AddPRReviewers`, `ListPRFiles`, `ListPRComments`", "commit": "fc65108"},
-        {"description": "New `release` package with `ListReleases`, `ListReleasesSince`, `GetRelease`, `GetLatestRelease`, `GetReleaseByTag`, `ListReleaseAssets`", "commit": "c123ea5"},
-        {"description": "New `cliutil` package with `GitStatusShortLines`, `GitRmDeletedLines`, `GitRmDeletedFile` helpers", "commit": "c123ea5"},
-        {"description": "Example command `cmd/searchuserpr` for searching user pull requests", "commit": "c123ea5"}
+        {"description": "New `release` package with `ListReleases`, `ListReleasesSince`, `GetRelease`, `GetLatestRelease`, `GetReleaseByTag`, `ListReleaseAssets`", "commit": "da1d62c"},
+        {"description": "New `cliutil` package with `GitStatusShortLines`, `GitRmDeletedLines`, `GitRmDeletedFile` helpers", "commit": "da1d62c"},
+        {"description": "Example command `cmd/searchuserpr` for searching user pull requests", "commit": "da1d62c"}
       ],
       "changed": [
-        {"description": "Reorganized codebase from flat package structure to modular subpackages by operation type", "commit": "04d3c80"},
-        {"description": "Root package now provides backward-compatible re-exports delegating to subpackages", "commit": "04d3c80"},
-        {"description": "Moved search functionality from `api_search.go` to `search/search.go`", "commit": "04d3c80"},
-        {"description": "Moved constants from `constants.go` to `search/query.go`", "commit": "04d3c80"},
-        {"description": "Moved issue types from `issue.go` to `search/issues.go`", "commit": "04d3c80"},
-        {"description": "Moved example command from `pullrequest/cmd/searchuserpr` to `cmd/searchuserpr`", "commit": "04d3c80"}
+        {"description": "Reorganized codebase from flat package structure to modular subpackages by operation type", "commit": "2badf94"},
+        {"description": "Root package now provides backward-compatible re-exports delegating to subpackages", "commit": "2badf94"},
+        {"description": "Moved search functionality from `api_search.go` to `search/search.go`", "commit": "2badf94"},
+        {"description": "Moved constants from `constants.go` to `search/query.go`", "commit": "2badf94"},
+        {"description": "Moved issue types from `issue.go` to `search/issues.go`", "commit": "2badf94"},
+        {"description": "Moved example command from `pullrequest/cmd/searchuserpr` to `cmd/searchuserpr`", "commit": "2badf94"}
       ],
       "deprecated": [
-        {"description": "Root package `Client` type - use `auth.NewGitHubClient` and subpackage clients directly", "commit": "04d3c80"},
-        {"description": "Root package `NewClient` function - use `auth.NewGitHubClient` instead", "commit": "04d3c80"},
-        {"description": "Root package `NewClientWithToken` function - use `auth.NewGitHubClient` instead", "commit": "04d3c80"},
-        {"description": "Root package type aliases (`Query`, `Issues`, `Issue`) - import from `search` package directly", "commit": "04d3c80"},
-        {"description": "Root package constant re-exports (`ParamUser`, `ParamState`, etc.) - import from `search` package directly", "commit": "04d3c80"},
-        {"description": "Root package wrapper methods (`SearchOpenPullRequests`, `SearchIssues`, `SearchIssuesAll`) - use `search.Client` methods directly", "commit": "04d3c80"}
+        {"description": "Root package `Client` type - use `auth.NewGitHubClient` and subpackage clients directly", "commit": "2badf94"},
+        {"description": "Root package `NewClient` function - use `auth.NewGitHubClient` instead", "commit": "2badf94"},
+        {"description": "Root package `NewClientWithToken` function - use `auth.NewGitHubClient` instead", "commit": "2badf94"},
+        {"description": "Root package type aliases (`Query`, `Issues`, `Issue`) - import from `search` package directly", "commit": "2badf94"},
+        {"description": "Root package constant re-exports (`ParamUser`, `ParamState`, etc.) - import from `search` package directly", "commit": "2badf94"},
+        {"description": "Root package wrapper methods (`SearchOpenPullRequests`, `SearchIssues`, `SearchIssuesAll`) - use `search.Client` methods directly", "commit": "2badf94"}
       ],
       "removed": [
-        {"description": "Removed `api_search.go` (functionality moved to `search/search.go`)", "commit": "04d3c80"},
-        {"description": "Removed `constants.go` (functionality moved to `search/query.go`)", "commit": "04d3c80"},
-        {"description": "Removed `issue.go` (functionality moved to `search/issues.go`)", "commit": "04d3c80"},
-        {"description": "Removed `pullrequest/` directory (functionality moved to `pr/` and `cmd/`)", "commit": "04d3c80"}
+        {"description": "Removed `api_search.go` (functionality moved to `search/search.go`)", "commit": "2badf94"},
+        {"description": "Removed `constants.go` (functionality moved to `search/query.go`)", "commit": "2badf94"},
+        {"description": "Removed `issue.go` (functionality moved to `search/issues.go`)", "commit": "2badf94"},
+        {"description": "Removed `pullrequest/` directory (functionality moved to `pr/` and `cmd/`)", "commit": "2badf94"}
       ],
       "dependencies": [
-        {"description": "Upgraded `github.com/google/go-github` from v68 to v81", "commit": "8309e32"},
-        {"description": "Updated Go version from 1.22 to 1.24.0", "commit": "8309e32"},
-        {"description": "Updated indirect dependencies", "commit": "8309e32"}
+        {"description": "Upgraded `github.com/google/go-github` from v68 to v81", "commit": "943e2ff"},
+        {"description": "Updated Go version from 1.22 to 1.24.0", "commit": "943e2ff"},
+        {"description": "Updated indirect dependencies", "commit": "943e2ff"}
       ],
       "documentation": [
-        {"description": "Updated README with new modular package structure and usage examples", "commit": "272526d"},
-        {"description": "Added RELEASE_NOTES_v0.3.0.md with comprehensive release documentation", "commit": "272526d"},
-        {"description": "Added ROADMAP.json and ROADMAP.md with project roadmap and v0.4.0 deprecation plan", "commit": "0a59369"},
-        {"description": "Added missing v0.3.0 packages to README documentation", "commit": "30fd20f"},
-        {"description": "Added structured changelog (CHANGELOG.json and CHANGELOG.md)", "commit": "43c601e"}
+        {"description": "Updated README with new modular package structure and usage examples", "commit": "796615e"},
+        {"description": "Added RELEASE_NOTES_v0.3.0.md with comprehensive release documentation", "commit": "796615e"},
+        {"description": "Added ROADMAP.json and ROADMAP.md with project roadmap and v0.4.0 deprecation plan", "commit": "3bf43b5"},
+        {"description": "Added missing v0.3.0 packages to README documentation", "commit": "29b965e"},
+        {"description": "Added structured changelog (CHANGELOG.json and CHANGELOG.md)", "commit": "b74ddef"}
       ]
     },
     {
