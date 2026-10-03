@@ -1,71 +1,84 @@
+// Package cliutil provides helpers for scripting git operations on a local
+// working tree, such as staging files that were deleted outside of git.
 package cliutil
 
 import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 
-	"github.com/grokify/mogo/os/executil"
 	"github.com/grokify/mogo/os/osutil"
 )
 
-const GitCmdStatusShort = "git status -s"
+// GitCmdStatusShort is the git command whose output GitStatusShortLines
+// returns. The porcelain format is stable across git versions.
+const GitCmdStatusShort = "git status --porcelain"
 
+// deletedInWorktree matches a porcelain status line for a file deleted in the
+// working tree but still tracked in the index, capturing its path.
+var deletedInWorktree = regexp.MustCompile(`^\s+D\s+(.+?)\s*$`)
+
+// GitStatusShortLines returns the non-empty lines of `git status --porcelain`
+// for the repository at dir.
 func GitStatusShortLines(dir string) ([]string, error) {
 	ok, err := osutil.IsDir(dir)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	} else if !ok {
-		return []string{}, errors.New("path is not a directory")
+		return nil, errors.New("path is not a directory")
 	}
-	err = os.Chdir(dir)
+	cmd := exec.Command("git", "-C", dir, "status", "--porcelain")
+	stdout, err := cmd.Output()
 	if err != nil {
-		return []string{}, err
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			return nil, fmt.Errorf("%s: %w: %s", GitCmdStatusShort, err, strings.TrimSpace(string(exitErr.Stderr)))
+		}
+		return nil, fmt.Errorf("%s: %w", GitCmdStatusShort, err)
 	}
-	stdout, _, err := executil.ExecSimple(GitCmdStatusShort)
-	if err != nil {
-		return []string{}, err
+	var lines []string
+	for line := range strings.SplitSeq(strings.TrimRight(string(stdout), "\n"), "\n") {
+		if line != "" {
+			lines = append(lines, line)
+		}
 	}
-	lines := strings.Split(stdout.String(), "\n")
 	return lines, nil
 }
 
+// GitRmDeletedLines returns one `git rm <path>` command per file that was
+// deleted in the working tree of the repository at dir but is still tracked,
+// so that running them stages the deletions. Paths are quoted as git prints
+// them.
 func GitRmDeletedLines(dir string) ([]string, error) {
 	lines, err := GitStatusShortLines(dir)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
-
-	rmlines := []string{}
-	rx := regexp.MustCompile(`^\s+D\s+(.+)\s*$`)
-
+	var rmlines []string
 	for _, line := range lines {
-		m := rx.FindStringSubmatch(line)
-		if len(m) == 0 {
+		m := deletedInWorktree.FindStringSubmatch(line)
+		if m == nil {
 			continue
 		}
-		rmlines = append(rmlines, fmt.Sprintf("git rm %s\n", m[1]))
+		rmlines = append(rmlines, "git rm "+m[1])
 	}
 	return rmlines, nil
 }
 
+// GitRmDeletedFile writes the commands returned by GitRmDeletedLines to
+// filename, one per line, replacing any existing file.
 func GitRmDeletedFile(filename, dir string) error {
 	rmlines, err := GitRmDeletedLines(dir)
 	if err != nil {
 		return err
 	}
-
-	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0600)
-	if err != nil {
-		return err
-	}
+	var sb strings.Builder
 	for _, rmline := range rmlines {
-		_, err := file.WriteString(rmline + "\n")
-		if err != nil {
-			return err
-		}
+		sb.WriteString(rmline)
+		sb.WriteByte('\n')
 	}
-	return nil
+	return os.WriteFile(filename, []byte(sb.String()), 0600)
 }
