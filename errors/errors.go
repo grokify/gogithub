@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/google/go-github/v89/github"
 )
@@ -161,6 +162,35 @@ func IsRateLimitError(err error) bool {
 	return errors.As(err, &abuseErr)
 }
 
+// tokenPolicyMessage is the message fragment GitHub returns when an
+// organization's policy rejects the type of token used for the request.
+const tokenPolicyMessage = "forbids access via"
+
+// IsTokenPolicyError returns true if err is (or wraps) a 403 response caused
+// by an organization policy that rejects the type of token used, such as an
+// organization that forbids classic personal access tokens. The request may
+// succeed with a different kind of credential.
+//
+// Like IsRateLimitError, this matches raw errors returned directly from a
+// clientv1 call, as well as errors translated with a message by Translate.
+func IsTokenPolicyError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errResp *github.ErrorResponse
+	if errors.As(err, &errResp) {
+		return errResp.Response != nil &&
+			errResp.Response.StatusCode == http.StatusForbidden &&
+			strings.Contains(errResp.Message, tokenPolicyMessage)
+	}
+	var apiErr *APIError
+	if errors.As(err, &apiErr) {
+		return apiErr.StatusCode == http.StatusForbidden &&
+			strings.Contains(apiErr.Message, tokenPolicyMessage)
+	}
+	return false
+}
+
 // IsConflict returns true if the error indicates a conflict.
 func IsConflict(err error) bool {
 	return errors.Is(err, ErrConflict)
@@ -192,4 +222,20 @@ func StatusCode(err error) int {
 	}
 
 	return 0
+}
+
+// Message extracts the message GitHub returned with an error, if available.
+// Returns an empty string if the error carries no GitHub message.
+func Message(err error) string {
+	var apiErr *APIError
+	if errors.As(err, &apiErr) && apiErr.Message != "" {
+		return apiErr.Message
+	}
+
+	var errResp *github.ErrorResponse
+	if errors.As(err, &errResp) {
+		return errResp.Message
+	}
+
+	return ""
 }
