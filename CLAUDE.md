@@ -69,6 +69,7 @@ The `clientv1` package provides the `Client` interface that returns these types.
 | `config` | Configuration loading from env/files | Exposes go-github types |
 | `errors` | Error types and translation utilities | Stable |
 | `graphql` | GraphQL API client wrapper | Exposes githubv4 types |
+| `health` | Repository health: open issues, PRs, workflow run status for repo sets | Stable |
 | `pathutil` | Path validation and normalization | Stable |
 | `profile` | User contribution statistics | Exposes go-github types |
 | `pr` | Pull request operations | Exposes go-github types |

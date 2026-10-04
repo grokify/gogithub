@@ -365,6 +365,82 @@ See [OAuth App Authentication](auth.md#oauth-app-authentication) for the
 credentials set file and [Repository Operations](repo.md#list-repositories-in-organizations-you-are-not-a-member-of)
 for token requirements.
 
+### health
+
+Show open issue and pull request counts and the latest run of every GitHub
+Actions workflow for a set of repositories.
+
+```bash
+gogithub health [flags]
+```
+
+#### Flags
+
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--repo` | | Repository to check (`owner/name`, repeatable) | |
+| `--repos-file` | | File with one `owner/name` per line; blank lines and `#` comments are skipped | |
+| `--branch` | | Branch to evaluate workflow runs on | each repository's default branch |
+| `--any-branch` | | Evaluate each workflow's latest run on any branch or tag | `false` |
+| `--concurrency` | | Repositories collected at once | `4` |
+| `--format` | `-f` | Output format: `text` or `json` | `text` |
+
+`--repo` and `--repos-file` combine; duplicates are removed. `--branch` and
+`--any-branch` cannot be combined.
+
+#### Output
+
+Text output has two tables: one row per repository with its state, open
+issues (excluding pull requests), open pull requests, and a count of active
+workflows by state; then one row per workflow with its latest run's
+conclusion, branch, time, and URL. Disabled workflows show their GitHub state
+(`disabled_manually`, `disabled_inactivity`) in the conclusion column.
+
+```text
+REPOSITORY        STATE    ISSUES  PRS  WORKFLOWS
+grokify/gogithub  failing  0       0    1 failing, 6 passing, 1 none
+grokify/mogo      passing  0       0    5 passing
+
+REPOSITORY        WORKFLOW  STATE    CONCLUSION  BRANCH  UPDATED               URL
+grokify/gogithub  Go CI     passing  success     main    2026-10-04T00:01:20Z  https://github.com/grokify/gogithub/actions/runs/...
+...
+```
+
+JSON output is an array with one object per repository, including the
+repository URL and, for each workflow, its path, badge URL, and latest run
+details — what a dashboard needs to render links and badges without further
+API calls. A repository that could not be collected has `"state": "error"`
+and an `error` field.
+
+Repository states are `passing`, `failing`, `running`, `inconclusive`, `none`,
+or `error`. See [Repository Health](health.md#workflow-states) for how they
+are derived.
+
+#### Exit Status
+
+The command writes results for every repository it could collect, then exits
+non-zero if any repository failed, printing the failures to stderr.
+
+#### Examples
+
+```bash
+# A few repositories
+gogithub health --repo grokify/gogithub --repo grokify/mogo
+
+# A maintained list
+gogithub health --repos-file repos.txt
+
+# JSON for a dashboard
+gogithub health --repos-file repos.txt -f json > health.json
+
+# Include workflows triggered by tags or releases
+gogithub health --repo owner/name --any-branch
+```
+
+Each repository costs four API requests, so a list of a hundred repositories
+can be refreshed every few minutes within the rate limit. See
+[Repository Health](health.md#api-cost).
+
 ## Progress Display
 
 Long-running commands show real-time progress with:

@@ -186,6 +186,7 @@ new tree, then update the branch ref to the new commit.
 |--------|---------|-------------|
 | `GetPullRequest(ctx, owner, repo, number)` | `*gogithub.PullRequest` | Get PR details |
 | `ListPullRequests(ctx, owner, repo, opts)` | `[]*gogithub.PullRequest` | List pull requests |
+| `CountPullRequests(ctx, owner, repo, state)` | `int` | Count pull requests in one request (`"open"`, `"closed"`, or `"all"`) |
 | `CreatePullRequest(ctx, owner, repo, input)` | `*gogithub.PullRequest` | Create a new PR |
 | `UpdatePullRequest(ctx, owner, repo, num, input)` | `*gogithub.PullRequest` | Update a PR |
 | `MergePullRequest(ctx, owner, repo, num, opts)` | `*gogithub.MergeResult` | Merge a PR |
@@ -296,11 +297,15 @@ GitHub's Events API only returns the most recent ~300 events regardless of pagin
 |--------|---------|-------------|
 | `ListWorkflows(ctx, owner, repo)` | `[]*gogithub.Workflow` | List GitHub Actions workflows defined in a repository |
 | `ListWorkflowRuns(ctx, owner, repo, workflowID, opts)` | `[]*gogithub.WorkflowRun` | List runs of a workflow, most recent first |
+| `ListRepositoryWorkflowRuns(ctx, owner, repo, opts)` | `[]*gogithub.WorkflowRun` | List recent runs across all workflows, most recent first |
 
-Unlike most `List*` methods, `ListWorkflowRuns` does **not** paginate through all results — a
-long-lived workflow can accumulate thousands of runs, so it returns a single page controlled by
-`ListWorkflowRunsOptions.PerPage`/`Page` (GitHub's API defaults apply when `opts` is `nil`). To get
-only the latest run, pass `&ListWorkflowRunsOptions{PerPage: 1}` and take `runs[0]`.
+Unlike most `List*` methods, `ListWorkflowRuns` and `ListRepositoryWorkflowRuns` do **not**
+paginate through all results — a long-lived workflow can accumulate thousands of runs, so they
+return a single page controlled by `ListWorkflowRunsOptions.PerPage`/`Page` (GitHub's API defaults
+apply when `opts` is `nil`). To get only the latest run of one workflow, pass
+`&ListWorkflowRunsOptions{PerPage: 1}` and take `runs[0]`. To get the latest run of every workflow
+in one request, call `ListRepositoryWorkflowRuns` with `PerPage: 100` and keep the first run seen
+per `WorkflowID`; the [`health`](health.md) package does this.
 
 ## Stable Types
 
