@@ -12,6 +12,7 @@
       "date": "2026-10-03",
       "highlights": [
         { "description": "**Repository health for dashboards**: the new `health` package collects open issues, open pull requests, and the latest run of every GitHub Actions workflow for a set of repositories in four API requests per repository, with a `passing`/`failing`/`running` state per workflow and per repository; exposed as the `gogithub health` CLI command", "commit": "57b805e" },
+        { "description": "**Conditional requests**: the new `etagcache` transport sends `If-None-Match` on repeat requests and returns GitHub's `304 Not Modified` as the cached response, so polling consumers such as dashboards spend no rate limit on unchanged data; `clientv1.ClientOptions.Transport` accepts it and `gogithub health --cache-dir` persists the cache between runs", "commit": "a16c73f" },
         { "description": "**Repository access listing**: `repo.ListNonMemberOrgRepos` answers \"which repositories have I been granted access to in organizations I don't belong to?\", backed by new `clientv1` methods for the authenticated user's repositories and organization memberships, and exposed as the `gogithub repo-access` CLI command", "commit": "1016187" },
         { "description": "**OAuth app authentication via goauth**: organizations can forbid personal access tokens; the new `auth/credentialsset` package obtains an OAuth app token from a goauth credentials set file using the authorization code grant, and `errors.IsTokenPolicyError` plus `repo.CheckAccess` make the policy block visible instead of looking like a missing repository", "commit": "22a3ee7" }
       ],
@@ -26,7 +27,10 @@
         { "description": "[cli] `gogithub repo-access` lists accessible repositories with permission levels; `--non-member-orgs` filters to organizations the user is not a member of, `--repo owner/name` checks specific repositories, `--creds`/`--account` authenticate as an OAuth app, and `-f json` emits JSON", "commit": "2def571" },
         { "description": "[clientv1] `CountPullRequests(ctx, owner, repo, state)` counts pull requests in one request by reading the pagination header; `ListRepositoryWorkflowRuns(ctx, owner, repo, opts)` returns one page of recent runs across all workflows", "commit": "d645c2a" },
         { "description": "[health] `Collect` and `CollectAll` gather open issue and pull request counts and every workflow's latest run per repository, concurrently across a repository set with partial results; `RunState` and `OverallState` derive `passing`, `failing`, `running`, `inconclusive`, or `none`; `RunsURL` derives the all-runs page for a workflow; `Options` select the branch, any branch, concurrency, and page size", "commit": "57b805e" },
-        { "description": "[cli] `gogithub health` reports repository health for `--repo` and `--repos-file` lists as text tables or JSON with workflow names, paths, run details, and links to the workflow file, all runs, the latest run, and the badge; `--branch`, `--any-branch`, and `--concurrency` control collection", "commit": "5c19e84" }
+        { "description": "[cli] `gogithub health` reports repository health for `--repo` and `--repos-file` lists as text tables or JSON with workflow names, paths, run details, and links to the workflow file, all runs, the latest run, and the badge; `--branch`, `--any-branch`, and `--concurrency` control collection", "commit": "5c19e84" },
+        { "description": "[etagcache] `Transport` makes conditional requests and serves 304s from a `Store`; `MemoryStore` (LRU) and `FileStore` (owner-only files, atomic writes) are provided; `Stats` counts hits, misses, and uncacheable requests; entries are keyed by URL and a credential hash", "commit": "a16c73f" },
+        { "description": "[clientv1] `ClientOptions.Transport` sets the transport that performs requests after the token is attached", "commit": "a16c73f" },
+        { "description": "[cli] `gogithub health --cache-dir` caches responses between runs and prints hit statistics", "commit": "6f16de8" }
       ],
       "changed": [
         { "description": "[cliutil] `GitStatusShortLines` runs git in the target directory with `-C` instead of changing the process working directory, uses the stable porcelain format, and omits empty lines; `GitRmDeletedLines` returns commands without trailing newlines and `GitRmDeletedFile` replaces the output file", "commit": "29efed1" }
@@ -43,12 +47,14 @@
       "documentation": [
         { "description": "Documented repository access listing, `CheckAccess`, OAuth app authentication, token policy errors, and the `repo-access` CLI command across the clientv1, repo, auth, errors, and CLI guides", "commit": "6f9b0cf" },
         { "description": "Added coverage badge to README", "commit": "bacd650" },
-        { "description": "Added the Repository Health guide and documented the `health` command and new clientv1 methods", "commit": "3cc088b" }
+        { "description": "Added the Repository Health guide and documented the `health` command and new clientv1 methods", "commit": "3cc088b" },
+        { "description": "Added the Conditional Requests guide, documented `ClientOptions.Transport` and `--cache-dir`, and recorded v0.18.0 follow-ups in TASKS.md", "commit": "1512f73" }
       ],
       "tests": [
         { "description": "Covered the new clientv1 methods against a stubbed GitHub API, the repo access filter and `CheckAccess`, the token policy error helpers, and the credentials set authorization code flow", "commit": "118d1e3" },
         { "description": "Covered cliutil git status and rm command generation against a temporary repository", "commit": "423eb20" },
-        { "description": "Covered pull request counting and repository-wide run listing against a stubbed GitHub API, and health state derivation, collection, fallbacks, and concurrent partial results against a stubbed client", "commit": "57b805e" }
+        { "description": "Covered pull request counting and repository-wide run listing against a stubbed GitHub API, and health state derivation, collection, fallbacks, and concurrent partial results against a stubbed client", "commit": "57b805e" },
+        { "description": "Covered the etagcache transport against a server enforcing ETag semantics (hits, changes, credential isolation, bypasses, caller validators, store failures), the LRU store, and the file store across transports", "commit": "a16c73f" }
       ]
     },
     {
