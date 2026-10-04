@@ -11,6 +11,7 @@
       "version": "v0.18.0",
       "date": "2026-10-03",
       "highlights": [
+        { "description": "**Repository health for dashboards**: the new `health` package collects open issues, open pull requests, and the latest run of every GitHub Actions workflow for a set of repositories in four API requests per repository, with a `passing`/`failing`/`running` state per workflow and per repository; exposed as the `gogithub health` CLI command", "commit": "57b805e" },
         { "description": "**Repository access listing**: `repo.ListNonMemberOrgRepos` answers \"which repositories have I been granted access to in organizations I don't belong to?\", backed by new `clientv1` methods for the authenticated user's repositories and organization memberships, and exposed as the `gogithub repo-access` CLI command", "commit": "1016187" },
         { "description": "**OAuth app authentication via goauth**: organizations can forbid personal access tokens; the new `auth/credentialsset` package obtains an OAuth app token from a goauth credentials set file using the authorization code grant, and `errors.IsTokenPolicyError` plus `repo.CheckAccess` make the policy block visible instead of looking like a missing repository", "commit": "22a3ee7" }
       ],
@@ -22,7 +23,10 @@
         { "description": "[repo] `ListNonMemberOrgRepos`, `FilterNonMemberOrgRepos`, and `MembershipOrgLogins` list and filter repositories owned by organizations the user is not an active member of", "commit": "1016187" },
         { "description": "[repo] `CheckAccess(ctx, client, owner, name)` reports access to one repository as `granted`, `not_visible`, or `blocked_by_token_policy`, probing the owner on a 404 to tell the last two apart", "commit": "1016187" },
         { "description": "[auth/credentialsset] `NewClient` and `NewToken` create clients from a goauth credentials set account, using a stored token or the authorization code grant via an `AuthCodePrompt`; `PromptReadWriter` provides a command-line prompt and `RedirectURL` the hosted redirect page", "commit": "22a3ee7" },
-        { "description": "[cli] `gogithub repo-access` lists accessible repositories with permission levels; `--non-member-orgs` filters to organizations the user is not a member of, `--repo owner/name` checks specific repositories, `--creds`/`--account` authenticate as an OAuth app, and `-f json` emits JSON", "commit": "2def571" }
+        { "description": "[cli] `gogithub repo-access` lists accessible repositories with permission levels; `--non-member-orgs` filters to organizations the user is not a member of, `--repo owner/name` checks specific repositories, `--creds`/`--account` authenticate as an OAuth app, and `-f json` emits JSON", "commit": "2def571" },
+        { "description": "[clientv1] `CountPullRequests(ctx, owner, repo, state)` counts pull requests in one request by reading the pagination header; `ListRepositoryWorkflowRuns(ctx, owner, repo, opts)` returns one page of recent runs across all workflows", "commit": "d645c2a" },
+        { "description": "[health] `Collect` and `CollectAll` gather open issue and pull request counts and every workflow's latest run per repository, concurrently across a repository set with partial results; `RunState` and `OverallState` derive `passing`, `failing`, `running`, `inconclusive`, or `none`; `Options` select the branch, any branch, concurrency, and page size", "commit": "57b805e" },
+        { "description": "[cli] `gogithub health` reports repository health for `--repo` and `--repos-file` lists as text tables or JSON with workflow paths, badge URLs, and run details; `--branch`, `--any-branch`, and `--concurrency` control collection", "commit": "5c19e84" }
       ],
       "changed": [
         { "description": "[cliutil] `GitStatusShortLines` runs git in the target directory with `-C` instead of changing the process working directory, uses the stable porcelain format, and omits empty lines; `GitRmDeletedLines` returns commands without trailing newlines and `GitRmDeletedFile` replaces the output file", "commit": "29efed1" }
@@ -33,15 +37,18 @@
       "dependencies": [
         { "description": "Added `github.com/grokify/goauth` v0.25.0 for credentials set files and OAuth flows, imported only by `auth/credentialsset`; bumped `mogo`, `gocharts`, and `golang.org/x` modules", "commit": "77059d6" },
         { "description": "Bumped `github.com/grokify/mogo` from 0.74.6 to 0.74.7", "commit": "4081b61" },
-        { "description": "Updated Go module dependencies", "commit": "ffeb22e" }
+        { "description": "Updated Go module dependencies", "commit": "ffeb22e" },
+        { "description": "Bumped `github.com/grokify/mogo` from 0.74.9 to 0.75.0 and indirect dependencies", "commit": "1b672e2" }
       ],
       "documentation": [
         { "description": "Documented repository access listing, `CheckAccess`, OAuth app authentication, token policy errors, and the `repo-access` CLI command across the clientv1, repo, auth, errors, and CLI guides", "commit": "6f9b0cf" },
-        { "description": "Added coverage badge to README", "commit": "bacd650" }
+        { "description": "Added coverage badge to README", "commit": "bacd650" },
+        { "description": "Added the Repository Health guide and documented the `health` command and new clientv1 methods", "commit": "3cc088b" }
       ],
       "tests": [
         { "description": "Covered the new clientv1 methods against a stubbed GitHub API, the repo access filter and `CheckAccess`, the token policy error helpers, and the credentials set authorization code flow", "commit": "118d1e3" },
-        { "description": "Covered cliutil git status and rm command generation against a temporary repository", "commit": "423eb20" }
+        { "description": "Covered cliutil git status and rm command generation against a temporary repository", "commit": "423eb20" },
+        { "description": "Covered pull request counting and repository-wide run listing against a stubbed GitHub API, and health state derivation, collection, fallbacks, and concurrent partial results against a stubbed client", "commit": "57b805e" }
       ]
     },
     {
