@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -331,11 +332,13 @@ func TestFileStore(t *testing.T) {
 	if s.Dir() != dir {
 		t.Errorf("Dir() = %q, want %q", s.Dir(), dir)
 	}
+	// Windows has no Unix permission bits; Go reports 0777/0666 there.
+	checkPerms := runtime.GOOS != "windows"
 	info, err := os.Stat(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if perm := info.Mode().Perm(); perm != 0o700 {
+	if perm := info.Mode().Perm(); checkPerms && perm != 0o700 {
 		t.Errorf("dir perm = %o, want 700", perm)
 	}
 
@@ -366,7 +369,7 @@ func TestFileStore(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if perm := finfo.Mode().Perm(); perm != 0o600 {
+	if perm := finfo.Mode().Perm(); checkPerms && perm != 0o600 {
 		t.Errorf("file perm = %o, want 600", perm)
 	}
 
