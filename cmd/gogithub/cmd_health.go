@@ -13,6 +13,7 @@ import (
 
 	"github.com/grokify/gogithub"
 	"github.com/grokify/gogithub/clientv1"
+	"github.com/grokify/gogithub/etagcache"
 	"github.com/grokify/gogithub/health"
 	"github.com/spf13/cobra"
 )
@@ -24,6 +25,7 @@ var (
 	healthAnyBranch   bool
 	healthConcurrency int
 	healthFormat      string
+	healthCacheDir    string
 )
 
 var healthCmd = &cobra.Command{
@@ -34,7 +36,9 @@ counts, and the latest run of every GitHub Actions workflow.
 
 Each repository costs four API requests regardless of how many pull requests
 or workflows it has, so a set of repositories can be refreshed frequently
-within the API rate limit.
+within the API rate limit. With --cache-dir, responses are cached between
+runs and GitHub is asked only whether each one changed; unchanged responses
+do not count against the rate limit.
 
 Workflow runs are evaluated on the default branch unless --branch or
 --any-branch is given. A repository is failing if any active workflow's
@@ -46,6 +50,7 @@ Examples:
   gogithub health --repos-file repos.txt            # One owner/name per line
   gogithub health --repos-file repos.txt -f json    # For dashboards
   gogithub health --repo owner/name --any-branch    # Include tag-triggered workflows
+  gogithub health --repos-file repos.txt --cache-dir ~/.cache/gogithub   # Conditional requests
 
 Authentication:
   GITHUB_TOKEN    Token with the 'repo' scope (private repositories and
@@ -65,6 +70,7 @@ func init() {
 	healthCmd.Flags().BoolVar(&healthAnyBranch, "any-branch", false, "Evaluate each workflow's latest run on any branch or tag")
 	healthCmd.Flags().IntVar(&healthConcurrency, "concurrency", health.DefaultConcurrency, "Repositories to collect at once")
 	healthCmd.Flags().StringVarP(&healthFormat, "format", "f", repoAccessFormatText, "Output format: text or json")
+	healthCmd.Flags().StringVar(&healthCacheDir, "cache-dir", "", "Directory for cached responses, enabling conditional requests across runs")
 	healthCmd.MarkFlagsMutuallyExclusive("branch", "any-branch")
 }
 
@@ -158,9 +164,9 @@ func runHealth(cmd *cobra.Command, args []string) error {
 	}
 
 	ctx := context.Background()
-	client, err := clientv1.NewClient(ctx, ensureToken())
+	client, cache, err := newHealthClient(ctx, healthCacheDir)
 	if err != nil {
-		return fmt.Errorf("creating github client: %w", err)
+		return err
 	}
 
 	results, collectErr := health.CollectAll(ctx, client, repos, &health.Options{
@@ -175,8 +181,33 @@ func runHealth(cmd *cobra.Command, args []string) error {
 	if err := writeHealth(os.Stdout, entries, healthFormat); err != nil {
 		return err
 	}
+	if cache != nil {
+		fmt.Fprintln(os.Stderr, cache.Stats())
+	}
 	// Partial results were written; report what failed and exit non-zero.
 	return collectErr
+}
+
+// newHealthClient creates a client from GITHUB_TOKEN. With a cache
+// directory, requests go through an ETag cache persisted there, and the
+// returned transport reports hit statistics.
+func newHealthClient(ctx context.Context, cacheDir string) (clientv1.Client, *etagcache.Transport, error) {
+	opts := clientv1.ClientOptions{Token: ensureToken()}
+	var cache *etagcache.Transport
+	if cacheDir != "" {
+		store, err := etagcache.NewFileStore(cacheDir)
+		if err != nil {
+			return nil, nil, err
+		}
+		cache = etagcache.NewTransportWithStore(nil, store)
+		cache.OnStoreError = func(err error) { fmt.Fprintln(os.Stderr, "cache:", err) }
+		opts.Transport = cache
+	}
+	client, err := clientv1.NewClientWithOptions(ctx, opts)
+	if err != nil {
+		return nil, nil, fmt.Errorf("creating github client: %w", err)
+	}
+	return client, cache, nil
 }
 
 // healthRepoList merges --repo values with the lines of --repos-file,
