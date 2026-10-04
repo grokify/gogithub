@@ -53,6 +53,11 @@ type ClientOptions struct {
 	// UploadURL is the GitHub upload URL (for GitHub Enterprise).
 	// Leave empty for github.com.
 	UploadURL string
+	// Transport performs the HTTP requests after the token is attached.
+	// nil means http.DefaultTransport. Set it to an *etagcache.Transport to
+	// make conditional requests, which do not count against the rate limit
+	// when the response is unchanged.
+	Transport http.RoundTripper
 }
 
 // NewClientWithOptions creates a new GitHub client with the given options.
@@ -61,7 +66,12 @@ func NewClientWithOptions(ctx context.Context, opts ClientOptions) (Client, erro
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: opts.Token},
 	)
-	tc := oauth2.NewClient(ctx, ts)
+	var tc *http.Client
+	if opts.Transport != nil {
+		tc = &http.Client{Transport: &oauth2.Transport{Source: ts, Base: opts.Transport}}
+	} else {
+		tc = oauth2.NewClient(ctx, ts)
+	}
 
 	ghOpts := []github.ClientOptionsFunc{github.WithHTTPClient(tc)}
 	if opts.BaseURL != "" {

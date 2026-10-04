@@ -3,6 +3,7 @@ package clientv1
 import (
 	"context"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
 )
@@ -130,3 +131,40 @@ func TestListRepositoryWorkflowRunsNilOptions(t *testing.T) {
 		t.Errorf("len(runs) = %d, want 0", len(runs))
 	}
 }
+
+func TestNewClientWithOptionsTransport(t *testing.T) {
+	var gotAuth string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotAuth = r.Header.Get("Authorization")
+		writeJSON(t, w, `{"login":"me"}`)
+	}))
+	t.Cleanup(srv.Close)
+	target, err := url.Parse(srv.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	calls := 0
+	counting := roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+		calls++
+		return (&rewriteTransport{target: target}).RoundTrip(req)
+	})
+	c, err := NewClientWithOptions(context.Background(), ClientOptions{Token: "tok", Transport: counting})
+	if err != nil {
+		t.Fatalf("NewClientWithOptions() error = %v", err)
+	}
+	user, err := c.GetAuthenticatedUser(context.Background())
+	if err != nil {
+		t.Fatalf("GetAuthenticatedUser() error = %v", err)
+	}
+	if user.Login != "me" || calls != 1 {
+		t.Errorf("login = %q, transport calls = %d; want me via the custom transport", user.Login, calls)
+	}
+	if gotAuth != "Bearer tok" {
+		t.Errorf("Authorization = %q, want the token attached before the custom transport", gotAuth)
+	}
+}
+
+type roundTripperFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) { return f(req) }
