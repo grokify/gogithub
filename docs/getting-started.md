@@ -173,6 +173,25 @@ pullRequest, err := pr.CreatePR(ctx, client,
 fmt.Printf("PR URL: %s\n", pullRequest.HTMLURL)
 ```
 
+### Check Repository Health
+
+```go
+import "github.com/grokify/gogithub/health"
+
+results, err := health.CollectAll(ctx, client, []string{"grokify/gogithub", "grokify/mogo"}, nil)
+for _, r := range results {
+    if r.Err != nil {
+        fmt.Printf("%s: %v\n", r.FullName, r.Err)
+        continue
+    }
+    fmt.Printf("%s: %s, %d open issues, %d open PRs\n",
+        r.FullName, r.Health.State, r.Health.OpenIssues, r.Health.OpenPullRequests)
+}
+```
+
+Four API requests per repository. See [Repository Health](guides/health.md), and
+[Conditional Requests](guides/etagcache.md) to make repeated collection free of rate limit.
+
 ### Get User Contribution Stats (GraphQL)
 
 ```go
@@ -195,5 +214,7 @@ fmt.Printf("Additions: %d, Deletions: %d\n", commitStats.Additions, commitStats.
 
 - [Authentication Guide](guides/auth.md) - Detailed authentication options
 - [Search API Guide](guides/search.md) - Query syntax and examples
+- [Repository Health](guides/health.md) - Issues, pull requests, and workflow status for repository sets
+- [Command Line Interface](guides/cli.md) - `gogithub profile`, `search-prs`, `repo-access`, `health`
 - [GraphQL Guide](guides/graphql.md) - Contribution statistics
 - [Testing Guide](guides/testing.md) - Running unit and integration tests

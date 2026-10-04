@@ -43,11 +43,16 @@ func main() {
 - **Version-Isolated Client** - Stable types that don't break when go-github updates
 - **Search API** - Query issues, pull requests, code, and commits with a fluent query builder
 - **Repository Operations** - Fork, branch, commit, and batch file operations
+- **Repository Health** - Open issues, open pull requests, and workflow status across a set of repositories in four requests each
+- **Repository Access** - List grants in organizations you don't belong to; detect organizations that forbid your token type
+- **Conditional Requests** - ETag transport so unchanged responses cost no rate limit
 - **Pull Requests** - Create, list, merge, and manage PRs
 - **Releases** - List releases and download assets
 - **GraphQL API** - User contribution statistics and detailed commit stats
 - **Error Handling** - Typed errors with helper functions for common cases
+- **Authentication** - Tokens, GitHub Apps, and OAuth apps from a goauth credentials set file
 - **GitHub Enterprise** - Full support for GitHub Enterprise Server
+- **Command Line** - `gogithub` CLI for profiles, search, repository access, and health
 
 ## Search Example
 
@@ -93,13 +98,16 @@ func main() {
 | `clientv1` | **Version-isolated client** | **Stable** |
 | `gogithub` (root) | Stable types (User, Repository, etc.) | **Stable** |
 | [`search`](guides/search.md) | Search API with query builder | Stable (`clientv1.Client`) |
-| [`repo`](guides/repo.md) | Repository operations (fork, branch, commit, batch) | Stable (`clientv1.Client`) |
+| [`repo`](guides/repo.md) | Repository operations (fork, branch, commit, batch, access) | Stable (`clientv1.Client`) |
+| [`health`](guides/health.md) | Open issues, pull requests, and workflow status for repository sets | Stable (`clientv1.Client`) |
+| [`etagcache`](guides/etagcache.md) | HTTP transport for conditional requests (ETag / 304) | Stable |
 | [`pr`](guides/pr.md) | Pull request operations | Stable (`clientv1.Client`) |
 | [`release`](guides/release.md) | Release and asset operations | Stable (`clientv1.Client`) |
 | [`checks`](guides/clientv1.md) | Check run polling and status | Stable (`clientv1.Client`) |
 | [`tag`](guides/clientv1.md) | Git tag operations | Stable (`clientv1.Client`) |
 | [`sarif`](guides/clientv1.md) | SARIF upload for code scanning | Stable (`clientv1.Client`) |
 | [`auth`](guides/auth.md) | Client creation and authentication utilities | Legacy functions return go-github types |
+| [`auth/credentialsset`](guides/auth.md#oauth-app-authentication) | OAuth app clients from a goauth credentials set file | Stable |
 | [`config`](guides/auth.md#configuration) | Configuration from environment variables | `NewClientV1()` is stable; `NewClient()` is deprecated |
 | [`graphql`](guides/graphql.md) | GraphQL API for contribution statistics | Exposes `githubv4` types |
 | [`errors`](guides/errors.md) | Error types and translation | Stable |
@@ -112,5 +120,7 @@ versions. Prefer `clientv1.Client` wherever a package accepts it.
 
 - [Getting Started](getting-started.md) - Installation and first steps
 - [Version-Isolated Client](guides/clientv1.md) - Using the stable client API
+- [Repository Health](guides/health.md) - Dashboards over a set of repositories
+- [Command Line Interface](guides/cli.md) - The `gogithub` CLI
 - [API Reference](api-reference.md) - Links to pkg.go.dev documentation
 - [Changelog](https://github.com/grokify/gogithub/blob/main/CHANGELOG.md) - Version history and release notes

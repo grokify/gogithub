@@ -8,9 +8,12 @@ Complete API documentation is available on pkg.go.dev. Each package is documente
 |---------|-------------|---------------|
 | `gogithub` | Root package with backward-compatible exports | [pkg.go.dev](https://pkg.go.dev/github.com/grokify/gogithub) |
 | `auth` | Authentication and client creation | [pkg.go.dev](https://pkg.go.dev/github.com/grokify/gogithub/auth) |
+| `auth/credentialsset` | OAuth app clients from a goauth credentials set file | [pkg.go.dev](https://pkg.go.dev/github.com/grokify/gogithub/auth/credentialsset) |
 | `config` | Configuration from environment variables | [pkg.go.dev](https://pkg.go.dev/github.com/grokify/gogithub/config) |
 | `search` | Search API with query builder | [pkg.go.dev](https://pkg.go.dev/github.com/grokify/gogithub/search) |
-| `repo` | Repository operations | [pkg.go.dev](https://pkg.go.dev/github.com/grokify/gogithub/repo) |
+| `repo` | Repository operations and access checks | [pkg.go.dev](https://pkg.go.dev/github.com/grokify/gogithub/repo) |
+| `health` | Repository health: open issues, pull requests, workflow status | [pkg.go.dev](https://pkg.go.dev/github.com/grokify/gogithub/health) |
+| `etagcache` | HTTP transport for conditional requests | [pkg.go.dev](https://pkg.go.dev/github.com/grokify/gogithub/etagcache) |
 | `pr` | Pull request operations | [pkg.go.dev](https://pkg.go.dev/github.com/grokify/gogithub/pr) |
 | `release` | Release and asset operations | [pkg.go.dev](https://pkg.go.dev/github.com/grokify/gogithub/release) |
 | `graphql` | GraphQL API for contribution stats | [pkg.go.dev](https://pkg.go.dev/github.com/grokify/gogithub/graphql) |

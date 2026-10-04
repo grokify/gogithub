@@ -193,7 +193,7 @@ func main() {
 }
 ```
 
-### Operation Packages (search, repo, pr, checks, tag, release, sarif)
+### Operation Packages (search, repo, pr, checks, tag, release, sarif, health)
 
 These packages take a `clientv1.Client`, so they stay version-isolated just like the client itself.
 
@@ -230,6 +230,35 @@ func main() {
     fmt.Printf("Found %d open PRs\n", len(issues))
 }
 ```
+
+### Repository Health
+
+Open issues, open pull requests, and the latest run of every GitHub Actions workflow, for a set of repositories, in four API requests each. See the [health guide](https://grokify.github.io/gogithub/guides/health/).
+
+```go
+import (
+    "github.com/grokify/gogithub/clientv1"
+    "github.com/grokify/gogithub/etagcache"
+    "github.com/grokify/gogithub/health"
+)
+
+// Optional: conditional requests, so unchanged responses cost no rate limit.
+cache := etagcache.NewTransport(nil)
+client, err := clientv1.NewClientWithOptions(ctx, clientv1.ClientOptions{Token: token, Transport: cache})
+
+results, err := health.CollectAll(ctx, client, []string{"grokify/gogithub", "grokify/mogo"}, nil)
+for _, r := range results {
+    if r.Err != nil {
+        continue // partial results: the other repositories are still collected
+    }
+    fmt.Printf("%s: %s, %d issues, %d PRs\n", r.FullName, r.Health.State, r.Health.OpenIssues, r.Health.OpenPullRequests)
+    for _, wf := range r.Health.Workflows {
+        fmt.Printf("  %s: %s\n", wf.Workflow.Name, wf.State) // wf.LatestRun has the run URL when non-nil
+    }
+}
+```
+
+The same data from the command line: `gogithub health --repo grokify/gogithub --repo grokify/mogo` (`-f json` for dashboards, `--cache-dir` to cache between runs).
 
 ### Creating a Pull Request
 
@@ -564,6 +593,7 @@ use `clientv1` so it never needs to change when go-github does.
 
 - [google/go-github](https://github.com/google/go-github) v89 - GitHub API client (wrapped internally by `clientv1`; avoid importing it directly, see [Version-Isolated Client](#version-isolated-client-recommended))
 - [golang.org/x/oauth2](https://golang.org/x/oauth2) - OAuth2 authentication
+- [grokify/goauth](https://github.com/grokify/goauth) - Credentials set files and OAuth flows (imported only by `auth/credentialsset`)
 
 ## License
 
