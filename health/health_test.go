@@ -86,6 +86,32 @@ func run(workflowID int64, status, conclusion string) *gogithub.WorkflowRun {
 	return &gogithub.WorkflowRun{WorkflowID: workflowID, Status: status, Conclusion: conclusion, HeadBranch: "main"}
 }
 
+func TestRunsURL(t *testing.T) {
+	repo := &gogithub.Repository{HTMLURL: "https://github.com/o/r"}
+	tests := []struct {
+		name     string
+		repo     *gogithub.Repository
+		workflow *gogithub.Workflow
+		want     string
+	}{
+		{"workflow file", repo, &gogithub.Workflow{Path: ".github/workflows/ci.yml"}, "https://github.com/o/r/actions/workflows/ci.yml"},
+		{"dynamic workflow", repo, &gogithub.Workflow{Path: "dynamic/pages/pages-build-deployment"}, "https://github.com/o/r/actions/workflows/pages/pages-build-deployment"},
+		{"dependabot workflow", repo, &gogithub.Workflow{Path: "dynamic/dependabot/dependabot-updates"}, "https://github.com/o/r/actions/workflows/dependabot/dependabot-updates"},
+		{"unknown prefix", repo, &gogithub.Workflow{Path: "elsewhere/nested/build.yml"}, "https://github.com/o/r/actions/workflows/build.yml"},
+		{"nil repository", nil, &gogithub.Workflow{Path: ".github/workflows/ci.yml"}, ""},
+		{"no repository URL", &gogithub.Repository{}, &gogithub.Workflow{Path: ".github/workflows/ci.yml"}, ""},
+		{"nil workflow", repo, nil, ""},
+		{"no path", repo, &gogithub.Workflow{}, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := RunsURL(tt.repo, tt.workflow); got != tt.want {
+				t.Errorf("RunsURL() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestRunState(t *testing.T) {
 	tests := []struct {
 		name string

@@ -11,6 +11,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/grokify/gogithub"
 	"github.com/grokify/gogithub/clientv1"
 	"github.com/grokify/gogithub/health"
 	"github.com/spf13/cobra"
@@ -81,10 +82,14 @@ type healthEntry struct {
 
 // healthWorkflowEntry is one workflow in health output.
 type healthWorkflowEntry struct {
-	Name          string     `json:"name"`
-	Path          string     `json:"path"`
-	WorkflowState string     `json:"workflowState"`
-	State         string     `json:"state"`
+	Name          string `json:"name"`
+	Path          string `json:"path"`
+	WorkflowState string `json:"workflowState"`
+	State         string `json:"state"`
+	// WorkflowURL is the workflow definition file; RunsURL lists all of its
+	// runs; RunURL is the latest run; BadgeURL is the status badge image.
+	WorkflowURL   string     `json:"workflowUrl,omitempty"`
+	RunsURL       string     `json:"runsUrl,omitempty"`
 	RunStatus     string     `json:"runStatus,omitempty"`
 	RunConclusion string     `json:"runConclusion,omitempty"`
 	RunBranch     string     `json:"runBranch,omitempty"`
@@ -111,17 +116,19 @@ func newHealthEntry(r health.Result) healthEntry {
 		entry.URL = h.Repository.HTMLURL
 	}
 	for _, wf := range h.Workflows {
-		entry.Workflows = append(entry.Workflows, newHealthWorkflowEntry(wf))
+		entry.Workflows = append(entry.Workflows, newHealthWorkflowEntry(h.Repository, wf))
 	}
 	return entry
 }
 
-func newHealthWorkflowEntry(wf health.WorkflowHealth) healthWorkflowEntry {
+func newHealthWorkflowEntry(repository *gogithub.Repository, wf health.WorkflowHealth) healthWorkflowEntry {
 	entry := healthWorkflowEntry{State: string(wf.State)}
 	if wf.Workflow != nil {
 		entry.Name = wf.Workflow.Name
 		entry.Path = wf.Workflow.Path
 		entry.WorkflowState = wf.Workflow.State
+		entry.WorkflowURL = wf.Workflow.HTMLURL
+		entry.RunsURL = health.RunsURL(repository, wf.Workflow)
 		entry.BadgeURL = wf.Workflow.BadgeURL
 	}
 	if run := wf.LatestRun; run != nil {

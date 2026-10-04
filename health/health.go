@@ -13,6 +13,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path"
+	"strings"
 	"sync"
 
 	"github.com/grokify/gogithub"
@@ -121,6 +123,37 @@ type Result struct {
 	// Health is nil when Err is set.
 	Health *RepoHealth
 	Err    error
+}
+
+// Workflow path prefixes. Workflows defined in the repository live under
+// WorkflowPathPrefix; GitHub's own (Dependabot, Pages) are reported under
+// DynamicWorkflowPathPrefix.
+const (
+	WorkflowPathPrefix        = ".github/workflows/"
+	DynamicWorkflowPathPrefix = "dynamic/"
+)
+
+// RunsURL returns the GitHub page listing all runs of a workflow, which the
+// API does not provide. It is derived from the repository's HTMLURL and the
+// workflow path, e.g. https://github.com/owner/name/actions/workflows/ci.yml
+// for ".github/workflows/ci.yml" and
+// https://github.com/owner/name/actions/workflows/pages/pages-build-deployment
+// for "dynamic/pages/pages-build-deployment". It returns "" when either
+// input is missing.
+func RunsURL(repository *gogithub.Repository, workflow *gogithub.Workflow) string {
+	if repository == nil || repository.HTMLURL == "" || workflow == nil || workflow.Path == "" {
+		return ""
+	}
+	slug := workflow.Path
+	switch {
+	case strings.HasPrefix(slug, WorkflowPathPrefix):
+		slug = strings.TrimPrefix(slug, WorkflowPathPrefix)
+	case strings.HasPrefix(slug, DynamicWorkflowPathPrefix):
+		slug = strings.TrimPrefix(slug, DynamicWorkflowPathPrefix)
+	default:
+		slug = path.Base(slug)
+	}
+	return repository.HTMLURL + "/actions/workflows/" + slug
 }
 
 // RunState derives the State of a single run. A nil run is StateNone.
