@@ -66,6 +66,23 @@ Each `WorkflowHealth` pairs a `gogithub.Workflow` with its latest run and a
 
 `RunState` exposes this mapping for a single `gogithub.WorkflowRun`.
 
+### Linking to workflows
+
+Each `WorkflowHealth` carries the full `gogithub.Workflow` and latest
+`gogithub.WorkflowRun`, so a dashboard can link to:
+
+| Target | Field |
+|--------|-------|
+| The workflow definition file | `Workflow.HTMLURL` |
+| All runs of the workflow | `health.RunsURL(repository, workflow)` — derived, since the API does not return it |
+| The latest run and its logs | `LatestRun.HTMLURL` |
+| The status badge image | `Workflow.BadgeURL` |
+
+`RunsURL` handles both repository workflows (`.github/workflows/ci.yml` →
+`.../actions/workflows/ci.yml`) and GitHub's own dynamic workflows
+(`dynamic/pages/pages-build-deployment` →
+`.../actions/workflows/pages/pages-build-deployment`).
+
 The repository `State` is the most severe state among **active** workflows:
 `failing` if any failed, else `running`, else `passing`, else `inconclusive`,
 else `none`. Workflows that GitHub has disabled (`disabled_manually`,

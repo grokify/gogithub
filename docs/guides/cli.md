@@ -407,8 +407,10 @@ grokify/gogithub  Go CI     passing  success     main    2026-10-04T00:01:20Z  h
 ```
 
 JSON output is an array with one object per repository, including the
-repository URL and, for each workflow, its path, badge URL, and latest run
-details — what a dashboard needs to render links and badges without further
+repository URL and, for each workflow, its name, path, and latest run details
+plus four links: `workflowUrl` (the definition file), `runsUrl` (all runs of
+the workflow), `runUrl` (the latest run), and `badgeUrl` (the status badge
+image) — what a dashboard needs to render links and badges without further
 API calls. A repository that could not be collected has `"state": "error"`
 and an `error` field.
 
