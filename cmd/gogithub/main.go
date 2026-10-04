@@ -36,4 +36,5 @@ func init() {
 	rootCmd.AddCommand(profileCmd)
 	rootCmd.AddCommand(statsReportCmd)
 	rootCmd.AddCommand(repoAccessCmd)
+	rootCmd.AddCommand(healthCmd)
 }
