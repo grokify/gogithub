@@ -68,6 +68,7 @@ The `clientv1` package provides the `Client` interface that returns these types.
 | `checks` | CI/CD check runs and suites | Exposes go-github types |
 | `config` | Configuration loading from env/files | Exposes go-github types |
 | `errors` | Error types and translation utilities | Stable |
+| `etagcache` | HTTP transport for conditional requests (ETag / 304) | Stable |
 | `graphql` | GraphQL API client wrapper | Exposes githubv4 types |
 | `health` | Repository health: open issues, PRs, workflow run status for repo sets | Stable |
 | `pathutil` | Path validation and normalization | Stable |
@@ -137,7 +138,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ## Dependencies
 
-- `github.com/google/go-github/v88` - GitHub REST API client (internal use)
+- `github.com/google/go-github/v89` - GitHub REST API client (internal use)
 - `github.com/shurcooL/githubv4` - GitHub GraphQL client
 - `golang.org/x/oauth2` - OAuth2 authentication
 - `github.com/golang-jwt/jwt/v5` - JWT for GitHub App auth

@@ -51,6 +51,7 @@ nav:
       - Search API: guides/search.md
       - Repository Operations: guides/repo.md
       - Repository Health: guides/health.md
+      - Conditional Requests: guides/etagcache.md
       - Pull Requests: guides/pr.md
       - Releases: guides/release.md
       - GraphQL API: guides/graphql.md

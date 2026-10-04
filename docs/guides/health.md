@@ -131,6 +131,15 @@ collection against the 5,000 per hour core limit, so a dashboard can refresh
 every few minutes. Search API endpoints, which have a separate limit of 30
 requests per minute, are not used.
 
+All four requests return `ETag`s. With an [`etagcache`](etagcache.md)
+transport on the client, a refresh in which nothing changed costs no rate
+limit at all, since GitHub answers `304 Not Modified`:
+
+```go
+cache := etagcache.NewTransport(nil)
+client, err := clientv1.NewClientWithOptions(ctx, clientv1.ClientOptions{Token: token, Transport: cache})
+```
+
 ## Partial results
 
 `CollectAll` returns a `Result` per input repository, in input order, and

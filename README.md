@@ -15,7 +15,7 @@
  [go-lint-url]: https://github.com/grokify/gogithub/actions/workflows/go-lint.yaml
  [go-sast-svg]: https://github.com/grokify/gogithub/actions/workflows/go-sast-codeql.yaml/badge.svg?branch=main
  [go-sast-url]: https://github.com/grokify/gogithub/actions/workflows/go-sast-codeql.yaml
- [coverage-svg]: https://img.shields.io/badge/coverage-55.9%25-orange
+ [coverage-svg]: https://img.shields.io/badge/coverage-56.9%25-orange
  [coverage-url]: https://github.com/grokify/gogithub
  [docs-godoc-svg]: https://pkg.go.dev/badge/github.com/grokify/gogithub
  [docs-godoc-url]: https://pkg.go.dev/github.com/grokify/gogithub
@@ -143,6 +143,9 @@ gogithub/
 │   └── release.go        # ListReleases, GetLatestRelease, CreateRelease, DeleteRelease
 ├── health/               # Repository health: open issues, PRs, workflow status
 │   └── health.go         # Collect, CollectAll, RunState, OverallState
+├── etagcache/            # Conditional requests: 304s don't count against the rate limit
+│   ├── etagcache.go      # Transport, MemoryStore, Key, Stats
+│   └── filestore.go      # FileStore for caches that survive between runs
 ├── checks/               # Check runs operations
 │   └── checks.go         # ListCheckRuns, WaitForChecks, AllChecksPassed
 ├── sarif/                # SARIF upload for GitHub Code Scanning

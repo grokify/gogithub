@@ -96,8 +96,67 @@ manageable. Consider if repo package grows significantly.
 **Note:** API-calling functions require HTTP client mocking infrastructure. Tests added
 for constants, error types, and pure functions that don't need mocking.
 
+## Phase 4: Health and Access (v0.18.0 follow-ups)
+
+### 4.1 Fix the `Update Profile README` Workflow
+
+- [ ] Change `go-version: '1.23'` to `go-version: 'stable'` in `.github/workflows/update-profile-readme.yml`
+- [ ] Verify with a manual `workflow_dispatch` run
+
+**Status:** Open. The scheduled run has failed every week since August at the
+`Install gogithub` step: `setup-go` pins Go 1.23 with `GOTOOLCHAIN=local`, while
+`go.mod` requires a newer Go, so `go install ...@latest` refuses to build. Surfaced by
+`gogithub health --repo grokify/gogithub`. The workflow is a copyable example for
+profile repositories, so `stable` is the right fix for people copying it too.
+
+**Decision needed first:** once fixed, the schedule resumes committing
+`chore: update profile stats SVG` to `main` weekly (the last such commits are from
+early August). Options: keep as is (dogfoods the feature), drop the `schedule` trigger
+in this repo so it is `workflow_dispatch`-only (users keep the schedule in their copy),
+or commit the SVG to a non-`main` branch.
+
+**Files:** `.github/workflows/update-profile-readme.yml`, `stats.svg`
+
+### 4.2 `repo-access --external`
+
+- [ ] Add a `--external` flag (or `repo.ListExternalRepos`) that lists grants on repositories owned by **other users**, not only non-member organizations
+- [ ] Share the filter logic with `repo.FilterNonMemberOrgRepos`; keep case-insensitive owner matching
+- [ ] Document in `docs/guides/repo.md` and `docs/guides/cli.md`
+
+**Status:** Open. `--non-member-orgs` deliberately excludes user-owned repositories,
+so a direct collaborator grant on another person's repository is only visible in the
+unfiltered listing.
+
+**Files:** `repo/access.go`, `cmd/gogithub/cmd_repo_access.go`
+
+### 4.3 Conditional Requests (ETag) for Polling Consumers
+
+- [x] Add `etagcache` transport: `If-None-Match` on repeat `GET`s, `304` returned as the cached `200`
+- [x] `MemoryStore` (LRU) for long-running processes, `FileStore` for CLI runs
+- [x] `clientv1.ClientOptions.Transport` hook; `gogithub health --cache-dir`
+- [ ] Consider a bounded `FileStore` (eviction by age or size) if cache directories grow
+
+**Files:** `etagcache/`, `clientv1/client_impl.go`, `cmd/gogithub/cmd_health.go`
+
+### 4.4 Health Package Extensions
+
+- [ ] Open issue/PR counts by label or age (e.g. "stale > 30 days") — needs `ListIssues`/`ListPullRequests` rather than counts, so make it opt-in
+- [ ] Latest release and tag per repository (`GetLatestRelease` is already in `clientv1`)
+- [ ] Dependabot alert and code scanning alert counts (new `clientv1` methods; need `security_events` scope)
+- [ ] Branch protection summary for the default branch (`GetBranchProtection` exists)
+- [ ] GraphQL variant that batches issue and PR counts for ~25 repositories per request, for very large repository sets
+
+**Status:** Ideas. Each adds requests per repository; keep the default `Collect` at four.
+
+### 4.5 Repository Hygiene
+
+- [ ] Decide whether `stats.svg` belongs in the library repository (see 4.1)
+- [ ] Add a tracked-tree check for local filesystem paths (`/Users/`, `/home/`, `$HOME`) to the shared lint workflow
+
 ## Completed
 
+- [x] v0.18.0 - Repository access listing, OAuth app authentication, repository health,
+  conditional requests, `bulk_git_rm` cleanup
 - [x] v0.12.1 release (2026-04-06) - Code quality improvements
   - Phase 1: Quick Wins (all complete)
   - Phase 2.1: go-github iterators (complete)

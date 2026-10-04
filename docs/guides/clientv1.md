@@ -50,6 +50,23 @@ client, err := clientv1.NewClientWithOptions(ctx, clientv1.ClientOptions{
 })
 ```
 
+### With Conditional Requests
+
+```go
+import "github.com/grokify/gogithub/etagcache"
+
+cache := etagcache.NewTransport(nil)
+client, err := clientv1.NewClientWithOptions(ctx, clientv1.ClientOptions{
+    Token:     "your-token",
+    Transport: cache,
+})
+```
+
+`ClientOptions.Transport` performs the requests after the token is attached.
+An `etagcache.Transport` makes conditional requests, so unchanged responses
+come back as `304 Not Modified` and do not count against the rate limit. See
+[Conditional Requests](etagcache.md).
+
 ### From Config
 
 ```go

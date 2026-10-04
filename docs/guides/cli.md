@@ -384,6 +384,7 @@ gogithub health [flags]
 | `--any-branch` | | Evaluate each workflow's latest run on any branch or tag | `false` |
 | `--concurrency` | | Repositories collected at once | `4` |
 | `--format` | `-f` | Output format: `text` or `json` | `text` |
+| `--cache-dir` | | Directory for cached responses; enables conditional requests across runs | |
 
 `--repo` and `--repos-file` combine; duplicates are removed. `--branch` and
 `--any-branch` cannot be combined.
@@ -437,11 +438,17 @@ gogithub health --repos-file repos.txt -f json > health.json
 
 # Include workflows triggered by tags or releases
 gogithub health --repo owner/name --any-branch
+
+# Cache responses between runs; unchanged responses don't count against the rate limit
+gogithub health --repos-file repos.txt --cache-dir ~/.cache/gogithub
 ```
 
 Each repository costs four API requests, so a list of a hundred repositories
-can be refreshed every few minutes within the rate limit. See
-[Repository Health](health.md#api-cost).
+can be refreshed every few minutes within the rate limit. With `--cache-dir`,
+the command stores each response's `ETag` and body in that directory and asks
+GitHub only whether it changed; a `304 Not Modified` is free. The hit
+statistics are printed to stderr. See [Repository Health](health.md#api-cost)
+and [Conditional Requests](etagcache.md).
 
 ## Progress Display
 
