@@ -155,6 +155,12 @@ type Client interface {
 	// ListPullRequests lists pull requests in a repository.
 	ListPullRequests(ctx context.Context, owner, repo string, opts *ListPullRequestsOptions) ([]*gogithub.PullRequest, error)
 
+	// CountPullRequests returns the number of pull requests in a repository
+	// with the given state ("open", "closed", or "all"; default "open"). It
+	// makes a single request regardless of the count, so prefer it over
+	// len(ListPullRequests(...)) when only the number is needed.
+	CountPullRequests(ctx context.Context, owner, repo, state string) (int, error)
+
 	// CreatePullRequest creates a new pull request.
 	CreatePullRequest(ctx context.Context, owner, repo string, input *CreatePullRequestInput) (*gogithub.PullRequest, error)
 
@@ -287,6 +293,12 @@ type Client interface {
 	// workflow can accumulate thousands of runs, so it returns a single page
 	// per opts (PerPage defaults to GitHub's own default when opts is nil).
 	ListWorkflowRuns(ctx context.Context, owner, repo string, workflowID int64, opts *ListWorkflowRunsOptions) ([]*gogithub.WorkflowRun, error)
+
+	// ListRepositoryWorkflowRuns lists the most recent runs across all
+	// workflows in a repository, most recent first. Like ListWorkflowRuns,
+	// it returns a single page per opts. One call covers every workflow,
+	// which makes it the efficient way to find each workflow's latest run.
+	ListRepositoryWorkflowRuns(ctx context.Context, owner, repo string, opts *ListWorkflowRunsOptions) ([]*gogithub.WorkflowRun, error)
 
 	// Raw returns the underlying go-github client for advanced use cases.
 	// WARNING: Using this couples your code to a specific go-github version.

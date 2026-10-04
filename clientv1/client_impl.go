@@ -517,6 +517,28 @@ func (c *client) ListPullRequests(ctx context.Context, owner, repo string, opts 
 	return pullRequestsFromGitHub(allPRs), nil
 }
 
+// CountPullRequests returns the number of pull requests with the given state.
+// It requests a single item per page and reads the last page number from the
+// Link header, so one request yields the total.
+func (c *client) CountPullRequests(ctx context.Context, owner, repo, state string) (int, error) {
+	listOpts := &github.PullRequestListOptions{
+		State:       "open",
+		ListOptions: github.ListOptions{PerPage: 1},
+	}
+	if state != "" {
+		listOpts.State = state
+	}
+	prs, resp, err := c.gh.PullRequests.List(ctx, owner, repo, listOpts)
+	if err != nil {
+		return 0, fmt.Errorf("count pull requests: %w", err)
+	}
+	// GitHub omits the Link header when everything fits on one page.
+	if resp.LastPage == 0 {
+		return len(prs), nil
+	}
+	return resp.LastPage, nil
+}
+
 // CreatePullRequest creates a new pull request.
 func (c *client) CreatePullRequest(ctx context.Context, owner, repo string, input *CreatePullRequestInput) (*gogithub.PullRequest, error) {
 	newPR := &github.NewPullRequest{
@@ -1287,22 +1309,37 @@ func (c *client) ListWorkflows(ctx context.Context, owner, repo string) ([]*gogi
 // ListWorkflowRuns lists runs of a workflow, most recent first. Unlike most
 // List* methods, this does not paginate through all results.
 func (c *client) ListWorkflowRuns(ctx context.Context, owner, repo string, workflowID int64, opts *ListWorkflowRunsOptions) ([]*gogithub.WorkflowRun, error) {
-	runOpts := &github.ListWorkflowRunsOptions{}
-	if opts != nil {
-		runOpts.Branch = opts.Branch
-		runOpts.Status = opts.Status
-		if opts.PerPage > 0 {
-			runOpts.ListOptions.PerPage = opts.PerPage
-		}
-		if opts.Page > 0 {
-			runOpts.ListOptions.Page = opts.Page
-		}
-	}
-	runs, _, err := c.gh.Actions.ListWorkflowRunsByID(ctx, owner, repo, workflowID, runOpts)
+	runs, _, err := c.gh.Actions.ListWorkflowRunsByID(ctx, owner, repo, workflowID, workflowRunOptionsToGitHub(opts))
 	if err != nil {
 		return nil, fmt.Errorf("list workflow runs: %w", err)
 	}
 	return workflowRunsFromGitHub(runs.WorkflowRuns), nil
+}
+
+// ListRepositoryWorkflowRuns lists the most recent runs across all workflows
+// in a repository. It returns a single page.
+func (c *client) ListRepositoryWorkflowRuns(ctx context.Context, owner, repo string, opts *ListWorkflowRunsOptions) ([]*gogithub.WorkflowRun, error) {
+	runs, _, err := c.gh.Actions.ListRepositoryWorkflowRuns(ctx, owner, repo, workflowRunOptionsToGitHub(opts))
+	if err != nil {
+		return nil, fmt.Errorf("list repository workflow runs: %w", err)
+	}
+	return workflowRunsFromGitHub(runs.WorkflowRuns), nil
+}
+
+func workflowRunOptionsToGitHub(opts *ListWorkflowRunsOptions) *github.ListWorkflowRunsOptions {
+	runOpts := &github.ListWorkflowRunsOptions{}
+	if opts == nil {
+		return runOpts
+	}
+	runOpts.Branch = opts.Branch
+	runOpts.Status = opts.Status
+	if opts.PerPage > 0 {
+		runOpts.ListOptions.PerPage = opts.PerPage
+	}
+	if opts.Page > 0 {
+		runOpts.ListOptions.Page = opts.Page
+	}
+	return runOpts
 }
 
 // SearchCode searches for code in repositories.
